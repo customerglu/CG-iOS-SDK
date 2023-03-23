@@ -100,6 +100,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     @objc public var cgUserData = CGUser()
     private var sdkInitialized: Bool = false
     
+    // Below variables are used to save the remote notification
+    private var userInfo: [AnyHashable: Any]?
+    private var backgroundAlphaValue: Double = 0.5
+    private var autoCloseWebview: Bool = CustomerGlu.auto_close_webview ?? false
+        
     private override init() {
         super.init()
         
@@ -374,11 +379,25 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CustomerGlu.isDiagnosticsEnabled = isDiagnosticsEnabled
     }
     
+    @objc public func recordApplication(didReceiveRemoteNotification userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5, auto_close_webview: Bool = CustomerGlu.auto_close_webview ?? false) {
+        self.userInfo = userInfo
+        self.backgroundAlphaValue = backgroundAlpha
+        self.autoCloseWebview = auto_close_webview
+    }
+    
+    @objc public func rendeRecordedRemoteNotification() {
+        if let userInfo = userInfo {
+            self.cgapplication(UIApplication.shared, didReceiveRemoteNotification: userInfo, backgroundAlpha: self.backgroundAlphaValue, auto_close_webview: self.autoCloseWebview, fetchCompletionHandler: { _ in })
+            self.userInfo = nil
+        }
+    }
+    
     @objc public func cgapplication(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5,auto_close_webview : Bool = CustomerGlu.auto_close_webview!, fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         if CustomerGlu.sdk_disable! == true {
             CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-cgapplication", posttoserver: true)
             return
         }
+        
         if let messageID = userInfo[gcmMessageIDKey] {
             if(true == CustomerGlu.isDebugingEnabled){
                 print("Message ID: \(messageID)")
@@ -428,10 +447,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
                 
             } else {
-                
                 return
             }
-        } else {
         }
     }
     
