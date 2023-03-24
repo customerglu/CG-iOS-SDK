@@ -379,13 +379,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CustomerGlu.isDiagnosticsEnabled = isDiagnosticsEnabled
     }
     
-    @objc public func recordApplication(didReceiveRemoteNotification userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5, auto_close_webview: Bool = CustomerGlu.auto_close_webview ?? false) {
+    @objc public func recordRemoteNotification(withUserInfo userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5, auto_close_webview: Bool = CustomerGlu.auto_close_webview ?? false) {
         self.userInfo = userInfo
         self.backgroundAlphaValue = backgroundAlpha
         self.autoCloseWebview = auto_close_webview
     }
     
-    @objc public func rendeRecordedRemoteNotification() {
+    @objc public func renderRecordedRemoteNotification() {
         if let userInfo = userInfo {
             self.cgapplication(UIApplication.shared, didReceiveRemoteNotification: userInfo, backgroundAlpha: self.backgroundAlphaValue, auto_close_webview: self.autoCloseWebview, fetchCompletionHandler: { _ in })
             self.userInfo = nil
