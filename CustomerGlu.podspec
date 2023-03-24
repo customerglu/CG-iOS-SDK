@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'CustomerGlu'
-  s.version          = '2.3.0'
+  s.version          = '2.3.1'
   s.summary          = 'CustomerGlu'
   s.description      = <<-DESC
 A new CustomerGlu.
@@ -25,7 +25,7 @@ A new CustomerGlu.
     LICENSE
   }
   s.author           = { 'CustomerGlu' => 'code@customerglu.net' }
-  s.source           = { :git => 'https://github.com/customerglu/CG-iOS-SDK.git', :tag => 'v2.3.0'}
+  s.source           = { :git => 'https://github.com/customerglu/CG-iOS-SDK.git', :tag => 'v2.3.1'}
   s.source_files = 'Sources/CustomerGlu/Classes/**/*.*'
   s.exclude_files = 'Tests/**/*.*'
   s.resources = 'Sources/CustomerGlu/Resources/**/*.*'
