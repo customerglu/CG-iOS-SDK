@@ -33,6 +33,13 @@ struct PopUpModel: Codable {
 
 @objc(CustomerGlu)
 
+// MARK: - CGSDKInitialState
+private enum CGSDKInitialState: Int {
+    case notInitialized
+    case initialized
+    case none // will be used in notification state
+}
+
 public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     // MARK: - Global Variable
@@ -98,13 +105,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var lightEmbedLoaderURL = ""
     public static var darkEmbedLoaderURL = ""
     @objc public var cgUserData = CGUser()
-    private var sdkInitialized: Bool = false
+    private var sdkInitialized: CGSDKInitialState = .notInitialized
     
     // Below variables are used to save the remote notification
     private var userInfo: [AnyHashable: Any]?
     private var backgroundAlphaValue: Double = 0.5
     private var autoCloseWebview: Bool = CustomerGlu.auto_close_webview ?? false
-        
+    
     private override init() {
         super.init()
         
@@ -379,20 +386,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CustomerGlu.isDiagnosticsEnabled = isDiagnosticsEnabled
     }
     
-    @objc public func recordRemoteNotification(withUserInfo userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5, auto_close_webview: Bool = CustomerGlu.auto_close_webview ?? false) {
-        self.userInfo = userInfo
-        self.backgroundAlphaValue = backgroundAlpha
-        self.autoCloseWebview = auto_close_webview
-    }
-    
-    @objc public func renderRecordedRemoteNotification() {
-        if let userInfo = userInfo {
-            self.cgapplication(UIApplication.shared, didReceiveRemoteNotification: userInfo, backgroundAlpha: self.backgroundAlphaValue, auto_close_webview: self.autoCloseWebview, fetchCompletionHandler: { _ in })
-            self.userInfo = nil
-        }
-    }
-    
-    @objc public func cgapplication(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5,auto_close_webview : Bool = CustomerGlu.auto_close_webview!, fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    @objc private func handleRemoteNotification(withUserInfo userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5, auto_close_webview: Bool = CustomerGlu.auto_close_webview ?? false) {
         if CustomerGlu.sdk_disable! == true {
             CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-cgapplication", posttoserver: true)
             return
@@ -449,6 +443,32 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             } else {
                 return
             }
+        }
+    }
+    
+    @objc public func setupCGDeferredDeeplinkHandler() {
+        if let userInfo = userInfo {
+            self.handleRemoteNotification(withUserInfo: userInfo, backgroundAlpha: self.backgroundAlphaValue, auto_close_webview: self.autoCloseWebview)
+            self.userInfo = nil
+        }
+    }
+    
+    /*
+     isDeferredDeeplink - Only in case we have to render UI in later stage
+     sdkInitialized - happens only on Application didFinishLaunching
+     */
+    @objc public func cgapplication(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5,auto_close_webview : Bool = CustomerGlu.auto_close_webview!, fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void, isDeferredDeeplink: Bool = false)  {
+        if isDeferredDeeplink && sdkInitialized == .initialized {
+            // Set this value because the CG SDK Initialise should happen only ones.
+            sdkInitialized = .none
+            
+            // App is coming from Killed state so use setupCGNotificationHandler API to render the UI
+            self.userInfo = userInfo
+            self.backgroundAlphaValue = backgroundAlpha
+            self.autoCloseWebview = auto_close_webview
+        } else {
+            self.cgapplication(UIApplication.shared, didReceiveRemoteNotification: userInfo, backgroundAlpha: self.backgroundAlphaValue, auto_close_webview: self.autoCloseWebview, fetchCompletionHandler: { _ in })
+            self.userInfo = nil
         }
     }
     
@@ -597,9 +617,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     // MARK: - API Calls Methods
     
     @objc public func initializeSdk() {
-        if !sdkInitialized {
+        if sdkInitialized == .notInitialized {
             // So SDK is initialized
-            sdkInitialized = true
+            sdkInitialized = .initialized
             
             //  ExampleEvents
             var eventData: [String: Any] = [:]
@@ -1750,6 +1770,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func setCurrentClassName(className: String) {
+        // Set this value because the CG SDK Initialise should happen only ones.
+        sdkInitialized = .none
         
         if(popuptimer != nil){
             popuptimer?.invalidate()
