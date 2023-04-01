@@ -1505,7 +1505,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         eventData["campaign_id"] = campaign_id
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_LOAD_CAMPAIGN_BY_ID_CALLED, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
         DispatchQueue.main.async {
-            let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
+            guard let customerWebViewVC = StoryboardType.main.getCustomerWebViewController() else {
+                print("* CustomerGlu :: Unable to load WebViewController *")
+                return
+            }
             guard let topController = UIViewController.topViewController() else {
                 return
             }

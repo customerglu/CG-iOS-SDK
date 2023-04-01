@@ -29,4 +29,14 @@ enum StoryboardType: String {
     func instantiate<VC: UIViewController>(vcType: VC.Type) -> VC {
         return (instance().instantiateViewController(withIdentifier: String(describing: vcType.self)) as? VC)!
     }
+    
+    // Get Storyboard
+    func getStoryboard() -> UIStoryboard {
+        return UIStoryboard(name: "Storyboard", bundle: .module)
+    }
+    
+    // Controllers
+    func getCustomerWebViewController() -> CustomerWebViewController? {
+        return (getStoryboard().instantiateViewController(withIdentifier: "CustomerWebViewController") as? CustomerWebViewController)
+    }
 }
