@@ -20,7 +20,7 @@ protocol StoryboardIdentifiable where Self: UIViewController {
 
 enum StoryboardType: String {
     
-    case main = "Storyboard"
+    case main = "CGStoryboard"
     
     func instance() -> UIStoryboard {
         return UIStoryboard(name: rawValue, bundle: .module)
@@ -29,14 +29,9 @@ enum StoryboardType: String {
     func instantiate<VC: UIViewController>(vcType: VC.Type) -> VC {
         return (instance().instantiateViewController(withIdentifier: String(describing: vcType.self)) as? VC)!
     }
-    
-    // Get Storyboard
-    func getStoryboard() -> UIStoryboard {
-        return UIStoryboard(name: "Storyboard", bundle: .module)
-    }
-    
+
     // Controllers
     func getCustomerWebViewController() -> CustomerWebViewController? {
-        return (getStoryboard().instantiateViewController(withIdentifier: "CustomerWebViewController") as? CustomerWebViewController)
+        return (instance().instantiateViewController(withIdentifier: "CustomerWebViewController") as? CustomerWebViewController)
     }
 }
