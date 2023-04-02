@@ -24,6 +24,21 @@ class OtherUtils {
         return nil
     }
     
+    func dictToObject <T: Decodable>(dict: Dictionary<String, Any>, type: T.Type) -> T? {
+        do {
+            // Convert Dictionary to JSON Data
+            let jsonData = try JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted)
+            
+            // Decode data to model object
+            let jsonDecoder = JSONDecoder()
+            let object = try jsonDecoder.decode(type, from: jsonData)
+            return object
+        } catch let error { // response with error
+            print("JSON decode failed: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
     func getCrashInfo() -> [String: Any]? {
         let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") ?? ""
         let shortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") ?? ""
