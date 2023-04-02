@@ -20,7 +20,7 @@ protocol StoryboardIdentifiable where Self: UIViewController {
 
 enum StoryboardType: String {
     
-    case main = "CGStoryboard"
+    case main = "CustomerGluStoryboard"
     
     func instance() -> UIStoryboard {
         return UIStoryboard(name: rawValue, bundle: .module)
