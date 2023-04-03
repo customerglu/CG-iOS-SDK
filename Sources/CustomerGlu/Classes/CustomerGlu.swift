@@ -515,7 +515,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         })
     }
     
-    @objc public func cgReceiveBackgroundNotification(userInfo: [String: Any]){
+    @objc public func cgHandleCachingBackgroundNotification(userInfo: [String: Any]){
         self.userInfo = userInfo
     }
     
