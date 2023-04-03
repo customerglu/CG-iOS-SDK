@@ -515,6 +515,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         })
     }
     
+    @objc public func cgReceiveBackgroundNotification(userInfo: [String: Any]){
+        self.userInfo = userInfo
+    }
+    
     @objc public func displayBackgroundNotification(remoteMessage: [String: AnyHashable],auto_close_webview : Bool = CustomerGlu.auto_close_webview!) {
         if CustomerGlu.sdk_disable! == true {
             CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-displayBackgroundNotification", posttoserver: false)
