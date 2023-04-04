@@ -422,7 +422,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 nudgeConfiguration.closeOnDeepLink = Bool(closeOnDeepLink as! String) ?? CustomerGlu.auto_close_webview!
             }
             
-            if userInfo[NotificationsKey.glu_message_type] as? String == NotificationsKey.in_app {
+//            if userInfo[NotificationsKey.glu_message_type] as? String == NotificationsKey.in_app {
                 
                 if(true == CustomerGlu.isDebugingEnabled){
                     print(page_type as Any)
@@ -440,9 +440,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 
                 self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
                 
-            } else {
-                return
-            }
+//            } else {
+//                return
+//            }
         }
     }
     
@@ -517,6 +517,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func cgHandleCachingBackgroundNotification(userInfo: [String: Any]){
         self.userInfo = userInfo
+        if sdkInitialized == .initialized {
+            sdkInitialized = .notInitialized
+        }
     }
     
     @objc public func displayBackgroundNotification(remoteMessage: [String: AnyHashable],auto_close_webview : Bool = CustomerGlu.auto_close_webview!) {
