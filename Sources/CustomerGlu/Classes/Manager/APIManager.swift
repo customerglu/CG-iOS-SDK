@@ -73,7 +73,7 @@ class APIManager {
     // Singleton Instance
     static let shared = APIManager()
     
-    private static func performRequest<T: Decodable>(baseurl: String, methodandpath: MethodandPath, parametersDict: NSDictionary?,dispatchGroup:DispatchGroup = DispatchGroup() ,completion: @escaping (Result<T, Error>) -> Void) {
+    private static func performRequest<T: Decodable>(baseurl: String, methodandpath: MethodandPath, parametersDict: NSDictionary?,allowCommonHeader: Bool!,dispatchGroup:DispatchGroup = DispatchGroup() ,completion: @escaping (Result<T, Error>) -> Void) {
         
         //Grouped compelete API-call work flow into a DispatchGroup so that it can maintanted the oprational queue for task completion
         // Enter into DispatchGroup
@@ -91,15 +91,17 @@ class APIManager {
         urlRequest.httpMethod = methodandpath.method//method.rawValue
         
         // Common Headers
-        urlRequest.setValue(ContentType.json.rawValue, forHTTPHeaderField: HTTPHeaderField.contentType.rawValue)
-        urlRequest.setValue(CustomerGlu.sdkWriteKey, forHTTPHeaderField: HTTPHeaderField.xapikey.rawValue)
-        urlRequest.setValue("ios", forHTTPHeaderField: HTTPHeaderField.platform.rawValue)
-        urlRequest.setValue(CustomerGlu.isDebugingEnabled.description, forHTTPHeaderField: HTTPHeaderField.sandbox.rawValue)
-        urlRequest.setValue(APIParameterKey.cgsdkversionvalue, forHTTPHeaderField: HTTPHeaderField.cgsdkversionkey.rawValue)
-        
-        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
-            urlRequest.setValue("\(APIParameterKey.bearer) " + CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN), forHTTPHeaderField: HTTPHeaderField.authorization.rawValue)
-            urlRequest.setValue("\(APIParameterKey.bearer) " + CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN), forHTTPHeaderField: HTTPHeaderField.xgluauth.rawValue)
+        if allowCommonHeader {
+            urlRequest.setValue(ContentType.json.rawValue, forHTTPHeaderField: HTTPHeaderField.contentType.rawValue)
+            urlRequest.setValue(CustomerGlu.sdkWriteKey, forHTTPHeaderField: HTTPHeaderField.xapikey.rawValue)
+            urlRequest.setValue("ios", forHTTPHeaderField: HTTPHeaderField.platform.rawValue)
+            urlRequest.setValue(CustomerGlu.isDebugingEnabled.description, forHTTPHeaderField: HTTPHeaderField.sandbox.rawValue)
+            urlRequest.setValue(APIParameterKey.cgsdkversionvalue, forHTTPHeaderField: HTTPHeaderField.cgsdkversionkey.rawValue)
+            
+            if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
+                urlRequest.setValue("\(APIParameterKey.bearer) " + CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN), forHTTPHeaderField: HTTPHeaderField.authorization.rawValue)
+                urlRequest.setValue("\(APIParameterKey.bearer) " + CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN), forHTTPHeaderField: HTTPHeaderField.xgluauth.rawValue)
+            }
         }
         
         if parametersDict!.count > 0 { // Check Parameters & Move Accordingly
@@ -170,7 +172,7 @@ class APIManager {
         // Added Task into Queue
         blockOperation.addExecutionBlock {
             // Call Login API with API Router
-            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.userRegister, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.userRegister, parametersDict: queryParameters,allowCommonHeader: true ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
@@ -190,7 +192,7 @@ class APIManager {
         
         // Added Task into Queue
         blockOperation.addExecutionBlock {
-            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.getWalletRewards, parametersDict: queryParameters,completion: completion)
+            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.getWalletRewards, parametersDict: queryParameters,allowCommonHeader: true ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
@@ -210,7 +212,7 @@ class APIManager {
         // Added Task into Queue
         blockOperation.addExecutionBlock {
             // Call Get Wallet and Rewards List
-            performRequest(baseurl: BaseUrls.streamurl, methodandpath: MethodNameandPath.addToCart, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: BaseUrls.streamurl, methodandpath: MethodNameandPath.addToCart, parametersDict: queryParameters,allowCommonHeader: false ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
@@ -229,7 +231,7 @@ class APIManager {
         // Added Task into Queue
         blockOperation.addExecutionBlock {
             // Call Get Wallet and Rewards List
-            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.crashReport, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.crashReport, parametersDict: queryParameters,allowCommonHeader: true ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
@@ -248,7 +250,7 @@ class APIManager {
         // Added Task into Queue
         blockOperation.addExecutionBlock {
             // Call Get Wallet and Rewards List
-            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.entryPointdata, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.entryPointdata, parametersDict: queryParameters,allowCommonHeader: true ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
@@ -267,7 +269,7 @@ class APIManager {
         // Added Task into Queue
         blockOperation.addExecutionBlock {
             // Call Put EntryPoints_Config
-            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.entrypoints_config, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.entrypoints_config, parametersDict: queryParameters, allowCommonHeader: true ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
@@ -287,7 +289,7 @@ class APIManager {
         // Added Task into Queue
         blockOperation.addExecutionBlock {
             // Call Get Wallet and Rewards List
-            performRequest(baseurl: BaseUrls.streamurl, methodandpath: MethodNameandPath.send_analytics_event, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: BaseUrls.streamurl, methodandpath: MethodNameandPath.send_analytics_event, parametersDict: queryParameters,allowCommonHeader: true  ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
@@ -309,7 +311,7 @@ class APIManager {
         let blockOperation = BlockOperation()
         
         blockOperation.addExecutionBlock {
-            performRequest(baseurl: BaseUrls.diagnosticUrl, methodandpath: MethodNameandPath.cgMetricDiagnostics, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: BaseUrls.diagnosticUrl, methodandpath: MethodNameandPath.cgMetricDiagnostics, parametersDict: queryParameters,allowCommonHeader: false ,completion: completion)
         }
         
         if ApplicationManager.operationQueue.operations.count > 0 {
@@ -326,7 +328,7 @@ class APIManager {
         // Added Task into Queue
         blockOperation.addExecutionBlock {
             // Call Login API with API Router
-            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.cgdeeplink, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.cgdeeplink, parametersDict: queryParameters, allowCommonHeader: true  ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
@@ -345,7 +347,7 @@ class APIManager {
         // Added Task into Queue
         blockOperation.addExecutionBlock {
             // Call Login API with API Router
-            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.appconfig, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: BaseUrls.baseurl, methodandpath: MethodNameandPath.appconfig, parametersDict: queryParameters, allowCommonHeader: true  ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
@@ -364,7 +366,7 @@ class APIManager {
         // Added Task into Queue
         blockOperation.addExecutionBlock {
             // Call Login API with API Router
-            performRequest(baseurl: "stage-api.customerglu.com/", methodandpath: MethodNameandPath.cgNudgeIntegration, parametersDict: queryParameters, completion: completion)
+            performRequest(baseurl: "stage-api.customerglu.com/", methodandpath: MethodNameandPath.cgNudgeIntegration, parametersDict: queryParameters,allowCommonHeader: true ,completion: completion)
         }
         
         // Add dependency to finish previus task before starting new one
