@@ -103,6 +103,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private static var isAnonymousFlowAllowed: Bool = false
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     
+    // MARK: - Variables for APNS
+    internal var isAppLaunched: Bool = false
+    internal var remoteNotificationUserInfo: [AnyHashable: Any]?
+    
     private override init() {
         super.init()
         

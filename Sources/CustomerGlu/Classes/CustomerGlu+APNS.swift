@@ -58,6 +58,13 @@ extension CustomerGlu {
         }
         
         if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]) {
+            
+            // Record the Notification on app launch
+            if isAppLaunched, userInfo[NotificationsKey.glu_message_type] as? String == NotificationsKey.in_app {
+                isAppLaunched = false
+                remoteNotificationUserInfo = userInfo
+            }
+            
             let nudge_url = userInfo[NotificationsKey.nudge_url]
             if CustomerGlu.isDebugingEnabled {
                 print(nudge_url as Any)
@@ -163,5 +170,18 @@ extension CustomerGlu {
     @objc public func notificationFromCustomerGlu(remoteMessage: [String: AnyHashable]) -> Bool {
         let strType = remoteMessage[NotificationsKey.type] as? String
         return (strType == NotificationsKey.CustomerGlu) ? true : false
+    }
+    
+    @objc func cgapplication(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) {
+        isAppLaunched = true
+    }
+    
+    @objc func displayRecordedInAppNotification(withUserInfo userInfo: [String: AnyHashable],
+                                  auto_close_webview : Bool = CustomerGlu.auto_close_webview ?? false) {
+        if let remoteNotificationUserInfo {
+            cgapplication(UIApplication.shared, didReceiveRemoteNotification: remoteNotificationUserInfo) { _ in
+                
+            }
+        }
     }
 }
