@@ -86,7 +86,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal var popupDisplayScreens = [String]()
     private var configScreens = [String]()
     private var popuptimer : Timer?
-    private var delaySeconds: Double = 0
+    private (set) var delaySeconds: Double = 0
     public static var whiteListedDomains = [CGConstants.default_whitelist_doamin]
     public static var testUsers = [String]()
     public static var activityIdList = [String]()
@@ -346,24 +346,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    @objc public func cgUserNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        if CustomerGlu.sdk_disable! == true {
-            return
-        }
-        let userInfo = notification.request.content.userInfo
-        
-        // Change this to your preferred presentation option
-        if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]) {
-            if userInfo[NotificationsKey.glu_message_type] as? String == "push" {
-                
-                if UIApplication.shared.applicationState == .active {
-                    self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
-                    completionHandler([[.alert, .badge, .sound]])
-                }
-            }
-        }
-    }
-    
     @objc public func setCrashLoggingEnabled(isCrashLoggingEnabled: Bool){
         CustomerGlu.isCrashLogsEnabled = isCrashLoggingEnabled
     }
@@ -374,67 +356,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func setDiagnosticsEnabled(isDiagnosticsEnabled: Bool){
         CustomerGlu.isDiagnosticsEnabled = isDiagnosticsEnabled
-    }
-    
-    @objc public func cgapplication(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5,auto_close_webview : Bool = CustomerGlu.auto_close_webview!, fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        if CustomerGlu.sdk_disable! == true {
-            CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-cgapplication", posttoserver: true)
-            return
-        }
-        if let messageID = userInfo[gcmMessageIDKey] {
-            if(true == CustomerGlu.isDebugingEnabled){
-                print("Message ID: \(messageID)")
-            }
-        }
-        
-        if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]) {
-            let nudge_url = userInfo[NotificationsKey.nudge_url]
-            if(true == CustomerGlu.isDebugingEnabled){
-                print(nudge_url as Any)
-            }
-            let page_type = userInfo[NotificationsKey.page_type]
-            let absoluteHeight = userInfo[NotificationsKey.absoluteHeight]
-            let relativeHeight = userInfo[NotificationsKey.relativeHeight]
-            let closeOnDeepLink = userInfo[NotificationsKey.closeOnDeepLink]
-            
-            let nudgeConfiguration  = CGNudgeConfiguration()
-            if(page_type != nil){
-                nudgeConfiguration.layout = page_type as! String
-            }
-            if(absoluteHeight != nil){
-                nudgeConfiguration.absoluteHeight = Double(absoluteHeight as! String) ?? 0.0
-            }
-            if(relativeHeight != nil){
-                nudgeConfiguration.relativeHeight = Double(relativeHeight as! String) ?? 0.0
-            }
-            if(closeOnDeepLink != nil){
-                nudgeConfiguration.closeOnDeepLink = Bool(closeOnDeepLink as! String) ?? CustomerGlu.auto_close_webview!
-            }
-            
-            if userInfo[NotificationsKey.glu_message_type] as? String == NotificationsKey.in_app {
-                
-                if(true == CustomerGlu.isDebugingEnabled){
-                    print(page_type as Any)
-                }
-                if page_type as? String == CGConstants.BOTTOM_SHEET_NOTIFICATION {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.BOTTOM_SHEET_NOTIFICATION, backgroundAlpha: backgroundAlpha,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                    
-                } else if ((page_type as? String == CGConstants.BOTTOM_DEFAULT_NOTIFICATION) || (page_type as? String == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP)) {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.BOTTOM_DEFAULT_NOTIFICATION, backgroundAlpha: backgroundAlpha,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else if ((page_type as? String == CGConstants.MIDDLE_NOTIFICATIONS) || (page_type as? String == CGConstants.MIDDLE_NOTIFICATIONS_POPUP)) {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.MIDDLE_NOTIFICATIONS, backgroundAlpha: backgroundAlpha,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.FULL_SCREEN_NOTIFICATION, backgroundAlpha: backgroundAlpha,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                }
-                
-                self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
-                
-            } else {
-                
-                return
-            }
-        } else {
-        }
     }
     
     @objc public func presentToCustomerWebViewController(nudge_url: String, page_type: String, backgroundAlpha: Double, auto_close_webview : Bool, nudgeConfiguration : CGNudgeConfiguration? = nil) {
@@ -482,67 +403,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func setDelaySeconds(delaySeconds: Double) {
         self.delaySeconds = delaySeconds
-    }
-    
-    @objc public func displayBackgroundNotification(remoteMessage: [String: AnyHashable],auto_close_webview : Bool = CustomerGlu.auto_close_webview!) {
-        if CustomerGlu.sdk_disable! == true {
-            CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-displayBackgroundNotification", posttoserver: false)
-            return
-        }
-        
-        if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: remoteMessage ) {
-            let nudge_url = remoteMessage[NotificationsKey.nudge_url]
-            if(true == CustomerGlu.isDebugingEnabled){
-                print(nudge_url as Any)
-            }
-            let page_type = remoteMessage[NotificationsKey.page_type]
-            
-            let absoluteHeight = remoteMessage[NotificationsKey.absoluteHeight]
-            let relativeHeight = remoteMessage[NotificationsKey.relativeHeight]
-            let closeOnDeepLink = remoteMessage[NotificationsKey.closeOnDeepLink]
-            
-            let nudgeConfiguration  = CGNudgeConfiguration()
-            if(page_type != nil){
-                nudgeConfiguration.layout = page_type as! String
-            }
-            if(absoluteHeight != nil){
-                nudgeConfiguration.absoluteHeight = Double(absoluteHeight as! String) ?? 0.0
-            }
-            if(relativeHeight != nil){
-                nudgeConfiguration.relativeHeight = Double(relativeHeight as! String) ?? 0.0
-            }
-            if(closeOnDeepLink != nil){
-                nudgeConfiguration.closeOnDeepLink = Bool(closeOnDeepLink as! String) ?? CustomerGlu.auto_close_webview!
-            }
-            
-            if(true == CustomerGlu.isDebugingEnabled){
-                print(page_type as Any)
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) { [self] in
-                if page_type as? String == CGConstants.BOTTOM_SHEET_NOTIFICATION {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.BOTTOM_SHEET_NOTIFICATION, backgroundAlpha: 0.5,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else if ((page_type as? String == CGConstants.BOTTOM_DEFAULT_NOTIFICATION) || (page_type as? String == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP)) {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.BOTTOM_DEFAULT_NOTIFICATION, backgroundAlpha: 0.5,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else if((page_type as? String == CGConstants.MIDDLE_NOTIFICATIONS) || (page_type as? String == CGConstants.MIDDLE_NOTIFICATIONS_POPUP)) {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.MIDDLE_NOTIFICATIONS, backgroundAlpha: 0.5,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.FULL_SCREEN_NOTIFICATION, backgroundAlpha: 0.5,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                }
-            }
-            
-            self.postAnalyticsEventForNotification(userInfo: remoteMessage)
-        } else {
-        }
-    }
-    
-    @objc public func notificationFromCustomerGlu(remoteMessage: [String: AnyHashable]) -> Bool {
-        let strType = remoteMessage[NotificationsKey.type] as? String
-        if strType == NotificationsKey.CustomerGlu {
-            return true
-        } else {
-            return false
-        }
     }
     
     @objc public func clearGluData() {
@@ -958,11 +818,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         //user_id.count will always be > 0
         
         let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        let writekey = CustomerGlu.sdkWriteKey
         userData[APIParameterKey.deviceType] = "ios"
         userData[APIParameterKey.deviceName] = getDeviceName()
         userData[APIParameterKey.appVersion] = appVersion
-        userData[APIParameterKey.writeKey] = writekey
+        userData[APIParameterKey.writeKey] = CustomerGlu.sdkWriteKey
         userData[APIParameterKey.userId] = user_id
         
         if CustomerGlu.fcm_apn == "fcm" {
