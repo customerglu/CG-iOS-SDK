@@ -176,8 +176,7 @@ extension CustomerGlu {
         isAppLaunched = true
     }
     
-    @objc func displayRecordedInAppNotification(withUserInfo userInfo: [String: AnyHashable],
-                                  auto_close_webview : Bool = CustomerGlu.auto_close_webview ?? false) {
+    @objc func displayRecordedInAppNotification() {
         if let remoteNotificationUserInfo {
             cgapplication(UIApplication.shared, didReceiveRemoteNotification: remoteNotificationUserInfo) { _ in
                 
