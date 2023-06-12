@@ -26,6 +26,7 @@ public class CGClientTestingViewModel: NSObject {
     private var sdkTestStepsArray: [CGSDKTestStepsModel] = []
     var clientTestingModel: CGClientTestingModel?
     var testStepsResponseModel: CGSDKTestStepsResponseModel?
+    var isRelaunch: Bool = false // On Deeplink relaunch use this flag
     
     public override init() {
         super.init()
@@ -171,7 +172,17 @@ public class CGClientTestingViewModel: NSObject {
                 updateSdkTestStepsArray(withModel:CGSDKTestStepsModel(name: eventsSectionsArray[index], status: .success))
 
                 // Wait 5 seconds and than perform this action & Next step NudgeHandling will happen on alert response Yes or No
+            if isRelaunch {
+                eventsSectionsArray[index] = .callbackHanding(status: .pending)
+                updateTableDelegate(atIndexPath: indexPath, forEvent: eventsSectionsArray[index])
+                // Record Test Steps
+                updateSdkTestStepsArray(withModel:CGSDKTestStepsModel(name: eventsSectionsArray[index], status: .success))
+                
+                //Execute Next Step
+                executeNudgeHandling()
+            } else {
                 self.showCallBackAlert(forEvent: eventsSectionsArray[index], isRetry: isRetry)
+            }
 //            } catch {
 //                // nothing
 //                // Record Test Steps

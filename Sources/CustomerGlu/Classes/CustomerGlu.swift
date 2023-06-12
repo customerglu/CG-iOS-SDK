@@ -2326,8 +2326,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func testIntegration() {
+        launchClientTesting()
+    }
+    
+    private func launchClientTesting(isDeeplinkRelaunch: Bool = false) {
         DispatchQueue.main.async {
             let clientTestingVC = StoryboardType.main.instantiate(vcType: CGClientTestingViewController.self)
+            clientTestingVC.viewModel.isRelaunch = isDeeplinkRelaunch
             guard let topController = UIViewController.topViewController() else {
                 return
             }
@@ -2397,7 +2402,7 @@ extension CustomerGlu: CGCustomAlertDelegate {
     func okButtonPressed(_ alert: CGCustomAlert, alertTag: Int) {
         // Doing it after delay because topController is 'CGCustomAlert' and client testing wont open back
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            self?.testIntegration()
+            self?.launchClientTesting(isDeeplinkRelaunch: true)
         }
     }
     
