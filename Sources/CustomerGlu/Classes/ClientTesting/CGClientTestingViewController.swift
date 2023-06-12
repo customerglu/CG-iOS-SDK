@@ -263,6 +263,9 @@ extension CGClientTestingViewController: CGCustomAlertDelegate {
                     
                     postdata["data"] = data
                     
+                    // Show the alert to launch the Client testing back
+                    CustomerGlu.getInstance.showClientTestingRedirectAlert()
+                    
                     NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_DEEPLINK_EVENT").rawValue), object: nil, userInfo: postdata)
                 }
                 

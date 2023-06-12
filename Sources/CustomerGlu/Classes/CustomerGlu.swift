@@ -2369,6 +2369,36 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
         }
     }
+    
+    internal func showClientTestingRedirectAlert() {
+        // After 8 seconds show redirect alert
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) { [weak self] in
+            guard let topController = UIViewController.topViewController() else {
+                return
+            }
+            
+            let customAlert = CGCustomAlert()
+            customAlert.alertTitle = "Client Testing"
+            customAlert.alertMessage = "Launch client testing after successful deeplink redirect!"
+            customAlert.alertTag = 1001
+            customAlert.isCancelButtonHidden = true
+            customAlert.okButtonTitle = "Launch"
+            customAlert.cancelButtonTitle = ""
+            customAlert.isCancelButtonHidden = true
+            customAlert.delegate = self
+            customAlert.isRetry = false
+            customAlert.showOnViewController(topController)
+        }
+    }
+}
+
+// MARK: - CGCustomAlertDelegate
+extension CustomerGlu: CGCustomAlertDelegate {
+    func okButtonPressed(_ alert: CGCustomAlert, alertTag: Int) {
+        testIntegration()
+    }
+    
+    func cancelButtonPressed(_ alert: CGCustomAlert, alertTag: Int) {}
 }
 
 // MARK: - CGMqttClientDelegate
