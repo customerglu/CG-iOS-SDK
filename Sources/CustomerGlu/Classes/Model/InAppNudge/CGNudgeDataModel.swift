@@ -27,14 +27,14 @@ class CGNudgeDataModel: NSObject {
     var priority: String?
     var ttl: String?
     
-    init(fromDictionary dictionary: [String:Any]){
+    init(fromDictionary dictionary: [AnyHashable: Any]) {
         type = dictionary["type"] as? String
         client = dictionary["client"] as? String
         campaignId = dictionary["campaignId"] as? String
         userId = dictionary["userId"] as? String
         notificationType = dictionary["notificationType"] as? String
         pageType = dictionary["pageType"] as? String
-        if let contentDict = dictionary["content"] as? [String: AnyHashable] {
+        if let contentDict = dictionary["content"] as? [AnyHashable: Any] {
             content = CGNudgeContentModel(fromDictionary: contentDict)
         }
         timeRemaning = dictionary["timeRemaning"] as? String

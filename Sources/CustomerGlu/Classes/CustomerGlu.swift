@@ -450,6 +450,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 nudgeConfiguration.closeOnDeepLink = Bool(closeOnDeepLink as! String) ?? CustomerGlu.auto_close_webview!
             }
             
+            // Convert the Notification to Model
+            let nudgeDataModel = CGNudgeDataModel(fromDictionary: userInfo)
+            print("Printing Converted Model :: \(nudgeDataModel.type ?? "EMPTY")")
+            
             if userInfo[NotificationsKey.glu_message_type] as? String == NotificationsKey.in_app {
                 
                 if(true == CustomerGlu.isDebugingEnabled){
@@ -467,12 +471,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
                 
                 self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
-                
             } else {
-                
                 return
             }
-        } else {
         }
     }
     
@@ -818,7 +819,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func registerDevice(userdata: [String: AnyHashable], completion: @escaping (Bool) -> Void) {
-        if CustomerGlu.sdk_disable! == true || Reachability.shared.isConnectedToNetwork() != true || (userdata[APIParameterKey.userId] == nil && !allowAnonymousRegistration()){
+        if CustomerGlu.sdk_disable! == true || Reachability.shared.isConnectedToNetwork() != true || (userdata[APIParameterKey.userId] == nil && !allowAnonymousRegistration()) {
             CustomerGlu.getInstance.printlog(cglog: "Fail to call registerDevice", isException: false, methodName: "CustomerGlu-registerDevice-1", posttoserver: true)
             CustomerGlu.bannersHeight = [String:Any]()
             CustomerGlu.embedsHeight = [String:Any]()
@@ -896,6 +897,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             completion(false)
             return
         }
+        
+        // Pass the enableMqtt in register API
+        let enableMQTT = self.appconfigdata?.enableMqtt ?? false
+        userData[APIParameterKey.enableMqtt] = enableMQTT
         
         APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
             switch result {
@@ -1031,6 +1036,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             userData.removeValue(forKey: APIParameterKey.anonymousId)
         }
         
+        // Pass the enableMqtt in register API
+        let enableMQTT = self.appconfigdata?.enableMqtt ?? false
+        userData[APIParameterKey.enableMqtt] = enableMQTT
+
         APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
             switch result {
             case .success(let response):

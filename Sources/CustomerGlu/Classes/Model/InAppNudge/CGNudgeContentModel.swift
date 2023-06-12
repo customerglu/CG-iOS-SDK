@@ -13,7 +13,7 @@ class CGNudgeContentModel: NSObject {
     var clickAction: String?
     var image: String?
     
-    init(fromDictionary dictionary: [String:Any]) {
+    init(fromDictionary dictionary: [AnyHashable: Any]) {
         title = dictionary["title"] as? String
         body = dictionary["body"] as? String
         clickAction = dictionary["campaignId"] as? String
