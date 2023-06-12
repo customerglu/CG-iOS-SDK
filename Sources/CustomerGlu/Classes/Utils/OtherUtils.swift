@@ -82,4 +82,33 @@ class OtherUtils {
         
         return false
     }
+    
+    func getListOfScreenNames(from screenNames: String) -> [String] {
+        return screenNames.components(separatedBy: ",")
+    }
+    
+    func getNudgeConfiguration(fromData model: CGNudgeDataModel) -> CGNudgeConfiguration {
+        let nudgeConfiguration = CGNudgeConfiguration()
+        if let pageType = model.pageType {
+            nudgeConfiguration.layout = pageType
+        }
+        
+        if let absoluteHeight = model.absoluteHeight, let value = Double(absoluteHeight) {
+            nudgeConfiguration.absoluteHeight = value
+        }
+        
+        if let relativeHeight = model.relativeHeight, let value = Double(relativeHeight) {
+            nudgeConfiguration.relativeHeight = value
+        }
+        
+        if let closeOnDeepLink = model.closeOnDeepLink {
+            if closeOnDeepLink.caseInsensitiveCompare("true") == .orderedSame {
+                nudgeConfiguration.closeOnDeepLink = true
+            } else {
+                nudgeConfiguration.closeOnDeepLink = false
+            }
+        }
+        
+        return nudgeConfiguration
+    }
 }

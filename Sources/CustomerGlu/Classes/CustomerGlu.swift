@@ -2395,8 +2395,7 @@ extension CustomerGlu: CGMqttClientDelegate {
             self.testIntegration()
             
         case .CAMPAIGN_STATE_UPDATED,
-                .USER_SEGMENT_UPDATED,
-                .NUDGE:
+                .USER_SEGMENT_UPDATED:
             // Check Mqtt Enabled Components
             if checkMqttEnabledComponents(containsKey: CGConstants.MQTT_Enabled_Components_State_Sync),  let enableMQTT =  self.appconfigdata?.enableMqtt, enableMQTT {
                 // loadCampaign & Entrypoints API or user re-register
@@ -2413,7 +2412,53 @@ extension CustomerGlu: CGMqttClientDelegate {
                 // SDK Config Updation call & SDK re-initialised.
                 sdkInitialized = false // so the SDK can be re-initialised
                 initializeSdk()
-            }            
+            }
+            
+        case .NUDGE:
+            if let mqttMessage, let nudgeData = mqttMessage.nudgeData {
+                handleMQTTInAppNudges(withData: nudgeData)
+            }
+        }
+    }
+    
+    private func handleMQTTInAppNudges(withData model: CGNudgeDataModel) {
+        if let screenNames = model.screenNames {
+            let screenNamesArray = OtherUtils.shared.getListOfScreenNames(from: screenNames)
+            if screenNamesArray.contains(CustomerGlu.getInstance.activescreenname) || screenNames == "*" {
+                if let gluMessageType = model.gluMessageType, gluMessageType.caseInsensitiveCompare(NotificationsKey.in_app) == .orderedSame {
+                    openInAppNudge(withData: model)
+                }
+            }
+        }
+    }
+    
+    private func openInAppNudge(withData model: CGNudgeDataModel) {
+        if let pageType = model.pageType, let nudgeUrl = model.content?.clickAction {
+            let nudgeConfiguration = OtherUtils.shared.getNudgeConfiguration(fromData: model)
+            var localPageType = CGConstants.FULL_SCREEN_NOTIFICATION
+            let backgroundAlpha = Double(model.opacity ?? "0.5") ?? 0.5
+            var autoCloseWebview = true
+            if let closeOnDeepLink = model.closeOnDeepLink {
+                if closeOnDeepLink.caseInsensitiveCompare("true") == .orderedSame {
+                    autoCloseWebview = true
+                } else {
+                    autoCloseWebview = false
+                }
+            }
+            
+            if pageType == CGConstants.BOTTOM_SHEET_NOTIFICATION {
+                localPageType = CGConstants.BOTTOM_SHEET_NOTIFICATION
+            } else if pageType == CGConstants.BOTTOM_DEFAULT_NOTIFICATION || pageType == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP {
+                localPageType = CGConstants.BOTTOM_DEFAULT_NOTIFICATION
+            } else if pageType == CGConstants.MIDDLE_NOTIFICATIONS || pageType == CGConstants.MIDDLE_NOTIFICATIONS_POPUP {
+                localPageType = CGConstants.MIDDLE_NOTIFICATIONS
+            }
+            
+            presentToCustomerWebViewController(nudge_url: nudgeUrl,
+                                               page_type: localPageType,
+                                               backgroundAlpha: backgroundAlpha,
+                                               auto_close_webview: autoCloseWebview,
+                                               nudgeConfiguration: nudgeConfiguration)
         }
     }
     
