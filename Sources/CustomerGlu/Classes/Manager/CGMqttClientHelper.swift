@@ -15,6 +15,7 @@ enum CGMqttLaunchScreenType: String {
     case CAMPAIGN_STATE_UPDATED = "CAMPAIGN_STATE_UPDATED" // loadCampaign & Entrypoints API.
     case SDK_CONFIG_UPDATED = "SDK_CONFIG_UPDATED" // SDK Config Updation call & SDK re-initialised.
     case USER_SEGMENT_UPDATED = "USER_SEGMENT_UPDATED" // User re-registration.
+    case NUDGE = "NUDGE"
 }
 
 // MARK: - CGMqttClientDelegate

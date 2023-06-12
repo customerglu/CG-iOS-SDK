@@ -2395,7 +2395,8 @@ extension CustomerGlu: CGMqttClientDelegate {
             self.testIntegration()
             
         case .CAMPAIGN_STATE_UPDATED,
-                .USER_SEGMENT_UPDATED:
+                .USER_SEGMENT_UPDATED,
+                .NUDGE:
             // Check Mqtt Enabled Components
             if checkMqttEnabledComponents(containsKey: CGConstants.MQTT_Enabled_Components_State_Sync),  let enableMQTT =  self.appconfigdata?.enableMqtt, enableMQTT {
                 // loadCampaign & Entrypoints API or user re-register
@@ -2412,7 +2413,7 @@ extension CustomerGlu: CGMqttClientDelegate {
                 // SDK Config Updation call & SDK re-initialised.
                 sdkInitialized = false // so the SDK can be re-initialised
                 initializeSdk()
-            }
+            }            
         }
     }
     
