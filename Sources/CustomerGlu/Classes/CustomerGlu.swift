@@ -2379,10 +2379,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             
             let customAlert = CGCustomAlert()
             customAlert.alertTitle = "Client Testing"
-            customAlert.alertMessage = "Launch client testing after successful deeplink redirect!"
+            customAlert.alertMessage = "Relaunch client testing after successful deeplink redirect!"
             customAlert.alertTag = 1001
             customAlert.isCancelButtonHidden = true
-            customAlert.okButtonTitle = "Launch"
+            customAlert.okButtonTitle = "Relaunch"
             customAlert.cancelButtonTitle = ""
             customAlert.isCancelButtonHidden = true
             customAlert.delegate = self
@@ -2395,7 +2395,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
 // MARK: - CGCustomAlertDelegate
 extension CustomerGlu: CGCustomAlertDelegate {
     func okButtonPressed(_ alert: CGCustomAlert, alertTag: Int) {
-        testIntegration()
+        // Doing it after delay because topController is 'CGCustomAlert' and client testing wont open back
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.testIntegration()
+        }
     }
     
     func cancelButtonPressed(_ alert: CGCustomAlert, alertTag: Int) {}
