@@ -149,32 +149,23 @@ public class CGClientTestingViewModel: NSObject {
     func executecallbackHanding(isRetry: Bool = false) {
         let itemInfo = getIndexOfItem(.callbackHanding(status: .pending))
         guard let index = itemInfo.index, let indexPath = itemInfo.indexPath else { return }
-                        
-//        let webController = CustomerWebViewController()
-//        let message: WKScriptMessage = WKScriptMessage()
         
         if let _ = CustomerGlu.getInstance.appconfigdata?.callbackConfigurationUrl {
-//            let eventLinkData = CGEventLinkData(deepLink: callbackConfigurationUrl)
-//            let model = CGDeepLinkModel(eventName: "OPEN_DEEPLINK", data: eventLinkData)
+            // just show alert - Yes show green tick - No show cross UI
+            // Add retry button next to call back, nudge and onelink
+            // Retry only for NETWORK_EXCEPTION
             
-//            do {
-//                let jsonData = try JSONEncoder().encode(model)
-//                webController.handleDeeplinkEvent(withEventName: WebViewsKey.open_deeplink, bodyData: jsonData, message: message, diagnosticsEventData: &diagnosticsEventData)
-
-                // just show alert - Yes show green tick - No show cross UI
-                // Add retry button next to call back, nudge and onelink
-                // Retry only for NETWORK_EXCEPTION
-                
-                eventsSectionsArray[index] = .callbackHanding(status: .pending)
-                updateTableDelegate(atIndexPath: indexPath, forEvent: eventsSectionsArray[index])
-
-                // Record Test Steps
-                updateSdkTestStepsArray(withModel:CGSDKTestStepsModel(name: eventsSectionsArray[index], status: .success))
-
-                // Wait 5 seconds and than perform this action & Next step NudgeHandling will happen on alert response Yes or No
+            eventsSectionsArray[index] = .callbackHanding(status: .pending)
+            updateTableDelegate(atIndexPath: indexPath, forEvent: eventsSectionsArray[index])
+            
+            // Record Test Steps
+            updateSdkTestStepsArray(withModel:CGSDKTestStepsModel(name: eventsSectionsArray[index], status: .success))
+            
+            // Wait 5 seconds and than perform this action & Next step NudgeHandling will happen on alert response Yes or No
             if isRelaunch {
-                eventsSectionsArray[index] = .callbackHanding(status: .pending)
+                eventsSectionsArray[index] = .callbackHanding(status: .success)
                 updateTableDelegate(atIndexPath: indexPath, forEvent: eventsSectionsArray[index])
+                
                 // Record Test Steps
                 updateSdkTestStepsArray(withModel:CGSDKTestStepsModel(name: eventsSectionsArray[index], status: .success))
                 
@@ -183,11 +174,6 @@ public class CGClientTestingViewModel: NSObject {
             } else {
                 self.showCallBackAlert(forEvent: eventsSectionsArray[index], isRetry: isRetry)
             }
-//            } catch {
-//                // nothing
-//                // Record Test Steps
-//                updateSdkTestStepsArray(withModel:CGSDKTestStepsModel(name: .callbackHanding(status: .failure), status: .failure))
-//            }
         } else {
             // Record Test Steps
             updateSdkTestStepsArray(withModel:CGSDKTestStepsModel(name: .callbackHanding(status: .failure), status: .failure))
