@@ -427,49 +427,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         
         if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]) {
-            let nudge_url = userInfo[NotificationsKey.nudge_url]
-            if(true == CustomerGlu.isDebugingEnabled){
-                print(nudge_url as Any)
-            }
-            let page_type = userInfo[NotificationsKey.page_type]
-            let absoluteHeight = userInfo[NotificationsKey.absoluteHeight]
-            let relativeHeight = userInfo[NotificationsKey.relativeHeight]
-            let closeOnDeepLink = userInfo[NotificationsKey.closeOnDeepLink]
-            
-            let nudgeConfiguration  = CGNudgeConfiguration()
-            if(page_type != nil){
-                nudgeConfiguration.layout = page_type as! String
-            }
-            if(absoluteHeight != nil){
-                nudgeConfiguration.absoluteHeight = Double(absoluteHeight as! String) ?? 0.0
-            }
-            if(relativeHeight != nil){
-                nudgeConfiguration.relativeHeight = Double(relativeHeight as! String) ?? 0.0
-            }
-            if(closeOnDeepLink != nil){
-                nudgeConfiguration.closeOnDeepLink = Bool(closeOnDeepLink as! String) ?? CustomerGlu.auto_close_webview!
-            }
-            
+
             // Convert the Notification to Model
-            let nudgeDataModel = CGNudgeDataModel(fromDictionary: userInfo)
-            print("Printing Converted Model :: \(nudgeDataModel.type ?? "EMPTY")")
-            
             if userInfo[NotificationsKey.glu_message_type] as? String == NotificationsKey.in_app {
-                
-                if(true == CustomerGlu.isDebugingEnabled){
-                    print(page_type as Any)
-                }
-                if page_type as? String == CGConstants.BOTTOM_SHEET_NOTIFICATION {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.BOTTOM_SHEET_NOTIFICATION, backgroundAlpha: backgroundAlpha,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                    
-                } else if ((page_type as? String == CGConstants.BOTTOM_DEFAULT_NOTIFICATION) || (page_type as? String == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP)) {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.BOTTOM_DEFAULT_NOTIFICATION, backgroundAlpha: backgroundAlpha,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else if ((page_type as? String == CGConstants.MIDDLE_NOTIFICATIONS) || (page_type as? String == CGConstants.MIDDLE_NOTIFICATIONS_POPUP)) {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.MIDDLE_NOTIFICATIONS, backgroundAlpha: backgroundAlpha,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.FULL_SCREEN_NOTIFICATION, backgroundAlpha: backgroundAlpha,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                }
-                
+                let nudgeDataModel = CGNudgeDataModel(fromDictionary: userInfo)
+                openNotification(withData: nudgeDataModel)
+
                 self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
             } else {
                 return
@@ -531,45 +494,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         
         if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: remoteMessage ) {
-            let nudge_url = remoteMessage[NotificationsKey.nudge_url]
-            if(true == CustomerGlu.isDebugingEnabled){
-                print(nudge_url as Any)
-            }
-            let page_type = remoteMessage[NotificationsKey.page_type]
-            
-            let absoluteHeight = remoteMessage[NotificationsKey.absoluteHeight]
-            let relativeHeight = remoteMessage[NotificationsKey.relativeHeight]
-            let closeOnDeepLink = remoteMessage[NotificationsKey.closeOnDeepLink]
-            
-            let nudgeConfiguration  = CGNudgeConfiguration()
-            if(page_type != nil){
-                nudgeConfiguration.layout = page_type as! String
-            }
-            if(absoluteHeight != nil){
-                nudgeConfiguration.absoluteHeight = Double(absoluteHeight as! String) ?? 0.0
-            }
-            if(relativeHeight != nil){
-                nudgeConfiguration.relativeHeight = Double(relativeHeight as! String) ?? 0.0
-            }
-            if(closeOnDeepLink != nil){
-                nudgeConfiguration.closeOnDeepLink = Bool(closeOnDeepLink as! String) ?? CustomerGlu.auto_close_webview!
-            }
-            
-            if(true == CustomerGlu.isDebugingEnabled){
-                print(page_type as Any)
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) { [self] in
-                if page_type as? String == CGConstants.BOTTOM_SHEET_NOTIFICATION {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.BOTTOM_SHEET_NOTIFICATION, backgroundAlpha: 0.5,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else if ((page_type as? String == CGConstants.BOTTOM_DEFAULT_NOTIFICATION) || (page_type as? String == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP)) {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.BOTTOM_DEFAULT_NOTIFICATION, backgroundAlpha: 0.5,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else if((page_type as? String == CGConstants.MIDDLE_NOTIFICATIONS) || (page_type as? String == CGConstants.MIDDLE_NOTIFICATIONS_POPUP)) {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.MIDDLE_NOTIFICATIONS, backgroundAlpha: 0.5,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                } else {
-                    presentToCustomerWebViewController(nudge_url: (nudge_url as? String)!, page_type: CGConstants.FULL_SCREEN_NOTIFICATION, backgroundAlpha: 0.5,auto_close_webview: auto_close_webview, nudgeConfiguration: nudgeConfiguration)
-                }
-            }
+            let nudgeDataModel = CGNudgeDataModel(fromDictionary: remoteMessage)
+            openNotification(withData: nudgeDataModel)
             
             self.postAnalyticsEventForNotification(userInfo: remoteMessage)
         } else {
@@ -2464,13 +2390,17 @@ extension CustomerGlu: CGMqttClientDelegate {
             let screenNamesArray = OtherUtils.shared.getListOfScreenNames(from: screenNames)
             if screenNamesArray.contains(CustomerGlu.getInstance.activescreenname) || screenNames == "*" {
                 if let gluMessageType = model.gluMessageType, gluMessageType.caseInsensitiveCompare(NotificationsKey.in_app) == .orderedSame {
-                    openInAppNudge(withData: model)
+                    openNotification(withData: model)
                 }
             }
         }
     }
     
-    private func openInAppNudge(withData model: CGNudgeDataModel) {
+    private func openNotification(withData model: CGNudgeDataModel) {
+        if CustomerGlu.isDebugingEnabled {
+            nudgeDataModel.printNudgeData()
+        }
+
         if let pageType = model.pageType, let nudgeUrl = model.clickAction {
             let nudgeConfiguration = OtherUtils.shared.getNudgeConfiguration(fromData: model)
             var localPageType = CGConstants.FULL_SCREEN_NOTIFICATION
@@ -2492,11 +2422,13 @@ extension CustomerGlu: CGMqttClientDelegate {
                 localPageType = CGConstants.MIDDLE_NOTIFICATIONS
             }
             
-            presentToCustomerWebViewController(nudge_url: nudgeUrl,
-                                               page_type: localPageType,
-                                               backgroundAlpha: backgroundAlpha,
-                                               auto_close_webview: autoCloseWebview,
-                                               nudgeConfiguration: nudgeConfiguration)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) { [self] in
+                presentToCustomerWebViewController(nudge_url: nudgeUrl,
+                                                   page_type: localPageType,
+                                                   backgroundAlpha: backgroundAlpha,
+                                                   auto_close_webview: autoCloseWebview,
+                                                   nudgeConfiguration: nudgeConfiguration)
+            }
         }
     }
     

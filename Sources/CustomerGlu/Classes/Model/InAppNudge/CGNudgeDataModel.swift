@@ -78,4 +78,92 @@ public class CGNudgeDataModel: Codable {
         clickAction = dictionary["campaignId"] as? String
         image = dictionary["image"] as? String
     }
+    
+    func printNudgeData() {
+        print("** Printing Nudge Model Data **")
+        
+        if let type {
+            print("type :: \(type)")
+        }
+        
+        if let client {
+            print("client :: \(client)")
+        }
+        
+        if let campaignId {
+            print("campaignId :: \(campaignId)")
+        }
+        
+        if let userId {
+            print("userId :: \(userId)")
+        }
+        
+        if let notificationType {
+            print("notificationType :: \(notificationType)")
+        }
+        
+        if let pageType {
+            print("pageType :: \(pageType)")
+        }
+        
+        if let timeRemaning {
+            print("timeRemaning :: \(timeRemaning)")
+        }
+        
+        if let expiry {
+            print("expiry :: \(expiry)")
+        }
+        
+        if let gluMessageType {
+            print("gluMessageType :: \(gluMessageType)")
+        }
+        
+        if let absoluteHeight {
+            print("absoluteHeight :: \(absoluteHeight)")
+        }
+        
+        if let relativeHeight {
+            print("relativeHeight :: \(relativeHeight)")
+        }
+        
+        if let closeOnDeepLink {
+            print("closeOnDeepLink :: \(closeOnDeepLink)")
+        }
+        
+        if let nudgeId {
+            print("nudgeId :: \(nudgeId)")
+        }
+        
+        if let screenNames {
+            print("screenNames :: \(screenNames)")
+        }
+        
+        if let opacity {
+            print("opacity :: \(opacity)")
+        }
+        
+        if let priority {
+            print("priority :: \(priority)")
+        }
+        
+        if let ttl {
+            print("ttl :: \(ttl)")
+        }
+        
+        if let title {
+            print("title :: \(title)")
+        }
+        
+        if let body {
+            print("body :: \(body)")
+        }
+        
+        if let clickAction {
+            print("clickAction :: \(clickAction)")
+        }
+        
+        if let image {
+            print("image :: \(image)")
+        }
+    }
 }
