@@ -1760,10 +1760,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func setCurrentClassName(className: String) {
-        
-        // Show Nudge that match class name
-        showAllCacheNudgeData()
-        
         if(popuptimer != nil){
             popuptimer?.invalidate()
             popuptimer = nil
@@ -1778,6 +1774,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             
             CustomerGlu.getInstance.activescreenname = className
             
+            // Show Nudge that match class name
+            showAllCacheNudgeData()
+
             for floatBtn in self.arrFloatingButton {
                 floatBtn.hideFloatingButton(ishidden: true)
                 if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
