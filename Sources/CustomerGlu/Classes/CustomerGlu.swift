@@ -425,18 +425,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 print("Message ID: \(messageID)")
             }
         }
-        
+                
         if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]) {
-
-            // Convert the Notification to Model
-            if userInfo[NotificationsKey.glu_message_type] as? String == NotificationsKey.in_app {
-                let nudgeDataModel = CGNudgeDataModel(fromDictionary: userInfo)
-                openNotification(withData: nudgeDataModel)
-
-                self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
-            } else {
-                return
-            }
+            let nudgeDataModel = CGNudgeDataModel(fromDictionary: userInfo)
+            
+            processNudgeData(with: nudgeDataModel)
+            self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
         }
     }
     
@@ -495,10 +489,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
         if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: remoteMessage ) {
             let nudgeDataModel = CGNudgeDataModel(fromDictionary: remoteMessage)
-            openNotification(withData: nudgeDataModel)
+            // Application is not active so cache the data
+            if checkIfAppIsActive(with: nudgeDataModel) {
+                return
+            }
             
+            processNudgeData(with: nudgeDataModel)
             self.postAnalyticsEventForNotification(userInfo: remoteMessage)
-        } else {
         }
     }
     
@@ -2379,23 +2376,93 @@ extension CustomerGlu: CGMqttClientDelegate {
             }
             
         case .NUDGE:
-            if let mqttMessage, let nudgeData = mqttMessage.nudgeData {
-                handleMQTTInAppNudges(withData: nudgeData)
+            if let mqttMessage, let model = mqttMessage.nudgeData {
+                processNudgeData(with: model)
             }
         }
     }
     
-    private func handleMQTTInAppNudges(withData model: CGNudgeDataModel) {
-        if let screenNames = model.screenNames {
-            let screenNamesArray = OtherUtils.shared.getListOfScreenNames(from: screenNames)
-            if screenNamesArray.contains(CustomerGlu.getInstance.activescreenname) || screenNames == "*" {
-                if let gluMessageType = model.gluMessageType, gluMessageType.caseInsensitiveCompare(NotificationsKey.in_app) == .orderedSame {
+    private func checkMqttEnabledComponents(containsKey key: String) -> Bool {
+        if let mqttEnabledComponents = self.appconfigdata?.mqttEnabledComponents, mqttEnabledComponents.count > 0, mqttEnabledComponents.contains(key) {
+            return true
+        }
+        
+        return false
+    }
+}
+
+// MARK: - In App Nudge Changes API's
+extension CustomerGlu {
+    /*
+     applicationDidBecomeActive is called:
+     * when app is first launched after application:didFinishLaunchingWithOptions:
+     * after applicationWillEnterForeground: if there's no URL to handle.
+     */
+    @objc public func cgApplicationDidBecomeActive(_ application: UIApplication) {
+        //showAllCacheNudgeData()
+    }
+    
+    /*
+     applicationWillEnterForeground is called:
+     * when app is relaunched
+     * before applicationDidBecomeActive:
+     */
+    @objc public func cgApplicationWillEnterForeground(_ application: UIApplication) {
+        showAllCacheNudgeData()
+    }
+    
+    private func checkIfAppIsActive(with model: CGNudgeDataModel) -> Bool {
+        // Application is not active so cache the data
+        if UIApplication.shared.applicationState != .active {
+            cacheNudgeData(with: model)
+            return false
+        }
+        return true
+    }
+    
+    private func showAllCacheNudgeData() {
+        let data = CGNudgeDataManager.shared.getCacheNudgeDataModelsArray()
+        for model in data {
+            processNudgeData(with: model)
+        }
+    }
+    
+    private func cacheNudgeData(with model: CGNudgeDataModel) {
+        CGNudgeDataManager.shared.saveNudgeData(with: model)
+    }
+    
+    /*
+     Notification or MQTT want to present CustomerWebViewController should first call this to process the nudge data
+     */
+    private func processNudgeData(with model: CGNudgeDataModel) {
+        /*
+         We got 3 states
+         case active = 0
+         case inactive = 1
+         case background = 2
+         */
+        // Application is not active so cache the data
+        if checkIfAppIsActive(with: model) {
+            return
+        }
+        
+        if let gluMessageType = model.gluMessageType, gluMessageType.caseInsensitiveCompare(NotificationsKey.in_app) == .orderedSame {
+            if let screenNames = model.screenNames {
+                let screenNamesArray = OtherUtils.shared.getListOfScreenNames(from: screenNames)
+                if screenNamesArray.contains(CustomerGlu.getInstance.activescreenname) || screenNames == "*" {
                     openNotification(withData: model)
+                } else {
+                    cacheNudgeData(with: model)
                 }
             }
+        } else {
+            openNotification(withData: model)
         }
     }
     
+    /*
+     Only processNudgeData(with:) should call this method
+     */
     private func openNotification(withData model: CGNudgeDataModel) {
         if CustomerGlu.isDebugingEnabled {
             model.printNudgeData()
@@ -2428,15 +2495,10 @@ extension CustomerGlu: CGMqttClientDelegate {
                                                    backgroundAlpha: backgroundAlpha,
                                                    auto_close_webview: autoCloseWebview,
                                                    nudgeConfiguration: nudgeConfiguration)
+                
+                // Clear Nudge data if stored
+                CGNudgeDataManager.shared.deleteNudgeData(with: model)
             }
         }
-    }
-    
-    private func checkMqttEnabledComponents(containsKey key: String) -> Bool {
-        if let mqttEnabledComponents = self.appconfigdata?.mqttEnabledComponents, mqttEnabledComponents.count > 0, mqttEnabledComponents.contains(key) {
-            return true
-        }
-        
-        return false
     }
 }

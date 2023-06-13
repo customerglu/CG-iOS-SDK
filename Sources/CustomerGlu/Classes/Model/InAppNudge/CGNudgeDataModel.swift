@@ -79,6 +79,97 @@ public class CGNudgeDataModel: Codable {
         image = dictionary["image"] as? String
     }
     
+    func convertToDict() -> [AnyHashable: Any] {
+        var dictionary: [AnyHashable: Any] = [:]
+        
+        if let type {
+            dictionary["type"] = type
+        }
+        
+        if let client {
+            dictionary["client"] = client
+        }
+        
+        if let campaignId {
+            dictionary["campaignId"] = campaignId
+        }
+        
+        if let userId {
+            dictionary["userId"] = userId
+        }
+        
+        if let notificationType {
+            dictionary["notificationType"] = notificationType
+        }
+        
+        if let pageType {
+            dictionary["pageType"] = pageType
+        }
+        
+        if let timeRemaning {
+            dictionary["timeRemaning"] = timeRemaning
+        }
+        
+        if let expiry {
+            dictionary["expiry"] = expiry
+        }
+        
+        if let gluMessageType {
+            dictionary["gluMessageType"] = gluMessageType
+        }
+        
+        if let absoluteHeight {
+            dictionary["absoluteHeight"] = absoluteHeight
+        }
+        
+        if let relativeHeight {
+            dictionary["relativeHeight"] = relativeHeight
+        }
+        
+        if let closeOnDeepLink {
+            dictionary["closeOnDeepLink"] = closeOnDeepLink
+        }
+        
+        if let nudgeId {
+            dictionary["nudgeId"] = nudgeId
+        }
+        
+        if let screenNames {
+            dictionary["screenNames"] = screenNames
+        }
+        
+        if let opacity {
+            dictionary["opacity"] = opacity
+        }
+        
+        if let priority {
+            dictionary["opacity"] = opacity
+            print("priority :: \(priority)")
+        }
+        
+        if let ttl {
+            dictionary["ttl"] = ttl
+        }
+        
+        if let title {
+            dictionary["title"] = title
+        }
+        
+        if let body {
+            dictionary["body"] = body
+        }
+        
+        if let clickAction {
+            dictionary["clickAction"] = clickAction
+        }
+        
+        if let image {
+            dictionary["image"] = image
+        }
+        
+        return dictionary
+    }
+    
     func printNudgeData() {
         print("** Printing Nudge Model Data **")
         
