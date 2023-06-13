@@ -31,11 +31,19 @@ class CGNudgeDataManager: NSObject {
     }
 
     func saveNudgeData(with model: CGNudgeDataModel) {
-        if CustomerGlu.isDebugingEnabled {
-            print("** CGNudgeDataManager :: Save Nudge Data **")
+        // Save only if the nudge is not already available
+        if getFirstIndex(for: model) == nil {
+            if CustomerGlu.isDebugingEnabled {
+                print("** CGNudgeDataManager :: Save Nudge Data **")
+            }
+            
+            cacheNudgeDataModelsArray.append(model)
+            saveDataToUserDefaults()
+        } else {
+            if CustomerGlu.isDebugingEnabled {
+                print("** CGNudgeDataManager :: Duplicate Nudge Data **")
+            }
         }
-        cacheNudgeDataModelsArray.append(model)
-        saveDataToUserDefaults()
     }
     
     func deleteNudgeData(with model: CGNudgeDataModel) {
@@ -43,15 +51,22 @@ class CGNudgeDataManager: NSObject {
             print("** CGNudgeDataManager :: Start Delete Nudge Data **")
         }
         
-        if let firstIndex = cacheNudgeDataModelsArray.firstIndex(where: { data in
-            data.nudgeId == model.nudgeId
-        }) {
+        if let firstIndex = getFirstIndex(for: model) {
             if CustomerGlu.isDebugingEnabled {
                 print("** CGNudgeDataManager :: End Delete Nudge Data **")
             }
             cacheNudgeDataModelsArray.remove(at: firstIndex)
             saveDataToUserDefaults()
         }
+    }
+    
+    private func getFirstIndex(for model: CGNudgeDataModel) -> Int? {
+        if let firstIndex = cacheNudgeDataModelsArray.firstIndex(where: { data in
+            data.nudgeId == model.nudgeId
+        }) {
+            return firstIndex
+        }
+        return nil
     }
     
     private func saveDataToUserDefaults() {
