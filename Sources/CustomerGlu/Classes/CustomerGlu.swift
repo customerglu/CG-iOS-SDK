@@ -1761,6 +1761,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func setCurrentClassName(className: String) {
         
+        // Show Nudge that match class name
+        showAllCacheNudgeData()
+        
         if(popuptimer != nil){
             popuptimer?.invalidate()
             popuptimer = nil
