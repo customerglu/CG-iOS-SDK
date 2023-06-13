@@ -2398,7 +2398,7 @@ extension CustomerGlu: CGMqttClientDelegate {
     
     private func openNotification(withData model: CGNudgeDataModel) {
         if CustomerGlu.isDebugingEnabled {
-            nudgeDataModel.printNudgeData()
+            model.printNudgeData()
         }
 
         if let pageType = model.pageType, let nudgeUrl = model.clickAction {
