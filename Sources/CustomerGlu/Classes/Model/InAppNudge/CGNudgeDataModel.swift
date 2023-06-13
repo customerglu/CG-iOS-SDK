@@ -14,7 +14,6 @@ public class CGNudgeDataModel: Codable {
     var userId: String?
     var notificationType: String?
     var pageType: String?
-    var content: CGNudgeContentModel?
     var timeRemaning: String?
     var expiry: String?
     var gluMessageType: String?
@@ -26,6 +25,10 @@ public class CGNudgeDataModel: Codable {
     var opacity: String?
     var priority: String?
     var ttl: String?
+    var title: String?
+    var body: String?
+    var clickAction: String?
+    var image: String?
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -35,7 +38,6 @@ public class CGNudgeDataModel: Codable {
         self.userId = try container.decodeIfPresent(String.self, forKey: .userId)
         self.notificationType = try container.decodeIfPresent(String.self, forKey: .notificationType)
         self.pageType = try container.decodeIfPresent(String.self, forKey: .pageType)
-        self.content = try container.decodeIfPresent(CGNudgeContentModel.self, forKey: .content)
         self.timeRemaning = try container.decodeIfPresent(String.self, forKey: .timeRemaning)
         self.expiry = try container.decodeIfPresent(String.self, forKey: .expiry)
         self.gluMessageType = try container.decodeIfPresent(String.self, forKey: .gluMessageType)
@@ -47,6 +49,10 @@ public class CGNudgeDataModel: Codable {
         self.opacity = try container.decodeIfPresent(String.self, forKey: .opacity)
         self.priority = try container.decodeIfPresent(String.self, forKey: .priority)
         self.ttl = try container.decodeIfPresent(String.self, forKey: .ttl)
+        self.title = try container.decodeIfPresent(String.self, forKey: .title)
+        self.body = try container.decodeIfPresent(String.self, forKey: .body)
+        self.clickAction = try container.decodeIfPresent(String.self, forKey: .clickAction)
+        self.image = try container.decodeIfPresent(String.self, forKey: .image)
     }
     
     init(fromDictionary dictionary: [AnyHashable: Any]) {
@@ -56,9 +62,6 @@ public class CGNudgeDataModel: Codable {
         userId = dictionary["userId"] as? String
         notificationType = dictionary["notificationType"] as? String
         pageType = dictionary["pageType"] as? String
-        if let contentDict = dictionary["content"] as? [AnyHashable: Any] {
-            content = CGNudgeContentModel(fromDictionary: contentDict)
-        }
         timeRemaning = dictionary["timeRemaning"] as? String
         expiry = dictionary["expiry"] as? String
         gluMessageType = dictionary["gluMessageType"] as? String
@@ -70,5 +73,9 @@ public class CGNudgeDataModel: Codable {
         opacity = dictionary["opacity"] as? String
         priority = dictionary["priority"] as? String
         ttl = dictionary["ttl"] as? String
+        title = dictionary["title"] as? String
+        body = dictionary["body"] as? String
+        clickAction = dictionary["campaignId"] as? String
+        image = dictionary["image"] as? String
     }
 }

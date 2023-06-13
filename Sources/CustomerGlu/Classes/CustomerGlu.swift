@@ -2471,7 +2471,7 @@ extension CustomerGlu: CGMqttClientDelegate {
     }
     
     private func openInAppNudge(withData model: CGNudgeDataModel) {
-        if let pageType = model.pageType, let nudgeUrl = model.content?.clickAction {
+        if let pageType = model.pageType, let nudgeUrl = model.clickAction {
             let nudgeConfiguration = OtherUtils.shared.getNudgeConfiguration(fromData: model)
             var localPageType = CGConstants.FULL_SCREEN_NOTIFICATION
             let backgroundAlpha = Double(model.opacity ?? "0.5") ?? 0.5
