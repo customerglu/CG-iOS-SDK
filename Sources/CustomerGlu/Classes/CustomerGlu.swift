@@ -490,7 +490,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: remoteMessage ) {
             let nudgeDataModel = CGNudgeDataModel(fromDictionary: remoteMessage)
             // Application is not active so cache the data
-            if checkIfAppIsActive(with: nudgeDataModel) {
+            if isApplicationInActive(with: nudgeDataModel) {
                 return
             }
             
@@ -2411,13 +2411,13 @@ extension CustomerGlu {
         showAllCacheNudgeData()
     }
     
-    private func checkIfAppIsActive(with model: CGNudgeDataModel) -> Bool {
+    private func isApplicationInActive(with model: CGNudgeDataModel) -> Bool {
         // Application is not active so cache the data
         if UIApplication.shared.applicationState != .active {
             cacheNudgeData(with: model)
-            return false
+            return true
         }
-        return true
+        return false
     }
     
     private func showAllCacheNudgeData() {
@@ -2442,7 +2442,7 @@ extension CustomerGlu {
          case background = 2
          */
         // Application is not active so cache the data
-        if checkIfAppIsActive(with: model) {
+        if isApplicationInActive(with: model) {
             return
         }
         
