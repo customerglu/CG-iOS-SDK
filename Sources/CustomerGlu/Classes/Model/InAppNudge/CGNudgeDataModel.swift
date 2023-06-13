@@ -69,7 +69,7 @@ public class CGNudgeDataModel: Codable {
         relativeHeight = dictionary["relativeHeight"] as? String
         closeOnDeepLink = dictionary["closeOnDeepLink"] as? String
         nudgeId = dictionary["nudgeId"] as? String
-        screenNames = dictionary[""] as? String
+        screenNames = dictionary["screenNames"] as? String
         opacity = dictionary["opacity"] as? String
         priority = dictionary["priority"] as? String
         ttl = dictionary["ttl"] as? String
@@ -143,8 +143,7 @@ public class CGNudgeDataModel: Codable {
         }
         
         if let priority {
-            dictionary["opacity"] = opacity
-            print("priority :: \(priority)")
+            dictionary["priority"] = priority
         }
         
         if let ttl {
