@@ -205,7 +205,7 @@ struct APIParameterKey {
     static let action_type = "action_type"
     static let open_container = "open_container"
     static let open_content = "open_content"
-    static let enableMqtt = "enableMqtt"
+    static let isMqttEnabled = "isMqttEnabled"
 }
 
 // Default NotificationsKey

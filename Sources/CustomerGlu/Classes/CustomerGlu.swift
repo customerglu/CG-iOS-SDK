@@ -823,7 +823,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
         // Pass the enableMqtt in register API
         let enableMQTT = self.appconfigdata?.enableMqtt ?? false
-        userData[APIParameterKey.enableMqtt] = enableMQTT
+        userData[APIParameterKey.isMqttEnabled] = enableMQTT
         
         APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
             switch result {
@@ -961,7 +961,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
         // Pass the enableMqtt in register API
         let enableMQTT = self.appconfigdata?.enableMqtt ?? false
-        userData[APIParameterKey.enableMqtt] = enableMQTT
+        userData[APIParameterKey.isMqttEnabled] = enableMQTT
 
         APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
             switch result {
