@@ -2280,13 +2280,14 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
              */
             let userTopic = "nudges/" + (clientID) + "/" + (userID.sha256())
             let clientTopic = "/state/global/" + (clientID)
+            let acknowledgeChannel = "ack/" + (clientID) + "/" + (userID.sha256())
 //            let host = "hermes.customerglu.com"
             let host = "dev-hermes.customerglu.com"
             let username = userID
             let password = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
             let mqttIdentifier = decryptUserDefaultKey(userdefaultKey: CGConstants.MQTT_Identifier)
 
-            let config = CGMqttConfig(username: username, password: password, serverHost: host, topics: [userTopic, clientTopic], port: 1883, mqttIdentifier: mqttIdentifier)
+            let config = CGMqttConfig(username: username, password: password, serverHost: host, topics: [userTopic, clientTopic], port: 1883, mqttIdentifier: mqttIdentifier, acknowledgeChannel: acknowledgeChannel)
             CGMqttClientHelper.shared.setupMQTTClient(withConfig: config, delegate: self)
         } else {
             // Client ID is not available - register
@@ -2379,6 +2380,11 @@ extension CustomerGlu: CGMqttClientDelegate {
             }
             
         case .NUDGE:
+            // Acknowledge in case of nudge
+            if let nudgeId = mqttMessage?.data?.nudgeId {
+                CGMqttClientHelper.shared.acknowledge(withNudgeID: nudgeId)
+            }
+            
             if let mqttMessage, let model = mqttMessage.data {
                 processNudgeData(with: model)
             }
@@ -2498,7 +2504,7 @@ extension CustomerGlu {
                                                    backgroundAlpha: backgroundAlpha,
                                                    auto_close_webview: autoCloseWebview,
                                                    nudgeConfiguration: nudgeConfiguration)
-                
+                                            
                 // Clear Nudge data if stored
                 CGNudgeDataManager.shared.deleteNudgeData(with: model)
             }

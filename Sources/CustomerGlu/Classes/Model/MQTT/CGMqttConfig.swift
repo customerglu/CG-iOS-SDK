@@ -19,13 +19,15 @@ struct CGMqttConfig {
     var topics: [String]!
     var port: UInt16!
     var mqttIdentifier: String!
+    var acknowledgeChannel: String!
     
-    init(username: String, password: String, serverHost: String, topics: [String], port: UInt16, mqttIdentifier: String) {
+    init(username: String, password: String, serverHost: String, topics: [String], port: UInt16, mqttIdentifier: String, acknowledgeChannel: String) {
         self.username = username
         self.password = password
         self.serverHost = serverHost
         self.topics = topics
         self.port = port
         self.mqttIdentifier = mqttIdentifier
+        self.acknowledgeChannel = acknowledgeChannel
     }
 }

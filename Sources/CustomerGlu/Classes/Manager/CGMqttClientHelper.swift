@@ -30,7 +30,7 @@ class CGMqttClientHelper: NSObject {
     private weak var delegate: CGMqttClientDelegate?
     private var client: LightMQTT?
     private var config: CGMqttConfig?
-    
+
     /**
      * MQTT Client can be setup using the following parameters -
      *
@@ -48,6 +48,7 @@ class CGMqttClientHelper: NSObject {
         eventData["topics"] = config.topics
         eventData["port"] = config.port
         eventData["mqttIdentifier"] = config.mqttIdentifier
+        eventData["acknowledgeChannel"] = config.acknowledgeChannel
                 
         // DIAGNOSTICS
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_MQTT_INITIALIZE, eventType: CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
@@ -143,6 +144,19 @@ class CGMqttClientHelper: NSObject {
             eventData["topic"] = topic
             
             CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_MQTT_SUBSCRIBE, eventType: CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
+        }
+    }
+    
+    func acknowledge(withNudgeID nudgeID: String) {
+        guard let client = client, let config = config else { return }
+        
+        let dict: [AnyHashable: Any] = ["nudgeId": nudgeID]
+        do {
+            // Convert Dictionary to JSON Data
+            let jsonData = try JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted)
+            client.publish(to: config.acknowledgeChannel, message: jsonData)
+        } catch {
+            print(error.localizedDescription)
         }
     }
     
