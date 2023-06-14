@@ -2379,7 +2379,7 @@ extension CustomerGlu: CGMqttClientDelegate {
             }
             
         case .NUDGE:
-            if let mqttMessage, let model = mqttMessage.nudgeData {
+            if let mqttMessage, let model = mqttMessage.data {
                 processNudgeData(with: model)
             }
         }

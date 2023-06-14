@@ -10,5 +10,5 @@ import Foundation
 // MARK: - CGMqttMessage
 public class CGMqttMessage: Codable {
     public var type: String?
-    public var nudgeData: CGNudgeDataModel?
+    public var data: CGNudgeDataModel?
 }
