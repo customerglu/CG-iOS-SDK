@@ -206,6 +206,7 @@ struct APIParameterKey {
     static let open_container = "open_container"
     static let open_content = "open_content"
     static let isMqttEnabled = "isMqttEnabled"
+    static let nudgeVersion = "nudgeVersion"
 }
 
 // Default NotificationsKey

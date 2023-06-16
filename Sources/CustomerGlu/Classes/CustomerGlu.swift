@@ -824,6 +824,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         // Pass the enableMqtt in register API
         let enableMQTT = self.appconfigdata?.enableMqtt ?? false
         userData[APIParameterKey.isMqttEnabled] = enableMQTT
+        userData[APIParameterKey.nudgeVersion] = "2.0.0"
         
         APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
             switch result {
@@ -962,7 +963,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         // Pass the enableMqtt in register API
         let enableMQTT = self.appconfigdata?.enableMqtt ?? false
         userData[APIParameterKey.isMqttEnabled] = enableMQTT
-
+        userData[APIParameterKey.nudgeVersion] = "2.0.0"
+        
         APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
             switch result {
             case .success(let response):
