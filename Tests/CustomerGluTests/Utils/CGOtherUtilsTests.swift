@@ -11,12 +11,12 @@ import XCTest
 // MARK: - CGOtherUtilsTests
 final class CGOtherUtilsTests: CGBaseTestCase {
     var otherUtils: OtherUtils?
-
+    
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
         otherUtils = OtherUtils.shared
     }
-
+    
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
@@ -56,7 +56,7 @@ final class CGOtherUtilsTests: CGBaseTestCase {
             XCTAssertNotNil(crashInfo["device_id"])
         }
     }
-
+    
     func testGetUniqueEntryData() {
         // Construct Data
         let data1 = CGData(fromDictionary: ["_id": "1"])
@@ -110,5 +110,73 @@ final class CGOtherUtilsTests: CGBaseTestCase {
         if let validCampaignFlag = otherUtils?.validateCampaign(withCampaignID: "123456", in: campaigns) {
             XCTAssertTrue(validCampaignFlag)
         }
+    }
+    
+    func testGetListOfScreenNames() {
+        // Case 1 - Wild Card
+        var screenNames = OtherUtils.shared.getListOfScreenNames(from: "*")
+        XCTAssertTrue(screenNames.count == 1)
+        
+        // Case 2
+        screenNames = OtherUtils.shared.getListOfScreenNames(from: "Home")
+        XCTAssertTrue(screenNames.count == 1)
+        
+        // Case 3
+        screenNames = OtherUtils.shared.getListOfScreenNames(from: "Home,Cart,Profile")
+        XCTAssertTrue(screenNames.count == 3)
+    }
+    
+    func testGetNudgeConfiguration() {
+        // Input Data
+        let inputModel = CGNudgeDataModel(fromDictionary: ["type": "CustomerGlu",
+                                                           "client": "06319b7d-c724-49e5-8233-3cdbeea59c0e",
+                                                           "campaignId": "38bcd854-0d48-430c-8a02-aed462e69092",
+                                                           "userId": "6395edb98ffdbe671ceb8c71",
+                                                           "notificationType": "push",
+                                                           "pageType": "full-default",
+                                                           "title": "Congrats! You won a reward! ✨Check it out.",
+                                                           "body": "For referring a friend. Claim your Reward Now!",
+                                                           "clickAction": "https://d3guhyj4wa8abr.cloudfront.net/reward/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2Mzk1ZWRiOThmZmRiZTY3MWNlYjhjNzEiLCJjbGllbnQiOiIwNjMxOWI3ZC1jNzI0LTQ5ZTUtODIzMy0zY2RiZWVhNTljMGUiLCJpYXQiOjE2NzA3NzE2OTgsImV4cCI6MTcwMjMwNzY5OH0.nLuKuZc2fX4NIiCCVOh6yczHbbhphq-vfetS5bnpRak&campaignId=38bcd854-0d48-430c-8a02-aed462e69092&rewardUserId=bc4abbe4-c5b7-4fb3-9084-1b481c669510",
+                                                           "image": "https://assets.customerglu.com/zolve/cards/scratch-card/card.png",
+                                                           "timeRemaning": "",
+                                                           "expiry": "",
+                                                           "gluMessageType": "push",
+                                                           "absoluteHeight": "1200",
+                                                           "relativeHeight": "0",
+                                                           "closeOnDeepLink": "false",
+                                                           "nudgeId": "98472-32494fa-sdpo3-4kn423",
+                                                           "screenNames": "*",
+                                                           "opacity": "0.5",
+                                                           "priority": "1",
+                                                           "ttl": ""])
+        
+        // Test
+        let nudgeConfiguration = OtherUtils.shared.getNudgeConfiguration(fromData: inputModel)
+        XCTAssertTrue(nudgeConfiguration.layout == "full-default")
+        XCTAssertTrue(nudgeConfiguration.absoluteHeight == 1200)
+        XCTAssertTrue(nudgeConfiguration.relativeHeight == 0)
+        XCTAssertFalse(nudgeConfiguration.closeOnDeepLink)
+    }
+    
+    func testCheckTTLIsExpired() {
+        // Case 1 - Tommorrow - Date is in future not expired
+        if let tomorrow = Date().tomorrow?.timeIntervalSince1970 {
+            XCTAssertFalse(OtherUtils.shared.checkTTLIsExpired("\(tomorrow)"))
+        } else {
+            // To fail the test
+            XCTAssertTrue(1 == 0)
+        }
+        
+        // Case 2 - Yesterday - Date is in Past expired
+        if let yesterday = Date().yesterday?.timeIntervalSince1970 {
+            XCTAssertTrue(OtherUtils.shared.checkTTLIsExpired("\(yesterday)"))
+        }  else {
+            // To fail the test
+            XCTAssertTrue(1 == 0)
+        }
+        
+        // Case 3 - Current Date
+        let currentDate = Date().timeIntervalSince1970
+        XCTAssertTrue(OtherUtils.shared.checkTTLIsExpired("\(currentDate)"))
     }
 }

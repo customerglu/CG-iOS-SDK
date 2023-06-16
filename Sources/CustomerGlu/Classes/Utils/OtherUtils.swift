@@ -111,4 +111,13 @@ class OtherUtils {
         
         return nudgeConfiguration
     }
+    
+    func checkTTLIsExpired(_ ttl: String) -> Bool {
+        if let timeResult = Double(ttl) {
+            let date = Date(timeIntervalSince1970: timeResult)
+            return date < Date()
+        }
+        
+        return false
+    }
 }

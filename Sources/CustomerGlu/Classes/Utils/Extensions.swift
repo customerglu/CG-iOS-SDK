@@ -189,7 +189,12 @@ extension Date {
     var tomorrow: Date? {
         return Calendar.current.date(byAdding: .day, value: 1, to: self)
     }
+    
+    var yesterday: Date? {
+        return Calendar.current.date(byAdding: .day, value: -1, to: self)
+    }
 }
+
 extension UIColor {
     public convenience init?(hex: String) {
         let r, g, b, a: CGFloat

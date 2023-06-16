@@ -2446,6 +2446,13 @@ extension CustomerGlu {
      Notification or MQTT want to present CustomerWebViewController should first call this to process the nudge data
      */
     private func processNudgeData(with model: CGNudgeDataModel) {
+        // Time stamp is in past so dont show notification
+        if let ttl = model.ttl, OtherUtils.shared.checkTTLIsExpired(ttl) {
+            // Clear Nudge data if stored
+            CGNudgeDataManager.shared.deleteNudgeData(with: model)
+            return
+        }
+        
         /*
          We got 3 states
          case active = 0
