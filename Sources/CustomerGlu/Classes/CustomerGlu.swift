@@ -2383,10 +2383,10 @@ extension CustomerGlu: CGMqttClientDelegate {
             
         case .NUDGE:
             // Acknowledge in case of nudge
-            if let nudgeId = mqttMessage?.data?.nudgeId {
-                CGMqttClientHelper.shared.acknowledge(withNudgeID: nudgeId)
-            }
-            
+//            if let nudgeId = mqttMessage?.data?.nudgeId {
+//                CGMqttClientHelper.shared.acknowledge(withNudgeID: nudgeId)
+//            }
+//
             if let mqttMessage, let model = mqttMessage.data {
                 processNudgeData(with: model)
             }
