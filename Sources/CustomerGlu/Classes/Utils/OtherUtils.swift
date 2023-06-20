@@ -114,8 +114,13 @@ class OtherUtils {
     
     func checkTTLIsExpired(_ ttl: String) -> Bool {
         if let timeResult = Double(ttl) {
-            let date = Date(timeIntervalSince1970: timeResult)
-            return date < Date()
+            let date = Date(timeIntervalSince1970: timeResult/1000)
+            let flag = (date < Date())
+            print("TTL Date :: \(date)")
+            print("Current Date :: \(Date())")
+            print("Current Date :: \(flag ? "true" : "false")")
+            
+            return flag
         }
         
         return false
