@@ -2409,7 +2409,7 @@ extension CustomerGlu {
      * when app is first launched after application:didFinishLaunchingWithOptions:
      * after applicationWillEnterForeground: if there's no URL to handle.
      */
-    @objc public func cgApplicationDidBecomeActive(_ application: UIApplication) {
+    @objc public func cgApplicationDidBecomeActive() {
         //showAllCacheNudgeData()
     }
     
@@ -2418,24 +2418,7 @@ extension CustomerGlu {
      * when app is relaunched
      * before applicationDidBecomeActive:
      */
-    @objc public func cgApplicationWillEnterForeground(_ application: UIApplication) {
-        showAllCacheNudgeData()
-    }
-    
-    /*
-     // If you have
-     // Called when the scene has moved from an inactive state to an active state.
-     // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-     */
-    @objc public func cgSceneDidBecomeActive() {
-        // showAllCacheNudgeData()
-    }
-
-    /*
-     // Called as the scene transitions from the background to the foreground.
-     // Use this method to undo the changes made on entering the background.
-     */
-    @objc public func cgSceneWillEnterForeground() {
+    @objc public func cgApplicationWillEnterForeground() {
         showAllCacheNudgeData()
     }
     
