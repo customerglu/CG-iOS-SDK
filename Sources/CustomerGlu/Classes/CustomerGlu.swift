@@ -2422,6 +2422,23 @@ extension CustomerGlu {
         showAllCacheNudgeData()
     }
     
+    /*
+     // If you have
+     // Called when the scene has moved from an inactive state to an active state.
+     // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+     */
+    @objc public func cgSceneDidBecomeActive() {
+        // showAllCacheNudgeData()
+    }
+
+    /*
+     // Called as the scene transitions from the background to the foreground.
+     // Use this method to undo the changes made on entering the background.
+     */
+    @objc public func cgSceneWillEnterForeground() {
+        showAllCacheNudgeData()
+    }
+    
     private func isApplicationInActive(with model: CGNudgeDataModel) -> Bool {
         // Application is not active so cache the data
         if UIApplication.shared.applicationState != .active {
