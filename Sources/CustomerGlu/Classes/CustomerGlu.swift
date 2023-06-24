@@ -774,7 +774,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userData[APIParameterKey.appVersion] = appVersion
         userData[APIParameterKey.writeKey] = writekey
         if let isMQTTEnabled = appconfigdata?.enableMqtt {
-            userData[APIParameterKey.isMQTTEnabled] = false
+            userData[APIParameterKey.isMQTTEnabled] = isMQTTEnabled
         } else {
             userData[APIParameterKey.isMQTTEnabled] = false
         }
@@ -828,7 +828,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
         // Pass the enableMqtt in register API
         let enableMQTT = self.appconfigdata?.enableMqtt ?? false
-        userData[APIParameterKey.isMqttEnabled] = false
+        userData[APIParameterKey.isMqttEnabled] = enableMQTT
         userData[APIParameterKey.nudgeVersion] = "2.0.0"
         
         APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
@@ -967,7 +967,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
         // Pass the enableMqtt in register API
         let enableMQTT = self.appconfigdata?.enableMqtt ?? false
-        userData[APIParameterKey.isMqttEnabled] = false
+        userData[APIParameterKey.isMqttEnabled] = enableMQTT
         userData[APIParameterKey.nudgeVersion] = "2.0.0"
         
         APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
