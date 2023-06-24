@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Ankit Jain on 21/04/23.
 //
@@ -273,4 +273,3 @@ struct CGSDKTestStepsModel {
         return dateformatter.string(from: date)
     }
 }
-

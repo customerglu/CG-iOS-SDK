@@ -433,11 +433,16 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             }
             
             if bodyStruct?.eventName == WebViewsKey.analytics {
-                diagnosticsEventData["analyticsEvent"] = CustomerGlu.analyticsEvent
                 
+                diagnosticsEventData["analyticsEvent"] = CustomerGlu.analyticsEvent
+
                 if (true == CustomerGlu.analyticsEvent) {
                     let dict = OtherUtils.shared.convertToDictionary(text: (message.body as? String)!)
-                    if(dict != nil && dict!.count>0 && dict?["data"] != nil){
+                    if(dict != nil && dict!.count > 0 && dict?["data"] != nil) {
+                        if let dict = dict, let data = dict["data"] as? [String: Any], let eventName = data["event_name"] as? String, eventName.caseInsensitiveCompare("GAME_PLAYED") == .orderedSame {
+                            CustomerGlu.getInstance.doLoadCampaignAndEntryPointCall()
+                        }
+                        
                         NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_ANALYTICS_EVENT").rawValue), object: nil, userInfo: dict?["data"] as? [String: Any])
                     }
                 }

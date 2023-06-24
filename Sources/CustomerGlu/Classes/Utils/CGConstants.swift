@@ -132,6 +132,7 @@ struct APIParameterKey {
     static let deviceType = "deviceType"
     static let deviceName = "deviceName"
     static let appVersion = "appVersion"
+    static let isMQTTEnabled = "isMqttEnabled"
     static let writeKey = "writeKey"
     static let event_id = "event_id"
     static let event_name = "event_name"

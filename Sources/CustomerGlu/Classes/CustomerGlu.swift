@@ -773,6 +773,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userData[APIParameterKey.deviceName] = getDeviceName()
         userData[APIParameterKey.appVersion] = appVersion
         userData[APIParameterKey.writeKey] = writekey
+        if let isMQTTEnabled = appconfigdata?.enableMqtt {
+            userData[APIParameterKey.isMQTTEnabled] = isMQTTEnabled
+        } else {
+            userData[APIParameterKey.isMQTTEnabled] = false
+        }
         
         if CustomerGlu.fcm_apn == "fcm" {
             userData[APIParameterKey.apnsDeviceToken] = ""
@@ -2304,6 +2309,14 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    func doLoadCampaignAndEntryPointCall() {
+        ApplicationManager.openWalletApi { success, response in
+            if success {
+                self.getEntryPointData()
+            }
+        }
+    }
+    
     internal func showClientTestingRedirectAlert() {
         // After 8 seconds show redirect alert
         DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) { [weak self] in
@@ -2349,11 +2362,7 @@ extension CustomerGlu: CGMqttClientDelegate {
                 // Entrypoint API refresh
                 
                 if  let enableMQTT =  self.appconfigdata?.enableMqtt, enableMQTT{
-                    ApplicationManager.openWalletApi { success, response in
-                        if success {
-                            self.getEntryPointData()
-                        }
-                    }
+                    doLoadCampaignAndEntryPointCall()
                 }
             }
             
