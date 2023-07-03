@@ -111,6 +111,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
+    private var isAppLaunching: Bool? // Save this value for app launching flow
     
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     
@@ -2429,6 +2430,13 @@ extension CustomerGlu {
      */
     @objc public func cgApplicationWillEnterForeground() {
         showAllCacheNudgeData()
+    }
+    
+    /*
+     Record app launch
+     */
+    @objc public func cgApplication(didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) {
+        isAppLaunching = true
     }
     
     private func isApplicationInActive(with model: CGNudgeDataModel) -> Bool {
