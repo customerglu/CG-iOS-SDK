@@ -2474,7 +2474,8 @@ extension CustomerGlu {
         }
         
         if let gluMessageType = model.gluMessageType, gluMessageType.caseInsensitiveCompare(NotificationsKey.in_app) == .orderedSame {
-            if let screenNames = model.screenNames {
+            // Checking screenname is not empty because we want to wait showing the notification after screen name is set.
+            if let screenNames = model.screenNames, !screenNames.isEmpty {
                 let screenNamesArray = OtherUtils.shared.getListOfScreenNames(from: screenNames)
                 if screenNamesArray.contains(CustomerGlu.getInstance.activescreenname) || screenNames == "*" {
                     openNotification(withData: model)
