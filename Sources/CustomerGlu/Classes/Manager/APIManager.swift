@@ -298,15 +298,27 @@ class APIManager {
                         blockOperationForServiceWithDelay(andRequestData: requestData)
                     } else {
                         if let error, error == .badURLRetry {
+                            if type == .addToCart {
+                                APIManager.handleFailedEvent(with: parametersDict)
+                            }
                             completion(.failure(CGNetworkError.badURLRetry))
                         } else if let object = dictToObject(dict: data, type: T.self) {
                             completion(.success(object))
+                            if type == .addToCart {
+                                APIManager.handleFailedEvent(with: parametersDict)
+                            }
                         } else {
                             completion(.failure(CGNetworkError.other))
+                            if type == .addToCart {
+                                APIManager.handleFailedEvent(with: parametersDict)
+                            }
                         }
                     }
                 } else {
                     completion(.failure(CGNetworkError.bindingFailed))
+                    if type == .addToCart {
+                        APIManager.handleFailedEvent(with: parametersDict)
+                    }
                 }
                 
             case .failure:
@@ -315,12 +327,21 @@ class APIManager {
                     blockOperationForServiceWithDelay(andRequestData: requestData)
                 } else {
                     completion(.failure(CGNetworkError.other))
+                    if type == .addToCart {
+                        APIManager.handleFailedEvent(with: parametersDict)
+                    }
                 }
             }
         }
         
         requestData.completionBlock = block
         blockOperationForService(withRequestData: requestData)
+    }
+    
+    static func handleFailedEvent(with param: NSDictionary) -> Void {
+        let queue = APIFailureQueue()
+        queue.enqueue(with: .init(priority: .low, param: param))
+        APIFailureMonitor.shared.startObservation()
     }
     
     static func userRegister(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
@@ -467,5 +488,166 @@ class URLSessionMock: URLSession {
         return URLSessionDataTaskMock {
             completionHandler(data, nil, error)
         }
+    }
+}
+
+class APIFailureQueue {
+    private let userDefaults = UserDefaults.standard
+    private let queueKey = "APIFailureQueue"
+    
+    func enqueue(with failure: APIFailure) {
+        var failures = listFailures()
+        failures.append(failure)
+        failures.sort(by: { $0.priority.value > $1.priority.value })
+        registerFailures(failures)
+    }
+    
+    func dequeue() -> Void {
+        var failures = listFailures()
+        guard failures.isNotEmpty else { return }
+        
+        failures.removeFirst()
+        registerFailures(failures)
+    }
+    
+    func listFailures() -> [APIFailure] {
+        guard let data = userDefaults.data(forKey: queueKey) else {
+            return []
+        }
+
+        let decoder = JSONDecoder()
+        if let failures = try? decoder.decode([APIFailure].self, from: data) {
+            return failures
+        }
+        
+        return []
+    }
+    
+    private func registerFailures(_ failures: [APIFailure]) {
+        let encoder = JSONEncoder()
+        if let encodedData = try? encoder.encode(failures) {
+            userDefaults.set(encodedData, forKey: queueKey)
+        }
+    }
+}
+
+extension Collection {
+    var isNotEmpty: Bool {
+        return !self.isEmpty
+    }
+}
+
+enum APIObservationState {
+    case observing
+    case neutral
+}
+
+class APIFailureMonitor {
+    static let shared = APIFailureMonitor()
+    private let failureQueue = APIFailureQueue()
+    private let dispatchGroup = DispatchGroup()
+    private var observationState: APIObservationState = .neutral
+    private var timer: Timer?
+    
+    private init() { }
+    
+    func startObservation() -> Void {
+        guard failureQueue.listFailures().isNotEmpty, timer == nil else { return }
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+            switch self.observationState {
+            case .observing:
+                self.stopTimer()
+            case .neutral:
+                if self.failureQueue.listFailures().isEmpty {
+                    self.stopTimer()
+                } else {
+                    self.startRetryProcess()
+                }
+            }
+        }
+        
+        if let timer = timer {
+            RunLoop.main.add(timer, forMode: .common)
+        }
+    }
+    
+    private func startRetryProcess() -> Void {
+        guard failureQueue.listFailures().isNotEmpty, observationState == .neutral else { return }
+        
+        observationState = .observing
+        let failedAPICalls = failureQueue.listFailures()
+        
+        for item in failedAPICalls {
+            dispatchGroup.enter()
+            makeRequest(with: item.param)
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            self.observationState = .neutral
+        }
+    }
+    
+    private func makeRequest(with param: NSDictionary) -> Void {
+        APIManager.addToCart(queryParameters: param) { result in
+            self.failureQueue.dequeue()
+            self.dispatchGroup.leave()
+        }
+//        CGAPIManager.shared.request(isReTry: true, router: router, responseType: responseType) { result in
+//            self.failureQueue.dequeue()
+//            self.dispatchGroup.leave()
+//        }
+    }
+    
+    private func stopTimer() -> Void {
+        timer?.invalidate()
+        timer = nil
+    }
+}
+
+enum APIFailurePriority: String, Codable {
+    case high, low
+    
+    var value: Int {
+        switch self {
+        case .high:
+            return 1
+        case .low:
+            return 0
+        }
+    }
+}
+
+struct APIFailure: Codable {
+    var priority: APIFailurePriority
+    var param: NSDictionary
+
+    enum CodingKeys: String, CodingKey {
+        case priority
+        case param
+    }
+
+    init(priority: APIFailurePriority, param: NSDictionary) {
+        self.priority = priority
+        self.param = param
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        priority = try container.decode(APIFailurePriority.self, forKey: .priority)
+
+        if let dictionaryData = try container.decode(Data?.self, forKey: .param) {
+            param = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(dictionaryData) as? NSDictionary ?? NSDictionary()
+        } else {
+            param = NSDictionary()
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(priority, forKey: .priority)
+
+        let dictionaryData = try NSKeyedArchiver.archivedData(withRootObject: param, requiringSecureCoding: false)
+        try container.encode(dictionaryData, forKey: .param)
     }
 }
