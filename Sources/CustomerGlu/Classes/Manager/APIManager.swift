@@ -328,7 +328,6 @@ class APIManager {
     static func handleFailedEvent(with param: NSDictionary, priority: EventPriority) -> Void {
         let queue = APIFailureQueue()
         queue.enqueue(with: .init(priority: priority, param: param))
-        APIFailureMonitor.shared.startObservation()
     }
     
     static func userRegister(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
@@ -538,9 +537,7 @@ class APIFailureMonitor {
     
     private init() { }
     
-    func startObservation() -> Void {
-//        guard failureQueue.listFailures().isNotEmpty, timer == nil else { return }
-        
+    func startObservation() -> Void {        
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             self.startRetryProcess()
         }
