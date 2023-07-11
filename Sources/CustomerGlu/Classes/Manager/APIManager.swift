@@ -539,7 +539,7 @@ class APIFailureMonitor {
     private init() { }
     
     func startObservation() -> Void {
-        guard failureQueue.listFailures().isNotEmpty, timer == nil else { return }
+//        guard failureQueue.listFailures().isNotEmpty, timer == nil else { return }
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             self.startRetryProcess()
