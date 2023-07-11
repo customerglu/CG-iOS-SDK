@@ -541,7 +541,7 @@ class APIFailureMonitor {
     func startObservation() -> Void {
         guard failureQueue.listFailures().isNotEmpty, timer == nil else { return }
         
-        timer = Timer.scheduledTimer(withTimeInterval: 4, repeats: true) { _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
             self.startRetryProcess()
 //            switch self.observationState {
 //            case .observing:
