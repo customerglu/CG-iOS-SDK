@@ -290,6 +290,7 @@ class APIManager {
         
         // Call Login API with API Router
         let block: (_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void = { (status, data, error) in
+            let queue = APIFailureQueue()
             switch status {
             case .success:
                 if let data {
@@ -298,27 +299,16 @@ class APIManager {
                         blockOperationForServiceWithDelay(andRequestData: requestData)
                     } else {
                         if let error, error == .badURLRetry {
-                            if type == .addToCart {
-                                APIManager.handleFailedEvent(with: parametersDict)
-                            }
                             completion(.failure(CGNetworkError.badURLRetry))
                         } else if let object = dictToObject(dict: data, type: T.self) {
+                            queue.dequeue()
                             completion(.success(object))
-                            if type == .addToCart {
-                                APIManager.handleFailedEvent(with: parametersDict)
-                            }
                         } else {
                             completion(.failure(CGNetworkError.other))
-                            if type == .addToCart {
-                                APIManager.handleFailedEvent(with: parametersDict)
-                            }
                         }
                     }
                 } else {
                     completion(.failure(CGNetworkError.bindingFailed))
-                    if type == .addToCart {
-                        APIManager.handleFailedEvent(with: parametersDict)
-                    }
                 }
                 
             case .failure:
@@ -327,9 +317,6 @@ class APIManager {
                     blockOperationForServiceWithDelay(andRequestData: requestData)
                 } else {
                     completion(.failure(CGNetworkError.other))
-                    if type == .addToCart {
-                        APIManager.handleFailedEvent(with: parametersDict)
-                    }
                 }
             }
         }
@@ -338,9 +325,9 @@ class APIManager {
         blockOperationForService(withRequestData: requestData)
     }
     
-    static func handleFailedEvent(with param: NSDictionary) -> Void {
+    static func handleFailedEvent(with param: NSDictionary, priority: EventPriority) -> Void {
         let queue = APIFailureQueue()
-        queue.enqueue(with: .init(priority: .low, param: param))
+        queue.enqueue(with: .init(priority: priority, param: param))
         APIFailureMonitor.shared.startObservation()
     }
     
@@ -593,10 +580,6 @@ class APIFailureMonitor {
             self.failureQueue.dequeue()
             self.dispatchGroup.leave()
         }
-//        CGAPIManager.shared.request(isReTry: true, router: router, responseType: responseType) { result in
-//            self.failureQueue.dequeue()
-//            self.dispatchGroup.leave()
-//        }
     }
     
     private func stopTimer() -> Void {
@@ -605,21 +588,21 @@ class APIFailureMonitor {
     }
 }
 
-enum APIFailurePriority: String, Codable {
-    case high, low
+public enum EventPriority: String, Codable {
+    case high, normal
     
     var value: Int {
         switch self {
         case .high:
             return 1
-        case .low:
+        case .normal:
             return 0
         }
     }
 }
 
 struct APIFailure: Codable {
-    var priority: APIFailurePriority
+    var priority: EventPriority
     var param: NSDictionary
 
     enum CodingKeys: String, CodingKey {
@@ -627,14 +610,14 @@ struct APIFailure: Codable {
         case param
     }
 
-    init(priority: APIFailurePriority, param: NSDictionary) {
+    init(priority: EventPriority, param: NSDictionary) {
         self.priority = priority
         self.param = param
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        priority = try container.decode(APIFailurePriority.self, forKey: .priority)
+        priority = try container.decode(EventPriority.self, forKey: .priority)
 
         if let dictionaryData = try container.decode(Data?.self, forKey: .param) {
             param = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(dictionaryData) as? NSDictionary ?? NSDictionary()

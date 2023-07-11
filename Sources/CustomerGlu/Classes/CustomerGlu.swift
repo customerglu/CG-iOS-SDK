@@ -1671,7 +1671,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    @objc public func sendEventData(eventName: String, eventProperties: [String: Any]?) {
+    @objc public func tempFunction() -> Void {
+        let queue = APIFailureQueue()
+        print("Pendings: \(queue.listFailures())")
+    }
+    
+    @objc public func sendEventData(eventName: String, eventProperties: [String: Any]?, isHighPriority: Bool = false) {
         if CustomerGlu.sdk_disable! == true || Reachability.shared.isConnectedToNetwork() != true || userDefaults.string(forKey: CGConstants.CUSTOMERGLU_TOKEN) == nil {
             CustomerGlu.getInstance.printlog(cglog: "Fail to call sendEventData", isException: false, methodName: "CustomerGlu-sendEventData-1", posttoserver: true)
             return
@@ -1686,15 +1691,26 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
 
         }
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_SEND_EVENT_START, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
-        ApplicationManager.sendEventData(eventName: eventName, eventProperties: eventProperties) { success, addCartModel in
-            if success {
-                if(true == CustomerGlu.isDebugingEnabled){
-                    print(addCartModel as Any)
+        
+        let priority: EventPriority = isHighPriority ? .high : .normal
+        let queue = APIFailureQueue()
+        
+        switch priority {
+        case .high:
+            queue.enqueue(with: .init(priority: .high, param: eventProperties as? NSDictionary ?? [:]))
+            ApplicationManager.sendEventData(eventName: eventName, eventProperties: eventProperties) { success, addCartModel in
+                if success {
+                    if(true == CustomerGlu.isDebugingEnabled){
+                        print(addCartModel as Any)
+                    }
+                } else {
+                    CustomerGlu.getInstance.printlog(cglog: "Fail to call sendEventData", isException: false, methodName: "CustomerGlu-sendEventData-2", posttoserver: true)
                 }
-            } else {
-                CustomerGlu.getInstance.printlog(cglog: "Fail to call sendEventData", isException: false, methodName: "CustomerGlu-sendEventData-2", posttoserver: true)
             }
+        case .normal:
+            queue.enqueue(with: .init(priority: .normal, param: eventProperties as? NSDictionary ?? [:]))
         }
+        
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_SEND_EVENT_END, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
     }
     
