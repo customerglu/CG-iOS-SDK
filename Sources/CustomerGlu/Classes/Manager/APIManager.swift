@@ -542,16 +542,17 @@ class APIFailureMonitor {
         guard failureQueue.listFailures().isNotEmpty, timer == nil else { return }
         
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
-            switch self.observationState {
-            case .observing:
-                self.stopTimer()
-            case .neutral:
-                if self.failureQueue.listFailures().isEmpty {
-                    self.stopTimer()
-                } else {
-                    self.startRetryProcess()
-                }
-            }
+            self.startRetryProcess()
+//            switch self.observationState {
+//            case .observing:
+//                self.stopTimer()
+//            case .neutral:
+//                if self.failureQueue.listFailures().isEmpty {
+//                    self.stopTimer()
+//                } else {
+//                    self.startRetryProcess()
+//                }
+//            }
         }
         
         if let timer = timer {
@@ -582,10 +583,10 @@ class APIFailureMonitor {
         }
     }
     
-    private func stopTimer() -> Void {
-        timer?.invalidate()
-        timer = nil
-    }
+//    private func stopTimer() -> Void {
+//        timer?.invalidate()
+//        timer = nil
+//    }
 }
 
 public enum EventPriority: String, Codable {
