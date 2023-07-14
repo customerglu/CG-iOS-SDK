@@ -479,46 +479,6 @@ class URLSessionMock: URLSession {
     }
 }
 
-class APIFailureQueue {
-    private let userDefaults = UserDefaults.standard
-    private let queueKey = "APIFailureQueue"
-    
-    func enqueue(with failure: APIFailure) {
-        var failures = listFailures()
-        failures.append(failure)
-        failures.sort(by: { $0.priority.value > $1.priority.value })
-        registerFailures(failures)
-    }
-    
-    func dequeue() -> Void {
-        var failures = listFailures()
-        guard failures.isNotEmpty else { return }
-        
-        failures.removeFirst()
-        registerFailures(failures)
-    }
-    
-    func listFailures() -> [APIFailure] {
-        guard let data = userDefaults.data(forKey: queueKey) else {
-            return []
-        }
-
-        let decoder = JSONDecoder()
-        if let failures = try? decoder.decode([APIFailure].self, from: data) {
-            return failures
-        }
-        
-        return []
-    }
-    
-    private func registerFailures(_ failures: [APIFailure]) {
-        let encoder = JSONEncoder()
-        if let encodedData = try? encoder.encode(failures) {
-            userDefaults.set(encodedData, forKey: queueKey)
-        }
-    }
-}
-
 extension Collection {
     var isNotEmpty: Bool {
         return !self.isEmpty
@@ -528,49 +488,6 @@ extension Collection {
 enum APIObservationState {
     case observing
     case neutral
-}
-
-class APIFailureMonitor {
-    static let shared = APIFailureMonitor()
-    private let failureQueue = APIFailureQueue()
-    private let dispatchGroup = DispatchGroup()
-    private var observationState: APIObservationState = .neutral
-    private var timer: Timer?
-    
-    private init() { }
-    
-    func startObservation() -> Void {        
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            self.startRetryProcess()
-        }
-        
-        if let timer = timer {
-            RunLoop.main.add(timer, forMode: .common)
-        }
-    }
-    
-    private func startRetryProcess() -> Void {
-        guard failureQueue.listFailures().isNotEmpty, observationState == .neutral else { return }
-        
-        observationState = .observing
-        let failedAPICalls = failureQueue.listFailures()
-        
-        for item in failedAPICalls {
-            dispatchGroup.enter()
-            makeRequest(with: item.param)
-        }
-        
-        dispatchGroup.notify(queue: .main) {
-            self.observationState = .neutral
-        }
-    }
-    
-    private func makeRequest(with param: NSDictionary) -> Void {
-        APIManager.addToCart(queryParameters: param) { result in
-            self.failureQueue.dequeue()
-            self.dispatchGroup.leave()
-        }
-    }
 }
 
 public enum EventPriority: String, Codable {
@@ -619,4 +536,3 @@ struct APIFailure: Codable {
         try container.encode(dictionaryData, forKey: .param)
     }
 }
-
