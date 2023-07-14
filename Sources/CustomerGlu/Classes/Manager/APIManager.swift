@@ -301,7 +301,9 @@ class APIManager {
                         if let error, error == .badURLRetry {
                             completion(.failure(CGNetworkError.badURLRetry))
                         } else if let object = dictToObject(dict: data, type: T.self) {
-                            queue.dequeue()
+                            if type == .addToCart {
+                                queue.dequeue()
+                            }
                             completion(.success(object))
                         } else {
                             completion(.failure(CGNetworkError.other))
@@ -617,3 +619,4 @@ struct APIFailure: Codable {
         try container.encode(dictionaryData, forKey: .param)
     }
 }
+

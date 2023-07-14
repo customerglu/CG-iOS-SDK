@@ -636,7 +636,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     // MARK: - API Calls Methods
     
     @objc public func initializeSdk() {
-//        APIFailureMonitor.shared.startObservation()
+        APIFailureMonitor.shared.startObservation()
         
         if !sdkInitialized {
             // So SDK is initialized
@@ -1671,6 +1671,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    #warning("Need to remove")
     @objc public func tempFunction() -> Void {
         let queue = APIFailureQueue()
         print("Pendings: \(queue.listFailures())")
