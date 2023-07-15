@@ -417,6 +417,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func cgapplication(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], backgroundAlpha: Double = 0.5,auto_close_webview : Bool = CustomerGlu.auto_close_webview!, fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        if CustomerGlu.isDebugingEnabled {
+            print("** CustomerGlu :: didReceiveRemoteNotification **")
+        }
+        
         if CustomerGlu.sdk_disable! == true {
             CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-cgapplication", posttoserver: true)
             return
@@ -476,6 +480,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         } else {
             customerWebViewVC.modalPresentationStyle = .overCurrentContext//.fullScreen
         }
+        
+        if CustomerGlu.isDebugingEnabled {
+            print("** CustomerGlu :: presentToCustomerWebViewController **")
+        }
+        
         topController.present(customerWebViewVC, animated: true, completion: {
             self.hideFloatingButtons()
         })
@@ -496,6 +505,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             // Application is not active so cache the data
             if isApplicationInActive(with: nudgeDataModel) {
                 return
+            }
+            
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: displayBackgroundNotification **")
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
@@ -2446,15 +2459,42 @@ extension CustomerGlu {
     }
     
     private func isApplicationInActive(with model: CGNudgeDataModel) -> Bool {
+        
+        switch UIApplication.shared.applicationState {
+        case .active:
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: isApplicationInActive :: Active **")
+            }
+        case .background:
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: isApplicationInActive :: Background **")
+            }
+        case .inactive:
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: isApplicationInActive :: In-Active **")
+            }
+        }
+        
         // Application is not active so cache the data
         if UIApplication.shared.applicationState != .active {
             cacheNudgeData(with: model)
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: isApplicationInActive :: True **")
+            }
             return true
+        }
+        
+        if CustomerGlu.isDebugingEnabled {
+            print("** CustomerGlu :: isApplicationInActive :: false **")
         }
         return false
     }
     
     private func showAllCacheNudgeData() {
+        if CustomerGlu.isDebugingEnabled {
+            print("** CustomerGlu :: showAllCacheNudgeData **")
+        }
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
             let data = CGNudgeDataManager.shared.getCacheNudgeDataModelsArray()
             for model in data {
@@ -2471,10 +2511,18 @@ extension CustomerGlu {
      Notification or MQTT want to present CustomerWebViewController should first call this to process the nudge data
      */
     private func processNudgeData(with model: CGNudgeDataModel) {
+        if CustomerGlu.isDebugingEnabled {
+            print("** CustomerGlu :: processNudgeData :: Start **")
+        }
+        
         // Time stamp is in past so dont show notification
         if let ttl = model.ttl, OtherUtils.shared.checkTTLIsExpired(ttl) {
             // Clear Nudge data if stored
             CGNudgeDataManager.shared.deleteNudgeData(with: model)
+            
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: TTL Expired **")
+            }
             return
         }
         
@@ -2486,6 +2534,9 @@ extension CustomerGlu {
          */
         // Application is not active so cache the data
         if isApplicationInActive(with: model) {
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: App inactive **")
+            }
             return
         }
         
@@ -2494,12 +2545,21 @@ extension CustomerGlu {
             if let screenNames = model.screenNames, !screenNames.isEmpty {
                 let screenNamesArray = OtherUtils.shared.getListOfScreenNames(from: screenNames)
                 if screenNamesArray.contains(CustomerGlu.getInstance.activescreenname) || screenNames == "*" {
+                    if CustomerGlu.isDebugingEnabled {
+                        print("** CustomerGlu :: processNudgeData :: openNotification **")
+                    }
                     openNotification(withData: model)
                 } else {
+                    if CustomerGlu.isDebugingEnabled {
+                        print("** CustomerGlu :: processNudgeData :: cacheNudgeData **")
+                    }
                     cacheNudgeData(with: model)
                 }
             }
         } else {
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: Else Flow **")
+            }
             openNotification(withData: model)
         }
     }
@@ -2512,7 +2572,15 @@ extension CustomerGlu {
             model.printNudgeData()
         }
 
+        if CustomerGlu.isDebugingEnabled {
+            print("** CustomerGlu :: openNotification **")
+        }
+        
         if let pageType = model.pageType, let nudgeUrl = model.clickAction {
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: openNotification :: Inside If condition **")
+            }
+            
             let nudgeConfiguration = OtherUtils.shared.getNudgeConfiguration(fromData: model)
             var localPageType = CGConstants.FULL_SCREEN_NOTIFICATION
             let backgroundAlpha = Double(model.opacity ?? "0.5") ?? 0.5
