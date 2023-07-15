@@ -431,8 +431,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
         }
                 
-        if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]) {
-            let nudgeDataModel = CGNudgeDataModel(fromDictionary: userInfo)
+        if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]), let data = userInfo["data"] as? [AnyHashable: Any] {
+            let nudgeDataModel = CGNudgeDataModel(fromDictionary: data)
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
                 self.processNudgeData(with: nudgeDataModel)
@@ -500,8 +500,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             return
         }
         
-        if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: remoteMessage ) {
-            let nudgeDataModel = CGNudgeDataModel(fromDictionary: remoteMessage)
+        if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: remoteMessage), let data = remoteMessage["data"] as? [AnyHashable: Any] {
+            let nudgeDataModel = CGNudgeDataModel(fromDictionary: data)
             // Application is not active so cache the data
             if isApplicationInActive(with: nudgeDataModel) {
                 return
