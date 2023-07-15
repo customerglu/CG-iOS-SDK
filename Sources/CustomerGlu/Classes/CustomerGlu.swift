@@ -430,7 +430,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]) {
             let nudgeDataModel = CGNudgeDataModel(fromDictionary: userInfo)
             
-            processNudgeData(with: nudgeDataModel)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
+                processNudgeData(with: nudgeDataModel)
+            }
             self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
         }
     }
