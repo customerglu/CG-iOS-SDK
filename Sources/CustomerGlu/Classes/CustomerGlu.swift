@@ -2473,6 +2473,10 @@ extension CustomerGlu {
             if CustomerGlu.isDebugingEnabled {
                 print("** CustomerGlu :: isApplicationInActive :: In-Active **")
             }
+        @unknown default:
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: isApplicationInActive :: Unknown **")
+            }
         }
         
         // Application is not active so cache the data
