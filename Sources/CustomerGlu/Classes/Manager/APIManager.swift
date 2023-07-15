@@ -35,7 +35,7 @@ internal class MethodandPath: Codable {
     
     init(serviceType: CGService) {
         // Default value else change it in respective enum case.
-        self.baseurl = BaseUrls.baseurl
+        self.baseurl = BaseUrls.devbaseurl
         
         switch serviceType {
         case .userRegister:
