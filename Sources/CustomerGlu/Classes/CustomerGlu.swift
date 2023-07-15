@@ -431,8 +431,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let nudgeDataModel = CGNudgeDataModel(fromDictionary: userInfo)
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
-                processNudgeData(with: nudgeDataModel)
-            }
+                self.processNudgeData(with: nudgeDataModel)
+            })
+                                          
             self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
         }
     }
@@ -498,8 +499,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
-                processNudgeData(with: nudgeDataModel)
-            }
+                self.processNudgeData(with: nudgeDataModel)
+            })
+                                          
             self.postAnalyticsEventForNotification(userInfo: remoteMessage)
         }
     }
@@ -2456,9 +2458,9 @@ extension CustomerGlu {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
             let data = CGNudgeDataManager.shared.getCacheNudgeDataModelsArray()
             for model in data {
-                processNudgeData(with: model)
+                self.processNudgeData(with: model)
             }
-        }
+        })
     }
     
     private func cacheNudgeData(with model: CGNudgeDataModel) {
