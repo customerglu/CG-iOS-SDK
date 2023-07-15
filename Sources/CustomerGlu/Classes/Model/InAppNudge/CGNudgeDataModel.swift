@@ -75,7 +75,7 @@ public class CGNudgeDataModel: Codable {
         ttl = dictionary["ttl"] as? String
         title = dictionary["title"] as? String
         body = dictionary["body"] as? String
-        clickAction = dictionary["campaignId"] as? String
+        clickAction = dictionary["clickAction"] as? String
         image = dictionary["image"] as? String
     }
     
