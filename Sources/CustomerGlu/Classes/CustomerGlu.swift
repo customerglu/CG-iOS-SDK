@@ -2317,8 +2317,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let userTopic = "nudges/" + (clientID) + "/" + (userID.sha256())
             let clientTopic = "/state/global/" + (clientID)
             let acknowledgeChannel = "ack/" + (clientID) + "/" + (userID.sha256())
-//            let host = "hermes.customerglu.com"
-            let host = "dev-hermes.customerglu.com"
+            let host = "hermes.customerglu.com"
             let username = userID
             let password = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
             let mqttIdentifier = decryptUserDefaultKey(userdefaultKey: CGConstants.MQTT_Identifier)
