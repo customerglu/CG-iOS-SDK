@@ -2456,6 +2456,11 @@ extension CustomerGlu {
      */
     @objc public func cgApplication(didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) {
         isAppLaunching = true
+        
+        // Set App launching to false after 10 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
+            CustomerGlu.getInstance.isAppLaunching = false
+        }
     }
     
     private func isApplicationInActive(with model: CGNudgeDataModel) -> Bool {
@@ -2611,9 +2616,16 @@ extension CustomerGlu {
                                                    backgroundAlpha: backgroundAlpha,
                                                    auto_close_webview: autoCloseWebview,
                                                    nudgeConfiguration: nudgeConfiguration)
-                                            
-                // Clear Nudge data if stored
-                CGNudgeDataManager.shared.deleteNudgeData(with: model)
+                          
+                if isAppLaunching {
+                    // On app launch - delete the nudge data after delay.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
+                        CGNudgeDataManager.shared.deleteNudgeData(with: model)
+                    }
+                } else {
+                    // Clear Nudge data if stored
+                    CGNudgeDataManager.shared.deleteNudgeData(with: model)
+                }
             }
         }
     }
