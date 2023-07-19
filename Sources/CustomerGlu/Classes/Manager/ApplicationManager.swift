@@ -108,9 +108,10 @@ class ApplicationManager {
         if user_id.count < 0 {
             return
         }
-        if CustomerGlu.sdk_disable != true {
-            CGSentryHelper.shared.captureExceptionEvent(exceptionLog: cglog)
-        }
+//        TBD
+//        if CustomerGlu.sdk_disable != true {
+//            CGSentryHelper.shared.captureExceptionEvent(exceptionLog: cglog)
+//        }
         // Removed the crash event old implementation
 
     }
