@@ -2617,7 +2617,7 @@ extension CustomerGlu {
                                                    auto_close_webview: autoCloseWebview,
                                                    nudgeConfiguration: nudgeConfiguration)
                           
-                if isAppLaunching {
+                if isAppLaunching ?? false {
                     // On app launch - delete the nudge data after delay.
                     DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
                         CGNudgeDataManager.shared.deleteNudgeData(with: model)
