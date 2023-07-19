@@ -110,7 +110,7 @@ class ApplicationManager {
         }
 //        TBD
 //        if CustomerGlu.sdk_disable != true {
-//            CGSentryHelper.shared.captureExceptionEvent(exceptionLog: cglog)
+//            CGExceptionHelper.shared.captureExceptionEvent(exceptionLog: cglog)
 //        }
         // Removed the crash event old implementation
 

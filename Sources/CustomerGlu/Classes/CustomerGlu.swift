@@ -625,7 +625,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_DARK_EMBEDLOTTIE_FILE_PATH)
         CustomerGlu.getInstance.cgUserData = CGUser()
         ApplicationManager.appSessionId = UUID().uuidString
-//        CGSentryHelper.shared.logoutSentryUser() TBD
+//        CGExceptionHelper.shared.logoutSentryUser() TBD
         
         // Disconnect MQTT
         if let enableMqtt = self.appconfigdata?.enableMqtt, enableMqtt, CGMqttClientHelper.shared.checkIsMQTTConnected() {
@@ -718,7 +718,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             
             if self.appconfigdata!.enableSentry != nil  {
                 CustomerGlu.sentry_enable =  self.appconfigdata?.enableSentry ?? false
-//                CGSentryHelper.shared.setupSentry() TBD
+//                CGExceptionHelper.shared.setupSentry() TBD
             }
             
             if let enableMqtt = self.appconfigdata?.enableMqtt, enableMqtt {
@@ -902,7 +902,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             case .success(let response):
                 if response.success! {
                     // Setup Sentry user
-//                    CGSentryHelper.shared.setupUser(userId: response.data?.user?.userId ?? "", clientId: response.data?.user?.client ?? "") TBD
+//                    CGExceptionHelper.shared.setupUser(userId: response.data?.user?.userId ?? "", clientId: response.data?.user?.client ?? "") TBD
                     self.encryptUserDefaultKey(str: response.data?.token ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
                     self.encryptUserDefaultKey(str: response.data?.user?.userId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
                     self.encryptUserDefaultKey(str: response.data?.user?.anonymousId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)

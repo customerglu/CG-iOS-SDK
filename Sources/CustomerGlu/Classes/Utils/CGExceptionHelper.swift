@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  CGExceptionHelper.swift
 //  
 //
 //  Created by Kausthubh adhikari on 23/12/22.
@@ -8,9 +8,9 @@
 import Foundation
 //import Sentry
 
-//public class CGException {
+//public class CGExceptionHelper {
 //
-//    static let shared = CGSentryHelper()
+//    static let shared = CGExceptionHelper()
 //
 //    func setupSentry(){
 //        if CustomerGlu.sentry_enable! {
