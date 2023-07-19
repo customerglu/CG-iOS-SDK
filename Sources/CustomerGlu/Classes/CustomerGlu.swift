@@ -2460,7 +2460,7 @@ extension CustomerGlu {
         // Set App launching to false after 10 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
             CustomerGlu.getInstance.isAppLaunching = false
-        }
+        })
     }
     
     private func isApplicationInActive(with model: CGNudgeDataModel) -> Bool {
@@ -2621,7 +2621,7 @@ extension CustomerGlu {
                     // On app launch - delete the nudge data after delay.
                     DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
                         CGNudgeDataManager.shared.deleteNudgeData(with: model)
-                    }
+                    })
                 } else {
                     // Clear Nudge data if stored
                     CGNudgeDataManager.shared.deleteNudgeData(with: model)
