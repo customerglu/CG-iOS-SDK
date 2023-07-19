@@ -434,7 +434,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]), let data = userInfo["data"] as? [AnyHashable: Any] {
             let nudgeDataModel = CGNudgeDataModel(fromDictionary: data)
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
+            let delaySeconds = DispatchTime.now() + ((isAppLaunching ?? false) ? 10 : 2)
+            DispatchQueue.main.asyncAfter(deadline: delaySeconds, execute: {
                 self.processNudgeData(with: nudgeDataModel)
             })
                                           
@@ -511,7 +512,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 print("** CustomerGlu :: displayBackgroundNotification **")
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
+            let delaySeconds = DispatchTime.now() + ((isAppLaunching ?? false) ? 10 : 2)
+            DispatchQueue.main.asyncAfter(deadline: delaySeconds, execute: {
                 self.processNudgeData(with: nudgeDataModel)
             })
                                           
@@ -2616,16 +2618,9 @@ extension CustomerGlu {
                                                    backgroundAlpha: backgroundAlpha,
                                                    auto_close_webview: autoCloseWebview,
                                                    nudgeConfiguration: nudgeConfiguration)
-                          
-                if isAppLaunching ?? false {
-                    // On app launch - delete the nudge data after delay.
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
-                        CGNudgeDataManager.shared.deleteNudgeData(with: model)
-                    })
-                } else {
-                    // Clear Nudge data if stored
-                    CGNudgeDataManager.shared.deleteNudgeData(with: model)
-                }
+                                            
+                // Clear Nudge data if stored
+                CGNudgeDataManager.shared.deleteNudgeData(with: model)
             }
         }
     }
