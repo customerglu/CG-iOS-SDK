@@ -111,7 +111,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
-    private var isAppLaunching: Bool? // Save this value for app launching flow
+    private var isAppLaunching: Bool = false // Save this value for app launching flow
+    private var isFromPushNotification: Bool = false // Save this value when launching from push notifications
     
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     
@@ -434,7 +435,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]), let data = userInfo["data"] as? [AnyHashable: Any] {
             let nudgeDataModel = CGNudgeDataModel(fromDictionary: data)
             
-            let delaySeconds = DispatchTime.now() + ((isAppLaunching ?? false) ? 10 : 2)
+            isFromPushNotification = true
+            
+            // Delay here because set root view controller will remove the CGWebController in Customer App or Demo App
+            let delaySeconds = DispatchTime.now() + ((isAppLaunching) ? 10 : 2)
             DispatchQueue.main.asyncAfter(deadline: delaySeconds, execute: {
                 self.processNudgeData(with: nudgeDataModel)
             })
@@ -512,7 +516,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 print("** CustomerGlu :: displayBackgroundNotification **")
             }
             
-            let delaySeconds = DispatchTime.now() + ((isAppLaunching ?? false) ? 10 : 2)
+            isFromPushNotification = true
+            
+            // Delay here because set root view controller will remove the CGWebController in Customer App or Demo App
+            let delaySeconds = DispatchTime.now() + ((isAppLaunching) ? 10 : 2)
             DispatchQueue.main.asyncAfter(deadline: delaySeconds, execute: {
                 self.processNudgeData(with: nudgeDataModel)
             })
@@ -2462,6 +2469,7 @@ extension CustomerGlu {
         // Set App launching to false after 10 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
             CustomerGlu.getInstance.isAppLaunching = false
+            CustomerGlu.getInstance.isFromPushNotification = false
         })
     }
     
@@ -2506,12 +2514,17 @@ extension CustomerGlu {
             print("** CustomerGlu :: showAllCacheNudgeData **")
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
-            let data = CGNudgeDataManager.shared.getCacheNudgeDataModelsArray()
-            for model in data {
-                self.processNudgeData(with: model)
-            }
-        })
+        // App is launching so lets wait for 10 seconds
+        if isAppLaunching && isFromPushNotification {
+            // Do nothing
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {
+                let data = CGNudgeDataManager.shared.getCacheNudgeDataModelsArray()
+                for model in data {
+                    self.processNudgeData(with: model)
+                }
+            })
+        }
     }
     
     private func cacheNudgeData(with model: CGNudgeDataModel) {
