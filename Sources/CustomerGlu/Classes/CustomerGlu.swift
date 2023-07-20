@@ -1811,6 +1811,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             CustomerGlu.getInstance.activescreenname = className
             
             // Show Nudge that match class name
+            if CustomerGlu.isDebugingEnabled {
+                print("** CustomerGlu :: setCurrent ClassName **")
+            }
             showAllCacheNudgeData()
 
             for floatBtn in self.arrFloatingButton {
@@ -2456,6 +2459,9 @@ extension CustomerGlu {
      * before applicationDidBecomeActive:
      */
     @objc public func cgApplicationWillEnterForeground() {
+        if CustomerGlu.isDebugingEnabled {
+            print("** CustomerGlu :: WillEnterForeground **")
+        }
         showAllCacheNudgeData()
     }
     
