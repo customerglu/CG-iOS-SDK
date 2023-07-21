@@ -37,6 +37,11 @@ class CGMqttClientHelper: NSObject {
      * @param config   - Pass all config requried for setting up Mqtt
      */
     func setupMQTTClient(withConfig config: CGMqttConfig, delegate: CGMqttClientDelegate) {
+        
+        if CustomerGlu.isDebugingEnabled {
+            print("** MQTT Setup **")
+        }
+        
         // Save config for future reference and make it nil for disconnect state
         self.config = config
         
@@ -75,6 +80,10 @@ class CGMqttClientHelper: NSObject {
             guard let client = self.client else { return }
             
             client.connect() { success in
+                if CustomerGlu.isDebugingEnabled {
+                    print("** MQTT Connection Success **")
+                }
+                
                 // DIAGNOSTICS
                 var eventData: [String: Any] = [:]
                 eventData["username"] = config.username
@@ -98,6 +107,12 @@ class CGMqttClientHelper: NSObject {
                 
                 DispatchQueue.main.async {
                     let jsonString = message.fromBase64() ?? ""
+                    
+                    if CustomerGlu.isDebugingEnabled {
+                        print("** MQTT Receiving Message **")
+                        print("** Topic :: \(topic) **")
+                        print("** Message :: \(message) **")
+                    }
                     
                     // DIAGNOSTICS
                     CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_MQTT_RECEIVING_MESSAGE, eventType: CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:["topic": topic, "message": message])
@@ -136,7 +151,7 @@ class CGMqttClientHelper: NSObject {
         for topic in topics {
             client.subscribe(to: topic)
             if CustomerGlu.isDebugingEnabled {
-                print("Topic name \(topic)")
+                print("MQTT Subscribe to Topic name :: \(topic)")
             }
             
             // DIAGNOSTICS
@@ -149,6 +164,10 @@ class CGMqttClientHelper: NSObject {
     
     func acknowledge(withNudgeID nudgeID: String) {
         guard let client = client, let config = config else { return }
+        
+        if CustomerGlu.isDebugingEnabled {
+            print("** MQTT Acknowledge Nudge ID :: \(nudgeID) **")
+        }
         
         let dict: [AnyHashable: Any] = ["nudgeId": nudgeID]
         do {
@@ -166,6 +185,10 @@ class CGMqttClientHelper: NSObject {
     
     func disconnectMQTT() {
         guard let client = self.client else { return }
+        
+        if CustomerGlu.isDebugingEnabled {
+            print("** MQTT Disconnected **")
+        }
         
         // DIAGNOSTICS
         if let config = config {

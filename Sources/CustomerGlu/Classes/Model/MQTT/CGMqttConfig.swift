@@ -29,5 +29,21 @@ struct CGMqttConfig {
         self.port = port
         self.mqttIdentifier = mqttIdentifier
         self.acknowledgeChannel = acknowledgeChannel
+        
+        // Print Config
+        printMqttConfig()
+    }
+    
+    func printMqttConfig() {
+        if CustomerGlu.isDebugingEnabled {
+            print("** MQTT Config **")
+            print("username :: \(username ?? "")")
+            print("password :: \(password ?? "")")
+            print("serverHost :: \(serverHost ?? "")")
+            print("topics :: \(topics ?? [])")
+            print("port :: \(port ?? 0)")
+            print("mqttIdentifier :: \(mqttIdentifier ?? "")")
+            print("acknowledgeChannel :: \(acknowledgeChannel ?? "")")
+        }
     }
 }

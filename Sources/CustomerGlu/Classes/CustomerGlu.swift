@@ -2387,6 +2387,10 @@ extension CustomerGlu: CGMqttClientDelegate {
     func openScreen(_ screenType: CGMqttLaunchScreenType, withMqttMessage mqttMessage: CGMqttMessage?) {
         switch screenType {
         case .ENTRYPOINT:
+            if CustomerGlu.isDebugingEnabled {
+                print("** MQTT Delegate - openScreen :: ENTRYPOINT **")
+            }
+            
             // Check Mqtt Enabled Components
             if checkMqttEnabledComponents(containsKey: CGConstants.MQTT_Enabled_Components_State_Sync) ||
                 checkMqttEnabledComponents(containsKey: CGConstants.MQTT_Enabled_Components_EntryPoints) {
@@ -2398,11 +2402,19 @@ extension CustomerGlu: CGMqttClientDelegate {
             }
             
         case .OPEN_CLIENT_TESTING_PAGE:
+            if CustomerGlu.isDebugingEnabled {
+                print("** MQTT Delegate - openScreen :: OPEN_CLIENT_TESTING_PAGE **")
+            }
+            
             // Open Client Testing Page
             self.testIntegration()
             
         case .CAMPAIGN_STATE_UPDATED,
                 .USER_SEGMENT_UPDATED:
+            if CustomerGlu.isDebugingEnabled {
+                print("** MQTT Delegate - openScreen :: Comapaign or User Segment **")
+            }
+            
             // Check Mqtt Enabled Components
             if checkMqttEnabledComponents(containsKey: CGConstants.MQTT_Enabled_Components_State_Sync),  let enableMQTT =  self.appconfigdata?.enableMqtt, enableMQTT {
                 // loadCampaign & Entrypoints API or user re-register
@@ -2414,6 +2426,10 @@ extension CustomerGlu: CGMqttClientDelegate {
             }
             
         case .SDK_CONFIG_UPDATED:
+            if CustomerGlu.isDebugingEnabled {
+                print("** MQTT Delegate - openScreen :: SDK_CONFIG_UPDATED **")
+            }
+            
             // Check Mqtt Enabled Components
             if checkMqttEnabledComponents(containsKey: CGConstants.MQTT_Enabled_Components_State_Sync), let enableMQTT =  self.appconfigdata?.enableMqtt, enableMQTT {
                 // SDK Config Updation call & SDK re-initialised.
@@ -2422,9 +2438,21 @@ extension CustomerGlu: CGMqttClientDelegate {
             }
             
         case .NUDGE:
+            if CustomerGlu.isDebugingEnabled {
+                print("** MQTT Delegate - openScreen :: NUDGE **")
+            }
+            
             // Acknowledge in case of nudge
             if let nudgeId = mqttMessage?.data?.nudgeId {
+                if CustomerGlu.isDebugingEnabled {
+                    print("** MQTT Delegate - openScreen :: NUDGE :: Inside If Condition **")
+                }
+                
                 CGMqttClientHelper.shared.acknowledge(withNudgeID: nudgeId)
+            } else {
+                if CustomerGlu.isDebugingEnabled {
+                    print("** MQTT Delegate - openScreen :: NUDGE :: Inside Else Condition **")
+                }
             }
             
             if let mqttMessage, let model = mqttMessage.data {
