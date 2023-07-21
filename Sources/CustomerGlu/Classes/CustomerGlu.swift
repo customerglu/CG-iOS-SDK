@@ -2443,17 +2443,17 @@ extension CustomerGlu: CGMqttClientDelegate {
             }
             
             // Acknowledge in case of nudge
-            if let nudgeId = mqttMessage?.data?.nudgeId {
-                if CustomerGlu.isDebugingEnabled {
-                    print("** MQTT Delegate - openScreen :: NUDGE :: Inside If Condition **")
-                }
-                
-                CGMqttClientHelper.shared.acknowledge(withNudgeID: nudgeId)
-            } else {
-                if CustomerGlu.isDebugingEnabled {
-                    print("** MQTT Delegate - openScreen :: NUDGE :: Inside Else Condition **")
-                }
-            }
+//            if let nudgeId = mqttMessage?.data?.nudgeId {
+//                if CustomerGlu.isDebugingEnabled {
+//                    print("** MQTT Delegate - openScreen :: NUDGE :: Inside If Condition **")
+//                }
+//                
+//                CGMqttClientHelper.shared.acknowledge(withNudgeID: nudgeId)
+//            } else {
+//                if CustomerGlu.isDebugingEnabled {
+//                    print("** MQTT Delegate - openScreen :: NUDGE :: Inside Else Condition **")
+//                }
+//            }
             
             if let mqttMessage, let model = mqttMessage.data {
                 processNudgeData(with: model)
