@@ -110,4 +110,12 @@ class CGNudgeDataManager: NSObject {
             }
         }
     }
+    
+    func clearNudgeDataOnLogout() {
+        userDefault.removeObject(forKey: udKey)
+        cacheNudgeDataModelsArray = []
+        if CustomerGlu.isDebugingEnabled {
+            print("** CGNudgeDataManager :: Clearing nudge data **")
+        }
+    }
 }
