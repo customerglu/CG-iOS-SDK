@@ -408,7 +408,14 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             handleDeeplinkEvent(withEventName: bodyStruct?.eventName ?? "", bodyData: bodyData, message: message, diagnosticsEventData: &diagnosticsEventData)
             
             if bodyStruct?.eventName == WebViewsKey.share {
-                let share = try? JSONDecoder().decode(CGEventShareModel.self, from: bodyData)
+                var share: CGEventShareModel?
+                
+                do {
+                    share = try JSONDecoder().decode(CGEventShareModel.self, from: bodyData)
+                } catch(let error) {
+                    print("asdfasdfasdf: \(error.localizedDescription)")
+                }
+//                let share = try? JSONDecoder().decode(CGEventShareModel.self, from: bodyData)
                 let text = share?.data?.text
                 let channelName = share?.data?.channelName
                 if let imageurl = share?.data?.image {
