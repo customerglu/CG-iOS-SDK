@@ -29,43 +29,48 @@ class FloatingButtonController: UIViewController {
     
     override func loadView() {
         let view = UIView()
+        let imageview = UIImageView()
         
         let screenHeight = Int(UIScreen.main.bounds.height)
         let screenWidth = Int(UIScreen.main.bounds.width)
-        
-        let heightPer = Int((floatInfo?.mobile.container.height)!)!
-        let widthPer = Int((floatInfo?.mobile.container.width)!)!
-        
-        let finalHeight = (screenHeight * heightPer)/100
-        let finalWidth = (screenWidth * widthPer)/100
-        
-        let bottomSpace = (screenHeight * 5)/100
-        let sideSpace = (screenWidth * 5)/100
-        let topSpace = (screenHeight * 5)/100
-        let midX = Int(UIScreen.main.bounds.midX)
-        let midY = Int(UIScreen.main.bounds.midY)
-        
-        let imageview = UIImageView()
-        
-        if floatInfo?.mobile.container.position == "BOTTOM-LEFT" {
-            imageview.frame = CGRect(x: sideSpace, y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "BOTTOM-RIGHT" {
-            imageview.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "BOTTOM-CENTER" {
-            imageview.frame = CGRect(x: midX - (finalWidth / 2), y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "TOP-LEFT" {
-            imageview.frame = CGRect(x: sideSpace, y: topSpace, width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "TOP-RIGHT" {
-            imageview.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: topSpace, width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "TOP-CENTER" {
-            imageview.frame = CGRect(x: midX - (finalWidth / 2), y: topSpace, width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "CENTER-LEFT" {
-            imageview.frame = CGRect(x: sideSpace, y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "CENTER-RIGHT" {
-            imageview.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
-        } else {
-            imageview.frame = CGRect(x: midX - (finalWidth / 2), y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
+
+        if let heightStr = floatInfo?.mobile.container.height,
+           let widthStr = floatInfo?.mobile.container.width,
+           let heightPer = Float(heightStr),
+           let widthPer = Float(widthStr),
+           let position = floatInfo?.mobile.container.position {
+
+            let finalHeight = Int(Float(screenHeight) * heightPer / 100)
+            let finalWidth = Int(Float(screenWidth) * widthPer / 100)
+
+            let bottomSpace = screenHeight * 5 / 100
+            let sideSpace = screenWidth * 5 / 100
+            let topSpace = screenHeight * 5 / 100
+            let midX = Int(UIScreen.main.bounds.midX)
+            let midY = Int(UIScreen.main.bounds.midY)
+
+            switch position {
+            case "BOTTOM-LEFT":
+                imageview.frame = CGRect(x: sideSpace, y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
+            case "BOTTOM-RIGHT":
+                imageview.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
+            case "BOTTOM-CENTER":
+                imageview.frame = CGRect(x: midX - (finalWidth / 2), y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
+            case "TOP-LEFT":
+                imageview.frame = CGRect(x: sideSpace, y: topSpace, width: finalWidth, height: finalHeight)
+            case "TOP-RIGHT":
+                imageview.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: topSpace, width: finalWidth, height: finalHeight)
+            case "TOP-CENTER":
+                imageview.frame = CGRect(x: midX - (finalWidth / 2), y: topSpace, width: finalWidth, height: finalHeight)
+            case "CENTER-LEFT":
+                imageview.frame = CGRect(x: sideSpace, y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
+            case "CENTER-RIGHT":
+                imageview.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
+            default:
+                imageview.frame = CGRect(x: midX - (finalWidth / 2), y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
+            }
         }
+
         
      
         imageview.contentMode = .scaleToFill
@@ -78,9 +83,8 @@ class FloatingButtonController: UIViewController {
         imageview.autoresizingMask = []
         imageview.isUserInteractionEnabled = true
         
-        if floatInfo?.mobile.container.borderRadius != nil {
-            let radius = NumberFormatter().number(from: (floatInfo?.mobile.container.borderRadius)!)
-            imageview.layer.cornerRadius = radius as! CGFloat
+        if let borderRadius = floatInfo?.mobile.container.borderRadius, let borderRadiusAsFloat = Float(borderRadius) {
+            imageview.layer.cornerRadius = CGFloat(borderRadiusAsFloat)
             imageview.clipsToBounds = true
         }
         
@@ -141,8 +145,8 @@ class FloatingButtonController: UIViewController {
             let finalfloatBtn = CustomerGlu.getInstance.popupDict.filter {
                 $0._id == floatInfo?._id
             }
-            if is_remove == true {
-                CustomerGlu.getInstance.updateShowCount(showCount: finalfloatBtn[0], eventData: floatInfo!)
+            if is_remove == true, let floatInfo = floatInfo  {
+                CustomerGlu.getInstance.updateShowCount(showCount: finalfloatBtn[0], eventData: floatInfo)
             }
             if let index = CustomerGlu.getInstance.arrFloatingButton.firstIndex(where: {$0 === self}) {
                 CustomerGlu.getInstance.arrFloatingButton.remove(at: index)
@@ -187,7 +191,7 @@ class FloatingButtonController: UIViewController {
                 
                 //Incase of Handled by CG is true
                 if actionData.isHandledBySDK == true {
-                    guard let url = URL(string: "http://assets.customerglu.com/deeplink-redirect/?redirect=\(actionData.url)" as! String) else { return }
+                    guard let url = URL(string: "http://assets.customerglu.com/deeplink-redirect/?redirect=\(actionData.url)") else { return }
                     
                     if #available(iOS 10.0, *) {
                         UIApplication.shared.open(url, options: [:], completionHandler: nil)
