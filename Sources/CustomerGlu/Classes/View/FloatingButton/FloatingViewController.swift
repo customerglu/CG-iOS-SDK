@@ -33,8 +33,8 @@ class FloatingButtonController: UIViewController {
         let screenHeight = Int(UIScreen.main.bounds.height)
         let screenWidth = Int(UIScreen.main.bounds.width)
         
-        let heightPer = Int((floatInfo?.mobile.container.height)!)!
-        let widthPer = Int((floatInfo?.mobile.container.width)!)!
+        let heightPer = Int((floatInfo?.mobile?.container.height)!)!
+        let widthPer = Int((floatInfo?.mobile?.container.width)!)!
         
         let finalHeight = (screenHeight * heightPer)/100
         let finalWidth = (screenWidth * widthPer)/100
@@ -47,21 +47,21 @@ class FloatingButtonController: UIViewController {
         
         let imageview = UIImageView()
         
-        if floatInfo?.mobile.container.position == "BOTTOM-LEFT" {
+        if floatInfo?.mobile?.container.position == "BOTTOM-LEFT" {
             imageview.frame = CGRect(x: sideSpace, y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "BOTTOM-RIGHT" {
+        } else if floatInfo?.mobile?.container.position == "BOTTOM-RIGHT" {
             imageview.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "BOTTOM-CENTER" {
+        } else if floatInfo?.mobile?.container.position == "BOTTOM-CENTER" {
             imageview.frame = CGRect(x: midX - (finalWidth / 2), y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "TOP-LEFT" {
+        } else if floatInfo?.mobile?.container.position == "TOP-LEFT" {
             imageview.frame = CGRect(x: sideSpace, y: topSpace, width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "TOP-RIGHT" {
+        } else if floatInfo?.mobile?.container.position == "TOP-RIGHT" {
             imageview.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: topSpace, width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "TOP-CENTER" {
+        } else if floatInfo?.mobile?.container.position == "TOP-CENTER" {
             imageview.frame = CGRect(x: midX - (finalWidth / 2), y: topSpace, width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "CENTER-LEFT" {
+        } else if floatInfo?.mobile?.container.position == "CENTER-LEFT" {
             imageview.frame = CGRect(x: sideSpace, y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
-        } else if floatInfo?.mobile.container.position == "CENTER-RIGHT" {
+        } else if floatInfo?.mobile?.container.position == "CENTER-RIGHT" {
             imageview.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
         } else {
             imageview.frame = CGRect(x: midX - (finalWidth / 2), y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
@@ -78,8 +78,8 @@ class FloatingButtonController: UIViewController {
         imageview.autoresizingMask = []
         imageview.isUserInteractionEnabled = true
         
-        if floatInfo?.mobile.container.borderRadius != nil {
-            let radius = NumberFormatter().number(from: (floatInfo?.mobile.container.borderRadius)!)
+        if floatInfo?.mobile?.container.borderRadius != nil {
+            let radius = NumberFormatter().number(from: (floatInfo?.mobile?.container.borderRadius)!)
             imageview.layer.cornerRadius = radius as! CGFloat
             imageview.clipsToBounds = true
         }
@@ -109,7 +109,7 @@ class FloatingButtonController: UIViewController {
         dismisimageview.image = UIImage(named: "imagedismissblack", in: .module, compatibleWith: nil)
         dismisview.addSubview(dismisimageview)
         
-        if(floatInfo?.mobile.conditions.draggable == true){
+        if(floatInfo?.mobile?.conditions.draggable == true){
             let panGesture = UIPanGestureRecognizer(target: self, action: #selector(self.draggedView(_:)))
             imageview.addGestureRecognizer(panGesture)
         }
@@ -152,7 +152,7 @@ class FloatingButtonController: UIViewController {
     }
     
     func updateFloatingButtonImage(){
-        let urlStr = (floatInfo?.mobile.content[0].darkUrl == nil || floatInfo?.mobile.content[0].lightUrl == nil) ? floatInfo?.mobile.content[0].url : (CustomerGlu.getInstance.isDarkModeEnabled() ? floatInfo?.mobile.content[0].darkUrl : floatInfo?.mobile.content[0].lightUrl)
+        let urlStr = (floatInfo?.mobile?.content[0].darkUrl == nil || floatInfo?.mobile?.content[0].lightUrl == nil) ? floatInfo?.mobile?.content[0].url : (CustomerGlu.getInstance.isDarkModeEnabled() ? floatInfo?.mobile?.content[0].darkUrl : floatInfo?.mobile?.content[0].lightUrl)
          
          imageview.downloadImage(urlString: (urlStr)!)
     }
@@ -182,7 +182,7 @@ class FloatingButtonController: UIViewController {
     
     // Handle the Callback / Hyperlink logic - consume data from floatInfo.mo
     @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
-        if let actionData = floatInfo?.mobile.content[0].action, let type = actionData.type {
+        if let actionData = floatInfo?.mobile?.content[0].action, let type = actionData.type {
             if type == WebViewsKey.open_deeplink {
                 
                 //Incase of Handled by CG is true
@@ -207,18 +207,18 @@ class FloatingButtonController: UIViewController {
                 
                 // Hyperlink logic
                 let nudgeConfiguration = CGNudgeConfiguration()
-                nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
-                nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
-                nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
-                nudgeConfiguration.relativeHeight = floatInfo?.mobile.content[0].relativeHeight ?? 0.0
-                nudgeConfiguration.absoluteHeight = floatInfo?.mobile.content[0].absoluteHeight ?? 0.0
+                nudgeConfiguration.layout = floatInfo?.mobile?.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
+                nudgeConfiguration.opacity = floatInfo?.mobile?.conditions.backgroundOpacity ?? 0.5
+                nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile?.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                nudgeConfiguration.relativeHeight = floatInfo?.mobile?.content[0].relativeHeight ?? 0.0
+                nudgeConfiguration.absoluteHeight = floatInfo?.mobile?.content[0].absoluteHeight ?? 0.0
                 nudgeConfiguration.isHyperLink = true
                 
                 CustomerGlu.getInstance.openURLWithNudgeConfig(url: actionData.url, nudgeConfiguration: nudgeConfiguration)
             } else {
                 //Incase of failure / API contract breach
                 // Check to open wallet or not in fallback case
-                let campaignId = floatInfo?.mobile.content[0].campaignId
+                let campaignId = floatInfo?.mobile?.content[0].campaignId
                 guard CustomerGlu.getInstance.checkToOpenWalletOrNot(withCampaignID: campaignId ?? "") else {
                     return
                 }
@@ -226,11 +226,11 @@ class FloatingButtonController: UIViewController {
                 // Opening Campaign using CampaignId from payload
                 if let campaignId = campaignId {
                     let nudgeConfiguration = CGNudgeConfiguration()
-                    nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
-                    nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
-                    nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
-                    nudgeConfiguration.relativeHeight = floatInfo?.mobile.content[0].relativeHeight ?? 0.0
-                    nudgeConfiguration.absoluteHeight = floatInfo?.mobile.content[0].absoluteHeight ?? 0.0
+                    nudgeConfiguration.layout = floatInfo?.mobile?.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
+                    nudgeConfiguration.opacity = floatInfo?.mobile?.conditions.backgroundOpacity ?? 0.5
+                    nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile?.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                    nudgeConfiguration.relativeHeight = floatInfo?.mobile?.content[0].relativeHeight ?? 0.0
+                    nudgeConfiguration.absoluteHeight = floatInfo?.mobile?.content[0].absoluteHeight ?? 0.0
                     
                     CustomerGlu.getInstance.openCampaignById(campaign_id: campaignId, nudgeConfiguration: nudgeConfiguration)
                 } else {
@@ -244,13 +244,13 @@ class FloatingButtonController: UIViewController {
             CustomerGlu.getInstance.callEventPublishNudge(data: floatInfo!, className: CustomerGlu.getInstance.activescreenname, actionType: "OPEN",event_name: "ENTRY_POINT_CLICK")
             
             let nudgeConfiguration = CGNudgeConfiguration()
-            nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
-            nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
-            nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
-            nudgeConfiguration.relativeHeight = floatInfo?.mobile.content[0].relativeHeight ?? 0.0
-            nudgeConfiguration.absoluteHeight = floatInfo?.mobile.content[0].absoluteHeight ?? 0.0
+            nudgeConfiguration.layout = floatInfo?.mobile?.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
+            nudgeConfiguration.opacity = floatInfo?.mobile?.conditions.backgroundOpacity ?? 0.5
+            nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile?.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+            nudgeConfiguration.relativeHeight = floatInfo?.mobile?.content[0].relativeHeight ?? 0.0
+            nudgeConfiguration.absoluteHeight = floatInfo?.mobile?.content[0].absoluteHeight ?? 0.0
             
-            CustomerGlu.getInstance.openCampaignById(campaign_id: (floatInfo?.mobile.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
+            CustomerGlu.getInstance.openCampaignById(campaign_id: (floatInfo?.mobile?.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
         }
     }
     

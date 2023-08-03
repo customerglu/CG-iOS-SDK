@@ -859,7 +859,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         
         // Manage UserID & AnonymousId
-        let t_userid = userData[APIParameterKey.userId] as! String? ?? ""
+        let t_userid = userData[APIParameterKey.userId] as? String ?? ""
         let t_anonymousIdP = userData[APIParameterKey.anonymousId] as! String? ?? ""
         let t_anonymousIdS = self.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID) as String? ?? ""
 
@@ -933,11 +933,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                             self.dismissFloatingButtons(is_remove: false)
                                         }
                                         CustomerGlu.entryPointdata.removeAll()
-                                        CustomerGlu.entryPointdata = responseGetEntry.data
+                                        CustomerGlu.entryPointdata = responseGetEntry.data ?? []
                                         
                                         // FLOATING Buttons
                                         let floatingButtons = CustomerGlu.entryPointdata.filter {
-                                            $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP"
+                                            $0.mobile?.container.type == "FLOATING" || $0.mobile?.container.type == "POPUP"
                                         }
                                         
                                         self.entryPointInfoAddDelete(entryPoint: floatingButtons)
@@ -1056,11 +1056,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                     self.dismissFloatingButtons(is_remove: false)
                                 }
                                 CustomerGlu.entryPointdata.removeAll()
-                                CustomerGlu.entryPointdata = responseGetEntry.data
+                                CustomerGlu.entryPointdata = responseGetEntry.data ?? []
                                 
                                 // FLOATING Buttons
                                 let floatingButtons = CustomerGlu.entryPointdata.filter {
-                                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP"
+                                    $0.mobile?.container.type == "FLOATING" || $0.mobile?.container.type == "POPUP"
                                 }
                                 
                                 self.entryPointInfoAddDelete(entryPoint: floatingButtons)
@@ -1147,11 +1147,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 
                 // Normal Flow
                 CustomerGlu.entryPointdata.removeAll()
-                CustomerGlu.entryPointdata = response.data
+                CustomerGlu.entryPointdata = response.data ?? []
                 
                 // FLOATING Buttons
                 let floatingButtons = CustomerGlu.entryPointdata.filter {
-                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP"
+                    $0.mobile?.container.type == "FLOATING" || $0.mobile?.container.type == "POPUP"
                 }
                 
                 entryPointInfoAddDelete(entryPoint: floatingButtons)
@@ -1162,7 +1162,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                  Below code only handles that scenario to show POPUP if it exists in API response.
                  */
                 let popupData = CustomerGlu.entryPointdata.filter {
-                    $0.mobile.container.type == "POPUP"
+                    $0.mobile?.container.type == "POPUP"
                 }
                 if popupData.count > 0 {
                     DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(0), execute: {
@@ -1202,38 +1202,38 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     if let index = popupDict.firstIndex(where: {$0._id == dict._id}) {
                         
                         var refreshlocal : Bool = false
-                        if(dict.mobile.conditions.showCount.dailyRefresh == true && popupDict[index].showcount?.dailyRefresh == true){
+                        if(dict.mobile?.conditions.showCount.dailyRefresh == true && popupDict[index].showcount?.dailyRefresh == true){
                             
                             if !(Calendar.current.isDate(popupDict[index].popupdate!, equalTo: Date(), toGranularity: .day)){
                                 refreshlocal = true
                             }
                             
-                        }else if(dict.mobile.conditions.showCount.dailyRefresh != popupDict[index].showcount?.dailyRefresh){
+                        }else if(dict.mobile?.conditions.showCount.dailyRefresh != popupDict[index].showcount?.dailyRefresh){
                             refreshlocal = true
                         }
                         
                         if (true == refreshlocal){
                             popupDict[index]._id = dict._id
-                            popupDict[index].showcount = dict.mobile.conditions.showCount
+                            popupDict[index].showcount = dict.mobile?.conditions.showCount
                             popupDict[index].showcount?.count = 0
-                            popupDict[index].delay = dict.mobile.conditions.delay
-                            popupDict[index].backgroundopacity = dict.mobile.conditions.backgroundOpacity
-                            popupDict[index].priority = dict.mobile.conditions.priority
+                            popupDict[index].delay = dict.mobile?.conditions.delay
+                            popupDict[index].backgroundopacity = dict.mobile?.conditions.backgroundOpacity
+                            popupDict[index].priority = dict.mobile?.conditions.priority
                             popupDict[index].popupdate = Date()
-                            popupDict[index].type = dict.mobile.container.type
+                            popupDict[index].type = dict.mobile?.container.type
                         }
                     }
                     
                 } else {
                     var popupInfo = PopUpModel()
                     popupInfo._id = dict._id
-                    popupInfo.showcount = dict.mobile.conditions.showCount
+                    popupInfo.showcount = dict.mobile?.conditions.showCount
                     popupInfo.showcount?.count = 0
-                    popupInfo.delay = dict.mobile.conditions.delay
-                    popupInfo.backgroundopacity = dict.mobile.conditions.backgroundOpacity
-                    popupInfo.priority = dict.mobile.conditions.priority
+                    popupInfo.delay = dict.mobile?.conditions.delay
+                    popupInfo.backgroundopacity = dict.mobile?.conditions.backgroundOpacity
+                    popupInfo.priority = dict.mobile?.conditions.priority
                     popupInfo.popupdate = Date()
-                    popupInfo.type = dict.mobile.container.type
+                    popupInfo.type = dict.mobile?.container.type
                     popupDict.append(popupInfo)
                 }
             }
@@ -1845,18 +1845,18 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             
             for floatBtn in self.arrFloatingButton {
                 floatBtn.hideFloatingButton(ishidden: true)
-                if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                    if  !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                if (floatBtn.floatInfo?.mobile?.container.ios.allowedActitivityList.count)! > 0 && (floatBtn.floatInfo?.mobile?.container.ios.disallowedActitivityList.count)! > 0 {
+                    if  !(floatBtn.floatInfo?.mobile?.container.ios.disallowedActitivityList.contains(className))! {
                         floatBtn.hideFloatingButton(ishidden: false)
                         callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
                     }
-                } else if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
-                    if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
+                } else if (floatBtn.floatInfo?.mobile?.container.ios.allowedActitivityList.count)! > 0 {
+                    if (floatBtn.floatInfo?.mobile?.container.ios.allowedActitivityList.contains(className))! {
                         floatBtn.hideFloatingButton(ishidden: false)
                         callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED",event_name: "ENTRY_POINT_LOAD")
                     }
-                } else if (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                    if !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                } else if (floatBtn.floatInfo?.mobile?.container.ios.disallowedActitivityList.count)! > 0 {
+                    if !(floatBtn.floatInfo?.mobile?.container.ios.disallowedActitivityList.contains(className))! {
                         floatBtn.hideFloatingButton(ishidden: false)
                         callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
                     }
@@ -1902,7 +1902,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     $0._id == floatBtn._id
                 }
                 
-                if floatButton.count > 0 && ((floatButton[0].mobile.content.count > 0) && (floatBtn.showcount?.count)! < floatButton[0].mobile.conditions.showCount.count) {
+                if floatButton.count > 0 && ((floatButton[0].mobile?.content.count ?? 0 > 0) && (floatBtn.showcount?.count)! < floatButton[0].mobile?.conditions.showCount.count ?? 0) {
                     self.addFloatingButton(btnInfo: floatButton[0])
                 }
             }
@@ -1919,24 +1919,24 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         var postInfo: [String: Any] = [:]
         
         let banners = CustomerGlu.entryPointdata.filter {
-            $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId != nil && $0.mobile.container.bannerId.count > 0
+            $0.mobile?.container.type == "BANNER" && $0.mobile?.container.bannerId != nil && $0.mobile?.container.bannerId.count ?? 0 > 0
         }
         
         if(banners.count > 0){
             for banner in banners {
-                postInfo[banner.mobile.container.bannerId] = banner.mobile.content.count
+                postInfo[banner.mobile?.container.bannerId ?? ""] = banner.mobile?.content.count
             }
         }
         
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_BANNER_LOADED").rawValue), object: nil, userInfo: postInfo)
         
         let bannersforheight = CustomerGlu.entryPointdata.filter {
-            $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId != nil && $0.mobile.container.bannerId.count > 0 && (Int($0.mobile.container.height)!) > 0 && $0.mobile.content.count > 0
+            $0.mobile?.container.type == "BANNER" && $0.mobile?.container.bannerId != nil && $0.mobile?.container.bannerId.count ?? 0 > 0 && (Int($0.mobile?.container.height ?? "")!) > 0 && $0.mobile?.content.count ?? 0 > 0
         }
         if bannersforheight.count > 0 {
             CustomerGlu.bannersHeight = [String:Any]()
             for banner in bannersforheight {
-                CustomerGlu.bannersHeight![banner.mobile.container.bannerId] = Int(banner.mobile.container.height)
+                CustomerGlu.bannersHeight![banner.mobile?.container.bannerId ?? ""] = Int(banner.mobile?.container.height ?? "")
             }
         }
         if (CustomerGlu.bannersHeight == nil) {
@@ -1949,25 +1949,25 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         var postInfo: [String: Any] = [:]
         
         let banners = CustomerGlu.entryPointdata.filter {
-            $0.mobile.container.type == "EMBEDDED" && $0.mobile.container.bannerId != nil && $0.mobile.container.bannerId.count > 0
+            $0.mobile?.container.type == "EMBEDDED" && $0.mobile?.container.bannerId != nil && $0.mobile?.container.bannerId.count ?? 0 > 0
         }
         
         if(banners.count > 0){
             for banner in banners {
-                postInfo[banner.mobile.container.bannerId] = banner.mobile.content.count
+                postInfo[banner.mobile?.container.bannerId ?? ""] = banner.mobile?.content.count
             }
         }
         
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_EMBEDDED_LOADED").rawValue), object: nil, userInfo: postInfo)
         
         let bannersforheight = CustomerGlu.entryPointdata.filter {
-            $0.mobile.container.type == "EMBEDDED" && $0.mobile.container.bannerId != nil && $0.mobile.container.bannerId.count > 0 /*&& (Int($0.mobile.container.height)!) > 0*/ && $0.mobile.content.count > 0
+            $0.mobile?.container.type == "EMBEDDED" && $0.mobile?.container.bannerId != nil && $0.mobile?.container.bannerId.count ?? 0 > 0 /*&& (Int($0.mobile.container.height)!) > 0*/ && $0.mobile?.content.count ?? 0 > 0
         }
         if bannersforheight.count > 0 {
             CustomerGlu.embedsHeight = [String:Any]()
             for banner in bannersforheight {
                 //                CustomerGlu.embedsHeight![banner.mobile.container.bannerId] = Int(banner.mobile.container.height)
-                CustomerGlu.embedsHeight![banner.mobile.container.bannerId] = Int(banner.mobile.content.first?.absoluteHeight ?? 0.0)
+                CustomerGlu.embedsHeight![banner.mobile?.container.bannerId ?? ""] = Int(banner.mobile?.content.first?.absoluteHeight ?? 0.0)
             }
         }
         if (CustomerGlu.embedsHeight == nil) {
@@ -1991,33 +1991,33 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     $0._id == popupShow._id
                 }
                 
-                if (finalPopUp.count > 0 && ((finalPopUp[0].mobile.content.count > 0) && (popupShow.showcount?.count)! < finalPopUp[0].mobile.conditions.showCount.count)) {
+                if (finalPopUp.count > 0 && ((finalPopUp[0].mobile?.content.count ?? 0 > 0) && (popupShow.showcount?.count)! < finalPopUp[0].mobile?.conditions.showCount.count ?? 0)) {
                     
                     var userInfo = [String: Any]()
                     userInfo["finalPopUp"] = (finalPopUp[0] )
                     userInfo["popupShow"] = (popupShow )
                     
-                    if finalPopUp[0].mobile.container.ios.allowedActitivityList.count > 0 && finalPopUp[0].mobile.container.ios.disallowedActitivityList.count > 0 {
-                        if !finalPopUp[0].mobile.container.ios.disallowedActitivityList.contains(className) {
+                    if finalPopUp[0].mobile?.container.ios.allowedActitivityList.count ?? 0 > 0 && finalPopUp[0].mobile?.container.ios.disallowedActitivityList.count ?? 0 > 0 {
+                        if !(finalPopUp[0].mobile?.container.ios.disallowedActitivityList.contains(className) ?? false) {
                             if !popupDisplayScreens.contains(className) {
-                                popuptimer = Timer.scheduledTimer(timeInterval: TimeInterval(finalPopUp[0].mobile.conditions.delay), target: self, selector: #selector(showPopupAfterTime(sender:)), userInfo: userInfo, repeats: false)
+                                popuptimer = Timer.scheduledTimer(timeInterval: TimeInterval(finalPopUp[0].mobile?.conditions.delay ?? 0), target: self, selector: #selector(showPopupAfterTime(sender:)), userInfo: userInfo, repeats: false)
                                 return
                             }
                         }
-                    }  else if finalPopUp[0].mobile.container.ios.allowedActitivityList.count > 0 {
-                        if finalPopUp[0].mobile.container.ios.allowedActitivityList.contains(className) {
+                    }  else if finalPopUp[0].mobile?.container.ios.allowedActitivityList.count ?? 0 > 0 {
+                        if ((finalPopUp[0].mobile?.container.ios.allowedActitivityList.contains(className)) != nil) {
                             
                             if !popupDisplayScreens.contains(className) {
-                                popuptimer = Timer.scheduledTimer(timeInterval: TimeInterval(finalPopUp[0].mobile.conditions.delay), target: self, selector: #selector(showPopupAfterTime(sender:)), userInfo: userInfo, repeats: false)
+                                popuptimer = Timer.scheduledTimer(timeInterval: TimeInterval(finalPopUp[0].mobile?.conditions.delay ?? 0), target: self, selector: #selector(showPopupAfterTime(sender:)), userInfo: userInfo, repeats: false)
                                 return
                             }
                         }
-                    } else if finalPopUp[0].mobile.container.ios.disallowedActitivityList.count > 0 {
+                    } else if finalPopUp[0].mobile?.container.ios.disallowedActitivityList.count ?? 0 > 0 {
                         
-                        if !finalPopUp[0].mobile.container.ios.disallowedActitivityList.contains(className) {
+                        if !(finalPopUp[0].mobile?.container.ios.disallowedActitivityList.contains(className) ?? false) {
                             
                             if !popupDisplayScreens.contains(className) {
-                                popuptimer = Timer.scheduledTimer(timeInterval: TimeInterval(finalPopUp[0].mobile.conditions.delay), target: self, selector: #selector(showPopupAfterTime(sender:)), userInfo: userInfo, repeats: false)
+                                popuptimer = Timer.scheduledTimer(timeInterval: TimeInterval(finalPopUp[0].mobile?.conditions.delay ?? 0), target: self, selector: #selector(showPopupAfterTime(sender:)), userInfo: userInfo, repeats: false)
                                 
                                 return
                             }
@@ -2055,13 +2055,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             popuptimer = nil
             
             let nudgeConfiguration = CGNudgeConfiguration()
-            nudgeConfiguration.layout = finalPopUp.mobile.content[0].openLayout.lowercased()
-            nudgeConfiguration.opacity = finalPopUp.mobile.conditions.backgroundOpacity ?? 0.5
-            nudgeConfiguration.closeOnDeepLink = finalPopUp.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
-            nudgeConfiguration.relativeHeight = finalPopUp.mobile.content[0].relativeHeight ?? 0.0
-            nudgeConfiguration.absoluteHeight = finalPopUp.mobile.content[0].absoluteHeight ?? 0.0
+            nudgeConfiguration.layout = finalPopUp.mobile?.content[0].openLayout.lowercased() ?? ""
+            nudgeConfiguration.opacity = finalPopUp.mobile?.conditions.backgroundOpacity ?? 0.5
+            nudgeConfiguration.closeOnDeepLink = finalPopUp.mobile?.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+            nudgeConfiguration.relativeHeight = finalPopUp.mobile?.content[0].relativeHeight ?? 0.0
+            nudgeConfiguration.absoluteHeight = finalPopUp.mobile?.content[0].absoluteHeight ?? 0.0
             
-            CustomerGlu.getInstance.openCampaignById(campaign_id: (finalPopUp.mobile.content[0].campaignId), nudgeConfiguration: nudgeConfiguration)
+            CustomerGlu.getInstance.openCampaignById(campaign_id: (finalPopUp.mobile?.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
             
             self.popupDisplayScreens.append(CustomerGlu.getInstance.activescreenname)
             updateShowCount(showCount: showCount, eventData: finalPopUp)
@@ -2071,10 +2071,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     internal func callEventPublishNudge(data: CGData, className: String, actionType: String, event_name:String) {
         
-        if(event_name == "ENTRY_POINT_LOAD" && data.mobile.container.type == "POPUP"){
-            postAnalyticsEventForEntryPoints(event_name: event_name, entry_point_id: data.mobile.content[0]._id, entry_point_name: data.name , entry_point_container: data.mobile.container.type, content_campaign_id: data.mobile.content[0].campaignId, open_container: data.mobile.content[0].openLayout, action_c_campaign_id: data.mobile.content[0].campaignId)
+        if(event_name == "ENTRY_POINT_LOAD" && data.mobile?.container.type == "POPUP"){
+            postAnalyticsEventForEntryPoints(event_name: event_name, entry_point_id: data.mobile?.content[0]._id ?? "", entry_point_name: data.name ?? "" , entry_point_container: data.mobile?.container.type ?? "", content_campaign_id: data.mobile?.content[0].campaignId ?? "", open_container: data.mobile?.content[0].openLayout ?? "", action_c_campaign_id: data.mobile?.content[0].campaignId ?? "")
         }else{
-            postAnalyticsEventForEntryPoints(event_name: event_name, entry_point_id: data.mobile.content[0]._id, entry_point_name: data.name , entry_point_container: data.mobile.container.type, content_campaign_id: data.mobile.content[0].url, open_container: data.mobile.content[0].openLayout, action_c_campaign_id: data.mobile.content[0].campaignId)
+            postAnalyticsEventForEntryPoints(event_name: event_name, entry_point_id: data.mobile?.content[0]._id ?? "", entry_point_name: data.name ?? "" , entry_point_container: data.mobile?.container.type ?? "", content_campaign_id: data.mobile?.content[0].url ?? "", open_container: data.mobile?.content[0].openLayout ?? "", action_c_campaign_id: data.mobile?.content[0].campaignId ?? "")
         }
         
     }

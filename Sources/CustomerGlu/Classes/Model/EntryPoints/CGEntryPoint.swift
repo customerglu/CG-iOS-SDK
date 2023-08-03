@@ -7,18 +7,17 @@ import Foundation
 
 public struct CGEntryPoint: Codable{
     
-    var data : [CGData]!
-    var success : Bool!
+    var data : [CGData]?
+    var success : Bool?
     
     /**
      * Instantiate the instance using the passed dictionary values to set the properties values
      */
     init(fromDictionary dictionary: [String:Any]){
-        data = [CGData]()
         if let dataArray = dictionary["data"] as? [[String:Any]]{
             for dic in dataArray{
                 let value = CGData(fromDictionary: dic)
-                data.append(value)
+                data?.append(value)
             }
         }
         success = dictionary["success"] as? Bool
@@ -27,16 +26,16 @@ public struct CGEntryPoint: Codable{
     /**
      * Returns all the available property values in the form of [String:Any] object where the key is the approperiate json key and the value is the value of the corresponding property
      */
-    func toDictionary() -> [String:Any]
-    {
+    func toDictionary() -> [String:Any] {
         var dictionary = [String:Any]()
-        if data != nil{
-            var dictionaryElements = [[String:Any]]()
-            for dataElement in data {
-                dictionaryElements.append(dataElement.toDictionary())
-            }
-            dictionary["data"] = dictionaryElements
+        guard let data = data else { return [:] }
+        
+        var dictionaryElements = [[String:Any]]()
+        for dataElement in data {
+            dictionaryElements.append(dataElement.toDictionary())
         }
+        dictionary["data"] = dictionaryElements
+        
         if success != nil{
             dictionary["success"] = success
         }

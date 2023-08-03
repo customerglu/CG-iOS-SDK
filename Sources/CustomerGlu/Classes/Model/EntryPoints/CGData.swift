@@ -7,16 +7,16 @@ import Foundation
 
 public struct CGData: Codable{
     
-    var v : Int!
-    var _id : String!
-    var client : String!
-    var consumer : String!
-    var createdAt : String!
-    var mobile : CGMobile!
-    var status : String!
-    var updatedAt : String!
-    var visible : Bool!
-    var name : String!
+    var v : Int?
+    var _id : String?
+    var client : String?
+    var consumer : String?
+    var createdAt : String?
+    var mobile : CGMobile?
+    var status : String?
+    var updatedAt : String?
+    var visible : Bool?
+    var name : String?
     
     /**
      * Instantiate the instance using the passed dictionary values to set the properties values
@@ -57,7 +57,7 @@ public struct CGData: Codable{
         if createdAt != nil{
             dictionary["createdAt"] = createdAt
         }
-        if mobile != nil{
+        if let mobile = mobile {
             dictionary["mobile"] = mobile.toDictionary()
         }
         if status != nil{

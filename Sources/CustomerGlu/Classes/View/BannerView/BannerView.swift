@@ -137,7 +137,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
             }
             
             let bannerViews = CustomerGlu.entryPointdata.filter {
-                $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId
+                $0.mobile?.container.type == "BANNER" && $0.mobile?.container.bannerId == self.bannerId
             }
             
             if bannerViews.count != 0, let mobile = bannerViews[0].mobile {
@@ -363,12 +363,12 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 CustomerGlu.getInstance.openCampaignById(campaign_id: dict.campaignId, nudgeConfiguration: nudgeConfiguration)
                 
                 let bannerViews = CustomerGlu.entryPointdata.filter {
-                    $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId ?? ""
+                    $0.mobile?.container.type == "BANNER" && $0.mobile?.container.bannerId == self.bannerId ?? ""
                 }
                 
                 if bannerViews.count != 0 {
                     let name = bannerViews[0].name ?? ""
-                    CustomerGlu.getInstance.postAnalyticsEventForEntryPoints(event_name: "ENTRY_POINT_CLICK", entry_point_id: dict._id, entry_point_name: name, entry_point_container: bannerViews[0].mobile.container.type, content_campaign_id: dict.url, open_container:dict.openLayout, action_c_campaign_id: dict.campaignId)
+                    CustomerGlu.getInstance.postAnalyticsEventForEntryPoints(event_name: "ENTRY_POINT_CLICK", entry_point_id: dict._id, entry_point_name: name, entry_point_container: bannerViews[0].mobile?.container.type ?? "", content_campaign_id: dict.url, open_container:dict.openLayout, action_c_campaign_id: dict.campaignId)
                 }
                 
             }
@@ -379,7 +379,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
         
         if (false == loadedapicalled){
             let bannerViews = CustomerGlu.entryPointdata.filter {
-                $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId ?? ""
+                $0.mobile?.container.type == "BANNER" && $0.mobile?.container.bannerId == self.bannerId ?? ""
             }
             
             if bannerViews.count != 0, let mobile = bannerViews[0].mobile {

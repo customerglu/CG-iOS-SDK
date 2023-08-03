@@ -300,7 +300,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
             self.view.subviews.forEach({ $0.removeFromSuperview() })
             
             let embedViews = CustomerGlu.entryPointdata.filter {
-                $0.mobile.container.type == "EMBEDDED" && $0.mobile.container.bannerId == self.embedId
+                $0.mobile?.container.type == "EMBEDDED" && $0.mobile?.container.bannerId == self.embedId
             }
             
             if embedViews.count != 0, let mobile = embedViews[0].mobile {
@@ -431,7 +431,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
         
         if (false == loadedapicalled){
             let embedViews = CustomerGlu.entryPointdata.filter {
-                $0.mobile.container.type == "EMBEDDED" && $0.mobile.container.bannerId == self.embedId ?? ""
+                $0.mobile?.container.type == "EMBEDDED" && $0.mobile?.container.bannerId == self.embedId ?? ""
             }
             
             if embedViews.count != 0, let mobile = embedViews[0].mobile {
