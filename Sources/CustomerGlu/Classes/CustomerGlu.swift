@@ -2450,7 +2450,7 @@ extension CustomerGlu: CGMqttClientDelegate {
                     print("** MQTT Delegate - openScreen :: NUDGE :: Inside If Condition **")
                 }
                 
-                CGMqttClientHelper.shared.acknowledge(withNudgeID: nudgeId)
+//                CGMqttClientHelper.shared.acknowledge(withNudgeID: nudgeId)
             } else {
                 if CustomerGlu.isDebugingEnabled {
                     print("** MQTT Delegate - openScreen :: NUDGE :: Inside Else Condition **")
