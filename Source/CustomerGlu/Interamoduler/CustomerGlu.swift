@@ -1,30 +1,8 @@
 import Foundation
-import SwiftUI
 import UIKit
 import Lottie
 
 let gcmMessageIDKey = "gcm.message_id"
-
-struct EntryPointPopUpModel: Codable {
-    public var popups: [PopUpModel]?
-}
-
-struct PopUpModel: Codable {
-    public var _id: String?
-    public var showcount: CGShowCount?
-    public var delay: Int?
-    public var backgroundopacity: Double?
-    public var priority: Int?
-    public var popupdate: Date?
-    public var type: String?
-}
-
-@objc(CGDeeplinkURLType)
-public enum CGDeeplinkURLType: Int {
-    case link,
-         wallet,
-         campaign
-}
 
 @objc(CustomerGlu)
 
@@ -1202,24 +1180,24 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     if let index = popupDict.firstIndex(where: {$0._id == dict._id}) {
                         
                         var refreshlocal : Bool = false
-                        if(dict.mobile.conditions.showCount.dailyRefresh == true && popupDict[index].showcount?.dailyRefresh == true){
+                        if(dict.mobile.conditions.showCount.dailyRefresh == true && popupDict[index].showCount?.dailyRefresh == true){
                             
-                            if !(Calendar.current.isDate(popupDict[index].popupdate ?? Date(), equalTo: Date(), toGranularity: .day)){
+                            if !(Calendar.current.isDate(popupDict[index].popUpDate ?? Date(), equalTo: Date(), toGranularity: .day)){
                                 refreshlocal = true
                             }
                             
-                        }else if(dict.mobile.conditions.showCount.dailyRefresh != popupDict[index].showcount?.dailyRefresh){
+                        }else if(dict.mobile.conditions.showCount.dailyRefresh != popupDict[index].showCount?.dailyRefresh){
                             refreshlocal = true
                         }
                         
                         if (true == refreshlocal){
                             popupDict[index]._id = dict._id
-                            popupDict[index].showcount = dict.mobile.conditions.showCount
-                            popupDict[index].showcount?.count = 0
+                            popupDict[index].showCount = dict.mobile.conditions.showCount
+                            popupDict[index].showCount?.count = 0
                             popupDict[index].delay = dict.mobile.conditions.delay
-                            popupDict[index].backgroundopacity = dict.mobile.conditions.backgroundOpacity
+                            popupDict[index].backgroundOpacity = dict.mobile.conditions.backgroundOpacity
                             popupDict[index].priority = dict.mobile.conditions.priority
-                            popupDict[index].popupdate = Date()
+                            popupDict[index].popUpDate = Date()
                             popupDict[index].type = dict.mobile.container.type
                         }
                     }
@@ -1227,12 +1205,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 } else {
                     var popupInfo = PopUpModel()
                     popupInfo._id = dict._id
-                    popupInfo.showcount = dict.mobile.conditions.showCount
-                    popupInfo.showcount?.count = 0
+                    popupInfo.showCount = dict.mobile.conditions.showCount
+                    popupInfo.showCount?.count = 0
                     popupInfo.delay = dict.mobile.conditions.delay
-                    popupInfo.backgroundopacity = dict.mobile.conditions.backgroundOpacity
+                    popupInfo.backgroundOpacity = dict.mobile.conditions.backgroundOpacity
                     popupInfo.priority = dict.mobile.conditions.priority
-                    popupInfo.popupdate = Date()
+                    popupInfo.popUpDate = Date()
                     popupInfo.type = dict.mobile.container.type
                     popupDict.append(popupInfo)
                 }
@@ -1908,7 +1886,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     $0._id == floatBtn._id
                 }
                 
-                if floatButton.count > 0 && ((floatButton[0].mobile.content.count > 0) && (floatBtn.showcount?.count)! < floatButton[0].mobile.conditions.showCount.count) {
+                if floatButton.count > 0 && ((floatButton[0].mobile.content.count > 0) && (floatBtn.showCount?.count)! < floatButton[0].mobile.conditions.showCount.count) {
                     self.addFloatingButton(btnInfo: floatButton[0])
                 }
             }
@@ -1997,7 +1975,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     $0._id == popupShow._id
                 }
                 
-                if (finalPopUp.count > 0 && ((finalPopUp[0].mobile.content.count > 0) && (popupShow.showcount?.count)! < finalPopUp[0].mobile.conditions.showCount.count)) {
+                if (finalPopUp.count > 0 && ((finalPopUp[0].mobile.content.count > 0) && (popupShow.showCount?.count)! < finalPopUp[0].mobile.conditions.showCount.count)) {
                     
                     var userInfo = [String: Any]()
                     userInfo["finalPopUp"] = (finalPopUp[0] )
@@ -2036,7 +2014,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     internal func updateShowCount(showCount: PopUpModel, eventData: CGData) {
         var showCountNew = showCount
-        showCountNew.showcount?.count += 1
+        showCountNew.showCount?.count += 1
         
         if let index = popupDict.firstIndex(where: {$0._id == showCountNew._id}) {
             popupDict.remove(at: index)
