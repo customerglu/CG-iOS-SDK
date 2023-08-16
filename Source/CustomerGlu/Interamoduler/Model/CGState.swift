@@ -8,14 +8,6 @@
 import UIKit
 
 @objc(CGState)
-@available(*, deprecated, renamed: "success")
-@available(*, deprecated, renamed: "userNotSignedIn")
-@available(*, deprecated, renamed: "invalidURL")
-@available(*, deprecated, renamed: "invalidCampaign")
-@available(*, deprecated, renamed: "campaignUnavailable")
-@available(*, deprecated, renamed: "networkException")
-@available(*, deprecated, renamed: "deepLinkURL")
-@available(*, deprecated, renamed: "exception")
 public enum CGState: Int {
     case success
     case userNotSignedIn
