@@ -30,17 +30,14 @@ class CGProxyHelper {
             "page" : 1
         ]
         
-        print("Program Request Body is: \(request)")
-        
         APIManager.getProgram(queryParameters: request) { result in
             switch result {
             case .success(let response):
-//                print("Got the response for program: \(String(describing: response))")
                 if let response = response {
                     self.encryptUserDefaultKey(str: response, userdefaultKey: CGConstants.CGGetProgramResponse)
                 }
-            case .failure(let failure):
-                print("Get program failed with error : \(failure.localizedDescription)")
+            case .failure(let error):
+                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "getProgram", posttoserver: false)
             }
         }
     }
@@ -62,17 +59,14 @@ class CGProxyHelper {
             "page" : 1
         ]
         
-        print("Reward Request Body is: \(request)")
-        
         APIManager.getReward(queryParameters: request) { result in
             switch result {
             case .success(let response):
                 if let response = response {
                     self.encryptUserDefaultKey(str: response, userdefaultKey: CGConstants.CGGetRewardResponse)
                 }
-                print("Got the response for reward: \(String(describing: response))")
-            case .failure(let failure):
-                print("Get reward failed with error : \(failure.localizedDescription)")
+            case .failure(let error):
+                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "getReward", posttoserver: false)
             }
         }
     }

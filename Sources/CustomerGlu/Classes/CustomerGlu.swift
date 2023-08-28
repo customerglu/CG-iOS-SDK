@@ -970,7 +970,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                 completion(true)
                             }
                             if let isEUIProxyEnabled = self.appconfigdata?.isEUIProxyEnabled, isEUIProxyEnabled, CustomerGlu.oldCampaignIds != CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString) {
-                                print("Get Program and Get Reward is getting called")
                                 CGProxyHelper.shared.getProgram()
                                 CGProxyHelper.shared.getReward()
                             }

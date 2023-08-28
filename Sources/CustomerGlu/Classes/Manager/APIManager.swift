@@ -450,14 +450,12 @@ class APIManager {
     
     static private func dictToObject <T: Decodable>(dict: Dictionary<String, Any>, type: T.Type) -> T? {
         do {
-            // Convert Dictionary to JSON Data
             let jsonData = try JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted)
-            // Decode data to model object
             let jsonDecoder = JSONDecoder()
             let object = try jsonDecoder.decode(type, from: jsonData)
             return object
-        } catch let error { // response with error
-            print("JSON decode failed: \(error.localizedDescription)")
+        } catch let error {
+            CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "dictToObject", posttoserver: false)
             return nil
         }
     }

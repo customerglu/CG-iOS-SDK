@@ -106,7 +106,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         }
     }
     public override func viewDidLoad() {
-        print("Web view has just initiliased \(Helper.shared.formatTimeWithMilliseconds())")
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(rotated),
@@ -129,7 +128,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         }
         
         contentController.add(self, name: WebViewsKey.callback) //name is the key you want the app to listen to.\
-        contentController.add(self, name: "consoleLog")
         config.userContentController = contentController
         config.allowsInlineMediaPlayback = true
         
@@ -276,8 +274,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 darkUrl = url + "&darkMode=" + (CustomerGlu.getInstance.checkIsDarkMode() ? "true" : "false")
             }
             
-//            print("DARK URL = \(darkUrl)")
-//            webView.load(URLRequest(url: URL(string: darkUrl)!))
             webView.load(URLRequest(url: CustomerGlu.getInstance.validateURL(url: URL(string: darkUrl)!)))
             webView.isHidden = true
             
@@ -329,14 +325,10 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         }
         """
         let javascriptCode = "\(functionName)(\(object));"
-        print("Sending this call back: \(javascriptCode)")
         
         webView.evaluateJavaScript(javascriptCode) { (result, error) in
-            print("Call back has been done at: \(Helper.shared.formatTimeWithMilliseconds())")
             if let error = error {
-                print("Error calling JavaScript function: \(error)")
-            } else {
-                print("Successfully sent the callback to EUI")
+                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "executeCallBack", posttoserver: false)
             }
         }
     }
@@ -415,10 +407,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     
     // receive message from wkwebview
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        
-        if message.name == "consoleLog", let logMessage = message.body as? String {
-            print("JavaScript Console Log: \(logMessage)")
-        }
         
         if message.name == WebViewsKey.callback {
             guard let bodyString = message.body as? String,
@@ -818,15 +806,4 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         }
         
     }
-}
-
-class Helper {
-    static let shared = Helper()
-    
-    func formatTimeWithMilliseconds() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "mm:ss.SSS"
-        return dateFormatter.string(from: Date())
-    }
-
 }
