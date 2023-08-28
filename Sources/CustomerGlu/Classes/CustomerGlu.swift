@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import UIKit
 import Lottie
+import WebKit
 
 let gcmMessageIDKey = "gcm.message_id"
 
@@ -474,6 +475,15 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 return
             }
         } else {
+        }
+    }
+    
+    @objc public func preLaunchWebView() {
+        let webView = WKWebView()
+        webView.frame = .zero
+        if let url = URL(string: "https://constellation.customerglu.com/error.html") {
+            webView.load(URLRequest(url: url))
+            print("Added URL in WKWebView")
         }
     }
     
