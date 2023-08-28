@@ -479,8 +479,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func preLaunchWebView() {
-        let webView = WKWebView()
-        webView.frame = .zero
+        let config = WKWebViewConfiguration()
+        let contentController = WKUserContentController()
+        config.userContentController = contentController
+        config.allowsInlineMediaPlayback = true
+        let webView = WKWebView(frame: .zero, configuration: config)
         if let url = URL(string: "https://constellation.customerglu.com/error.html") {
             webView.load(URLRequest(url: url))
             print("Added URL in WKWebView")
