@@ -118,7 +118,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     private override init() {
         super.init()
-        
+        preLaunchWebView()
         migrateUserDefaultKey()
         
         if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
@@ -478,7 +478,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    @objc public func preLaunchWebView() {
+    private func preLaunchWebView() {
         let config = WKWebViewConfiguration()
         let contentController = WKUserContentController()
         config.userContentController = contentController
@@ -486,7 +486,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         let webView = WKWebView(frame: .zero, configuration: config)
         if let url = URL(string: "https://constellation.customerglu.com/error.html") {
             webView.load(URLRequest(url: url))
-            print("Added URL in WKWebView")
         }
     }
     
@@ -2404,7 +2403,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
              */
             let userTopic = "nudges/" + (clientID) + "/" + (userID.sha256())
             let clientTopic = "/state/global/" + (clientID)
-            let host = "dev-hermes.customerglu.com"
+            let host = "hermes.customerglu.com"
             let username = userID
             let password = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
             let mqttIdentifier = decryptUserDefaultKey(userdefaultKey: CGConstants.MQTT_Identifier)

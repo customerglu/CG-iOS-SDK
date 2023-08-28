@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 class ApplicationManager {
-    public static var baseUrl = "dev-api.customerglu.com/"
+    public static var baseUrl = "api.customerglu.com/"
     public static var devbaseUrl = "dev-api.customerglu.com/"
     public static var streamUrl = "stream.customerglu.com/"
     public static var eventUrl = "events.customerglu.com/"
