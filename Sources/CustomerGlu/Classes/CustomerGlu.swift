@@ -476,6 +476,16 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    @objc public func preLaunchWebViewController(nudge_url: String, page_type: String, backgroundAlpha: Double, auto_close_webview : Bool, nudgeConfiguration : CGNudgeConfiguration? = nil) {
+        let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
+        customerWebViewVC.urlStr = nudge_url
+        customerWebViewVC.auto_close_webview = auto_close_webview
+        customerWebViewVC.notificationHandler = true
+        customerWebViewVC.alpha = backgroundAlpha
+        customerWebViewVC.nudgeConfiguration = nudgeConfiguration
+        print("WebView initialised")
+    }
+    
     @objc public func presentToCustomerWebViewController(nudge_url: String, page_type: String, backgroundAlpha: Double, auto_close_webview : Bool, nudgeConfiguration : CGNudgeConfiguration? = nil) {
         
         let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)

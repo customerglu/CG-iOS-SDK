@@ -382,7 +382,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     
     // receive message from wkwebview
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        
+        print("Message As Body")
         if message.name == WebViewsKey.callback {
             guard let bodyString = message.body as? String,
                   let bodyData = bodyString.data(using: .utf8) else { fatalError() }
