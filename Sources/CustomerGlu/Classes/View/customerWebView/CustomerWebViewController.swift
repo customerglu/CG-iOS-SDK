@@ -109,7 +109,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         
         let source = "function captureLog(msg) { window.webkit.messageHandlers.logHandler.postMessage(msg); } window.console.log = captureLog;"
         let script = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
-        contentController.add(self, name: "logHandler")
+        contentController.add(self, name: "WKWebViewLogger")
         contentController.addUserScript(script)
         
         NotificationCenter.default.addObserver(self,
