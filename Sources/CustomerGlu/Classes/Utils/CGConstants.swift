@@ -49,6 +49,8 @@ struct CGConstants {
     static let MQTT_Enabled_Components_State_Sync = "STATE_SYNC"
     static let MQTT_Enabled_Components_Nudges = "NUDGES"
     static let MQTT_Enabled_Components_EntryPoints = "ENTRYPOINTS"
+    
+    static let logHandler = "logHandler"
 }
 
 struct CGDiagnosticConstants{

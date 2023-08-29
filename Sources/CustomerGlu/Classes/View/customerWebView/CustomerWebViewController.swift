@@ -109,7 +109,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         
         let source = "function captureLog(msg) { window.webkit.messageHandlers.logHandler.postMessage(msg); } window.console.log = captureLog;"
         let script = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
-        contentController.add(self, name: "WKWebViewLogger")
+        contentController.add(self, name: CGConstants.logHandler)
         contentController.addUserScript(script)
         
         NotificationCenter.default.addObserver(self,
@@ -388,8 +388,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     // receive message from wkwebview
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         
-        if message.name == "logHandler" {
-            print("LOG: \(message.body)")
+        if message.name == CGConstants.logHandler {
+            CustomerGlu.getInstance.printlog(cglog: "EUI Logs: \(message.body)", isException: false, methodName: "userContentController", posttoserver: false)
         }
         
         if message.name == WebViewsKey.callback {
