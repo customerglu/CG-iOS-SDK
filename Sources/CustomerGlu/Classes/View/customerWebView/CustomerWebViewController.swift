@@ -107,6 +107,11 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     public override func viewDidLoad() {
         super.viewDidLoad()
         
+        let source = "function captureLog(msg) { window.webkit.messageHandlers.logHandler.postMessage(msg); } window.console.log = captureLog;"
+        let script = WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+        contentController.add(self, name: "logHandler")
+        contentController.addUserScript(script)
+        
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(rotated),
                                                name: UIDevice.orientationDidChangeNotification,
@@ -382,6 +387,10 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     
     // receive message from wkwebview
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        
+        if message.name == "logHandler" {
+            print("LOG: \(message.body)")
+        }
         
         if message.name == WebViewsKey.callback {
             guard let bodyString = message.body as? String,
