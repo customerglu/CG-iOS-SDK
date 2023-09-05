@@ -330,13 +330,12 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        if (challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust) {
-            DispatchQueue.main.async {
+        DispatchQueue.global().async {
+            if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
                 if let serverTrust = challenge.protectionSpace.serverTrust {
                     var secresult = SecTrustResultType.invalid
                     let status = SecTrustEvaluate(serverTrust, &secresult)
-                    if(errSecSuccess == status) {
-                        // server certificate
+                    if errSecSuccess == status {
                         if let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) {
                             let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
                             print("Server Certificate Data = \(serverCertificateData)")
@@ -345,19 +344,23 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                                 if let localCertificateString = self.getLocalCertificateAsString() {
                                     if fileString == localCertificateString {
                                         print("Certificate is same")
-                                        completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
+                                        DispatchQueue.main.async {
+                                            completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
+                                        }
                                         return
                                     }
                                 }
                             }
                         }
-
                     }
                 }
             }
+            DispatchQueue.main.async {
+                completionHandler(URLSession.AuthChallengeDisposition.cancelAuthenticationChallenge, nil)
+            }
         }
-        completionHandler(URLSession.AuthChallengeDisposition.cancelAuthenticationChallenge, nil)
     }
+
     
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         // DIAGNOSTICS
