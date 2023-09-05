@@ -331,26 +331,28 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         if (challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust) {
-            if let serverTrust = challenge.protectionSpace.serverTrust {
-                var secresult = SecTrustResultType.invalid
-                let status = SecTrustEvaluate(serverTrust, &secresult)
-                if(errSecSuccess == status) {
-                    // server certificate
-                    if let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) {
-                        let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-                        print("Server Certificate Data = \(serverCertificateData)")
-                        
-                        if let fileString = String(data: serverCertificateData, encoding: .utf8) {
-                            if let localCertificateString = getLocalCertificateAsString() {
-                                if fileString == localCertificateString {
-                                    print("Certificate is same")
-                                    completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-                                    return
+            DispatchQueue.main.async {
+                if let serverTrust = challenge.protectionSpace.serverTrust {
+                    var secresult = SecTrustResultType.invalid
+                    let status = SecTrustEvaluate(serverTrust, &secresult)
+                    if(errSecSuccess == status) {
+                        // server certificate
+                        if let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) {
+                            let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
+                            print("Server Certificate Data = \(serverCertificateData)")
+                            
+                            if let fileString = String(data: serverCertificateData, encoding: .ascii) {
+                                if let localCertificateString = self.getLocalCertificateAsString() {
+                                    if fileString == localCertificateString {
+                                        print("Certificate is same")
+                                        completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
+                                        return
+                                    }
                                 }
                             }
                         }
-                    }
 
+                    }
                 }
             }
         }
