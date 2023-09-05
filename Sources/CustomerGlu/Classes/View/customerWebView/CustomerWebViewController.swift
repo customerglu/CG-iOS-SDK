@@ -308,6 +308,37 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_START_PROVISIONAL, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
     }
     
+    public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        if (challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust) {
+            if let serverTrust = challenge.protectionSpace.serverTrust {
+                var secresult = SecTrustResultType.invalid
+                let status = SecTrustEvaluate(serverTrust, &secresult)
+                if(errSecSuccess == status) {
+                    // server certificate
+                    if let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) {
+                        let serverCertificateData = SecCertificateCopyData(serverCertificate)
+                        let data = CFDataGetBytePtr(serverCertificateData);
+                        let size = CFDataGetLength(serverCertificateData);
+                        let cert1 = NSData(bytes: data, length: size)
+                        // bundled certificate
+                        let file_der = Bundle.main.path(forResource: bundledSslCert, ofType: bundledSslCertExt)
+                        
+                        if let file = file_der {
+                            if let cert2 = NSData(contentsOfFile: file) {
+                                if cert1.isEqual(to: cert2 as Data) {
+                                    completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
+                                    return
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Certificate validation / Pinning failed
+        completionHandler(URLSession.AuthChallengeDisposition.cancelAuthenticationChallenge, nil)
+    }
+    
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         // DIAGNOSTICS
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_DIDFINISH, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
