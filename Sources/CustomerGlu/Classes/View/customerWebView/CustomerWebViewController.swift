@@ -308,6 +308,27 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_START_PROVISIONAL, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
     }
     
+    private func getLocalCertificateAsString() -> String? {
+        if let filePath = Bundle.main.path(forResource: "cg_ssl", ofType: "cer") {
+            do {
+                let fileData = try Data(contentsOf: URL(fileURLWithPath: filePath))
+                if let fileString = String(data: fileData, encoding: .utf8) {
+                    print("Local certificate as String \(fileString)")
+                    return fileString
+                } else {
+                    print("Unable to convert data to string.")
+                    return nil
+                }
+            } catch {
+                print("Error reading file: \(error)")
+                return nil
+            }
+        } else {
+            print("File not found in bundle.")
+            return nil
+        }
+    }
+    
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         if (challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust) {
             if let serverTrust = challenge.protectionSpace.serverTrust {
@@ -316,22 +337,34 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 if(errSecSuccess == status) {
                     // server certificate
                     if let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) {
-                        let serverCertificateData = SecCertificateCopyData(serverCertificate)
-                        let data = CFDataGetBytePtr(serverCertificateData);
-                        let size = CFDataGetLength(serverCertificateData);
-                        let cert1 = NSData(bytes: data, length: size)
-                        // bundled certificate
-                        let file_der = Bundle.main.path(forResource: bundledSslCert, ofType: bundledSslCertExt)
-                        
-                        if let file = file_der {
-                            if let cert2 = NSData(contentsOfFile: file) {
-                                if cert1.isEqual(to: cert2 as Data) {
-                                    completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-                                    return
+                        let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
+//                        if let fileURL = Bundle.main.url(forResource: "cg_ssl", withExtension: "cer") {
+//                            do {
+                                if let fileString = String(data: serverCertificateData, encoding: .utf8) {
+                                    if let localCertificateString = getLocalCertificateAsString() {
+                                        if fileString == localCertificateString {
+                                            print("Certificate is same")
+                                            completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
+                                            return
+                                        } else {
+                                            print("Certificate is not same")
+                                            return
+                                        }
+                                    }
+                                } else {
+                                    print("Unable to convert data to string.")
                                 }
-                            }
-                        }
+//                                let cert2 = try Data(contentsOf: fileURL)
+//                                if serverCertificateData == cert2 {
+//                                    completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
+//                                    return
+//                                }
+//                            } catch {
+//                                print("Error reading bundled certificate: \(error)")
+//                            }
+//                        }
                     }
+
                 }
             }
         }

@@ -636,6 +636,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     // MARK: - API Calls Methods
     
     @objc public func initializeSdk() {
+//     
+        
         if !sdkInitialized {
             // So SDK is initialized
             sdkInitialized = true
