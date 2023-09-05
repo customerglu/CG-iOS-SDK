@@ -340,6 +340,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                         let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
 //                        if let fileURL = Bundle.main.url(forResource: "cg_ssl", withExtension: "cer") {
 //                            do {
+                        print("Server Certificate Data = \(serverCertificateData)")
                                 if let fileString = String(data: serverCertificateData, encoding: .utf8) {
                                     if let localCertificateString = getLocalCertificateAsString() {
                                         if fileString == localCertificateString {
