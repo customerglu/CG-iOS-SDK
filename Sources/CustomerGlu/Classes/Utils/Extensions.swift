@@ -260,3 +260,22 @@ extension CellIdentifierProtocol where Self: UIView {
         return String(describing: Self.self)
     }
 }
+
+extension UIViewController {
+    static let swizzle: Void = {
+        let originalSelector = #selector(viewDidLoad)
+        let swizzledSelector = #selector(swizzledViewDidLoad)
+
+        guard let originalMethod = class_getInstanceMethod(UIViewController.self, originalSelector),
+              let swizzledMethod = class_getInstanceMethod(UIViewController.self, swizzledSelector) else {
+            return
+        }
+
+        method_exchangeImplementations(originalMethod, swizzledMethod)
+    }()
+
+    @objc func swizzledViewDidLoad() {
+        swizzledViewDidLoad()
+        CustomerGlu.getInstance.setCurrentClassName(className: String(describing: self.classForCoder))
+    }
+}

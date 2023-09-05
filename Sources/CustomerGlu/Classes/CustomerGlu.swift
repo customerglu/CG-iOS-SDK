@@ -636,6 +636,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     // MARK: - API Calls Methods
     
     @objc public func initializeSdk() {
+        // Initialising swizzling for setting class name all over the app.
+        UIViewController.swizzle
+        
         if !sdkInitialized {
             // So SDK is initialized
             sdkInitialized = true
