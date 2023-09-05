@@ -338,38 +338,22 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                     // server certificate
                     if let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) {
                         let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-//                        if let fileURL = Bundle.main.url(forResource: "cg_ssl", withExtension: "cer") {
-//                            do {
                         print("Server Certificate Data = \(serverCertificateData)")
-                                if let fileString = String(data: serverCertificateData, encoding: .utf8) {
-                                    if let localCertificateString = getLocalCertificateAsString() {
-                                        if fileString == localCertificateString {
-                                            print("Certificate is same")
-                                            completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-                                            return
-                                        } else {
-                                            print("Certificate is not same")
-                                            return
-                                        }
-                                    }
-                                } else {
-                                    print("Unable to convert data to string.")
+                        
+                        if let fileString = String(data: serverCertificateData, encoding: .utf8) {
+                            if let localCertificateString = getLocalCertificateAsString() {
+                                if fileString == localCertificateString {
+                                    print("Certificate is same")
+                                    completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
+                                    return
                                 }
-//                                let cert2 = try Data(contentsOf: fileURL)
-//                                if serverCertificateData == cert2 {
-//                                    completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-//                                    return
-//                                }
-//                            } catch {
-//                                print("Error reading bundled certificate: \(error)")
-//                            }
-//                        }
+                            }
+                        }
                     }
 
                 }
             }
         }
-        // Certificate validation / Pinning failed
         completionHandler(URLSession.AuthChallengeDisposition.cancelAuthenticationChallenge, nil)
     }
     
