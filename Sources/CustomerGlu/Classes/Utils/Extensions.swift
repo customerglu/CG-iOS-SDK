@@ -260,3 +260,4 @@ extension CellIdentifierProtocol where Self: UIView {
         return String(describing: Self.self)
     }
 }
+
