@@ -312,8 +312,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         if let filePath = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer") {
             do {
                 let fileData = try Data(contentsOf: filePath)
-                print("Local certificate as String: \(fileData.base64EncodedString())")
-                return fileData.base64EncodedString()
+                print("Local certificate as String: \(String(data: fileData, encoding: .ascii))")
+                return String(data: fileData, encoding: .ascii)
             } catch {
                 print("Error reading file: \(error)")
                 return nil 
@@ -341,8 +341,9 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
                let localCertificateString = self.getLocalCertificateAsString() {
                 let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-                print("Server Certificate as String: \(serverCertificateData.base64EncodedString())")
-                if serverCertificateData.base64EncodedString() == localCertificateString {
+                let serverCertificateAsString = String(data: serverCertificateData, encoding: .ascii)
+                print("Server Certificate as String: \(serverCertificateAsString)")
+                if serverCertificateAsString == localCertificateString {
                     print("Certificate is the same")
                     DispatchQueue.main.async {
                         completionHandler(.useCredential, URLCredential(trust: serverTrust))
