@@ -313,8 +313,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         if let filePath = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer") {
             do {
                 let fileData = try Data(contentsOf: filePath)
-                print("Local certificate as String: \(String(data: fileData, encoding: .ascii)?.replacingOccurrences(of: "-----BEGIN CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\r\n-----END CERTIFICATE-----\r\n", with: "") ?? "Local certificate string found NIL")")
-                return String(data: fileData, encoding: .ascii)?.replacingOccurrences(of: "-----BEGIN CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\r\n-----END CERTIFICATE-----\r\n", with: "")
+                print("Local certificate as String: \(String(data: fileData, encoding: .ascii)?.replacingOccurrences(of: "-----BEGIN CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\r\n-----END CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\n", with: "") ?? "Local certificate string found NIL")")
+                return String(data: fileData, encoding: .ascii)?.replacingOccurrences(of: "-----BEGIN CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\r\n-----END CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\n", with: "")
             } catch {
                 print("Error reading file: \(error)")
                 return nil 
