@@ -316,7 +316,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 return fileData.base64EncodedString()
             } catch {
                 print("Error reading file: \(error)")
-                return nil
+                return nil 
             }
         } else {
             print("File not found in bundle.")
