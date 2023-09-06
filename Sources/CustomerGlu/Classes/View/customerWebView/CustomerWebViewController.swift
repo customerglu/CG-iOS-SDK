@@ -309,18 +309,12 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_START_PROVISIONAL, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
     }
     
-    @available(iOS 13.0, *)
-    private func sha256(data: Data) -> String {
-        let hash = SHA256.hash(data: data)
-        return hash.map { String(format: "%02hhx", $0) }.joined()
-    }
-    
     private func getLocalCertificateAsString() -> String? {
         if let filePath = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer") {
             do {
                 let fileData = try Data(contentsOf: filePath)
-                print("Local certificate as String: \(fileData.sha256())")
-                return fileData.sha256()
+                print("Local certificate as String: \(fileData.base64EncodedString(options: []))")
+                return fileData.base64EncodedString(options: [])
             } catch {
                 print("Error reading file: \(error)")
                 return nil 
@@ -348,12 +342,9 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
                let localCertificateData = self.getLocalCertificateAsString() {
                 let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
+                print("Server Certificate as String: ", serverCertificateData.base64EncodedString(options: []))
                 
-                let a = SecCertificateCopySubjectSummary(serverCertificate)
-                print("a: \(String(describing: a))")
-//                print("Server Certificate as String: ", serverCertificateData.sha256())
-                
-                if serverCertificateData.sha256() == localCertificateData {
+                if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
                     print("Certificate is the same")
                     DispatchQueue.main.async {
                         completionHandler(.useCredential, URLCredential(trust: serverTrust))
