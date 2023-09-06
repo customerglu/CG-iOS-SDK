@@ -334,24 +334,24 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             return
         }
         
-        var secResult = SecTrustResultType.invalid
-        let status = SecTrustEvaluate(serverTrust, &secResult)
-        
-        if errSecSuccess == status,
-           let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
-           let localCertificateData = self.getLocalCertificateAsString() {
-            let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-            print("Server Certificate as String: ", serverCertificateData.base64EncodedString(options: []))
+        DispatchQueue.global(qos: .background).async {
+            var secResult = SecTrustResultType.invalid
+            let status = SecTrustEvaluate(serverTrust, &secResult)
             
-            if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
-                print("Certificate is the same")
-                DispatchQueue.global(qos: .background).async {
+            if errSecSuccess == status,
+               let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
+               let localCertificateData = self.getLocalCertificateAsString() {
+                let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
+                print("Server Certificate as String: ", serverCertificateData.base64EncodedString(options: []))
+                
+                if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
+                    print("Certificate is the same")
                     completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                    return
                 }
-                return
             }
+            completionHandler(.cancelAuthenticationChallenge, nil)
         }
-        completionHandler(.cancelAuthenticationChallenge, nil)
     }
     
     
