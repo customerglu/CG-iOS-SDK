@@ -309,9 +309,9 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     
     private func getLocalCertificateAsString() -> String? {
-        if let filePath = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer") { // path(forResource: "cg_ssl", ofType: "cer") {
+        if let filePath = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer") {
             do {
-                let fileData = try Data(contentsOf: filePath)  // Data(contentsOf: URL(fileURLWithPath: filePath))
+                let fileData = try Data(contentsOf: filePath)
                 print("Local certificate as String: \(fileData.base64EncodedString())")
                 return fileData.base64EncodedString()
             } catch {
@@ -325,34 +325,35 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        DispatchQueue.global().async {
-            if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
-                if let serverTrust = challenge.protectionSpace.serverTrust {
-                    var secresult = SecTrustResultType.invalid
-                    let status = SecTrustEvaluate(serverTrust, &secresult)
-                    if errSecSuccess == status {
-                        if let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) {
-                            let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-                            print("Server Certificate as String: \(serverCertificateData.base64EncodedString())")
-                            if let localCertificateString = self.getLocalCertificateAsString() {
-                                if serverCertificateData.base64EncodedString() == localCertificateString {
-                                    print("Certificate is same")
-                                    DispatchQueue.main.async {
-                                        completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-                                    }
-                                    return
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              let serverTrust = challenge.protectionSpace.serverTrust else {
             DispatchQueue.main.async {
-                completionHandler(URLSession.AuthChallengeDisposition.cancelAuthenticationChallenge, nil)
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
+            return
+        }
+        
+        var secResult = SecTrustResultType.invalid
+        let status = SecTrustEvaluate(serverTrust, &secResult)
+        
+        if errSecSuccess == status,
+           let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
+           let localCertificateString = self.getLocalCertificateAsString() {
+            let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
+            
+            if serverCertificateData.base64EncodedString() == localCertificateString {
+                print("Certificate is the same")
+                DispatchQueue.main.async {
+                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                }
+                return
             }
         }
+        
+        DispatchQueue.main.async {
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        }
     }
-
     
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         // DIAGNOSTICS
