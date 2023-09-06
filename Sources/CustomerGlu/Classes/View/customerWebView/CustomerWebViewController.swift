@@ -340,7 +340,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                             let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
                             print("Server Certificate Data = \(serverCertificateData)")
                             
-                            if let fileString = String(data: serverCertificateData, encoding: .ascii) {
+                            if let fileString = String(data: serverCertificateData, encoding: .utf8) {
                                 print("Server Certificate as String: \(fileString)")
                                 if let localCertificateString = self.getLocalCertificateAsString() {
                                     if fileString == localCertificateString {
