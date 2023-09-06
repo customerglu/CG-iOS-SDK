@@ -348,7 +348,10 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
                let localCertificateData = self.getLocalCertificateAsString() {
                 let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-                print("Server Certificate as String: ", serverCertificateData.sha256())
+                
+                let a = SecCertificateCopySubjectSummary(serverCertificate)
+                print("a: \(String(describing: a))")
+//                print("Server Certificate as String: ", serverCertificateData.sha256())
                 
                 if serverCertificateData.sha256() == localCertificateData {
                     print("Certificate is the same")
