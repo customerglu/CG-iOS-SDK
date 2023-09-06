@@ -346,9 +346,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 
                 if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
                     print("Certificate is the same")
-                    DispatchQueue.main.async {
-                        completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                    }
+                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
                     return
                 }
             }
