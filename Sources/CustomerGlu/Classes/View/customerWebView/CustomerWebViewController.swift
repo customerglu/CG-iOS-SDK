@@ -313,7 +313,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             do {
                 let fileData = try Data(contentsOf: filePath)  // Data(contentsOf: URL(fileURLWithPath: filePath))
                 if let fileString = String(data: fileData, encoding: .ascii) {
-                    print("Local certificate as String \(fileString)")
+                    print("Local Certificate as String \(fileString)")
                     return fileString
                 } else {
                     print("Unable to convert data to string.")
@@ -341,6 +341,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                             print("Server Certificate Data = \(serverCertificateData)")
                             
                             if let fileString = String(data: serverCertificateData, encoding: .ascii) {
+                                print("Server Certificate as String: \(fileString)")
                                 if let localCertificateString = self.getLocalCertificateAsString() {
                                     if fileString == localCertificateString {
                                         print("Certificate is same")
