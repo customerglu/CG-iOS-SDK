@@ -341,7 +341,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
                let localCertificateData = self.getLocalCertificateAsString() {
                 let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-                
+                print("Server Certificate as String: ", serverCertificateData.base64EncodedString())
                 if serverCertificateData.base64EncodedString() == localCertificateData {
                     print("Certificate is the same")
                     DispatchQueue.main.async {
