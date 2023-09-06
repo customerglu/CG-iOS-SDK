@@ -319,7 +319,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         if let filePath = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer") {
             do {
                 let fileData = try Data(contentsOf: filePath)
-                print("Local certificate as String: \(fileData.base64EncodedString())")
+                print("Local certificate as String: \(fileData.sha256())")
                 return fileData.sha256()
             } catch {
                 print("Error reading file: \(error)")
