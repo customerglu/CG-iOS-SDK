@@ -326,34 +326,32 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        DispatchQueue.global().async {
-            guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-                  let serverTrust = challenge.protectionSpace.serverTrust else {
-                DispatchQueue.main.async {
-                    completionHandler(.cancelAuthenticationChallenge, nil)
-                }
-                return
-            }
-            
-            var secResult = SecTrustResultType.invalid
-            let status = SecTrustEvaluate(serverTrust, &secResult)
-            
-            if errSecSuccess == status,
-               let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
-               let localCertificateData = self.getLocalCertificateAsString() {
-                let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-                print("Server Certificate as String: ", serverCertificateData.base64EncodedString(options: []))
-                
-                if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
-                    print("Certificate is the same")
-                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                    return
-                }
-            }
-            
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              let serverTrust = challenge.protectionSpace.serverTrust else {
             DispatchQueue.main.async {
                 completionHandler(.cancelAuthenticationChallenge, nil)
             }
+            return
+        }
+        
+        var secResult = SecTrustResultType.invalid
+        let status = SecTrustEvaluate(serverTrust, &secResult)
+        
+        if errSecSuccess == status,
+           let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
+           let localCertificateData = self.getLocalCertificateAsString() {
+            let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
+            print("Server Certificate as String: ", serverCertificateData.base64EncodedString(options: []))
+            
+            if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
+                print("Certificate is the same")
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
+            }
+        }
+        
+        DispatchQueue.main.async {
+            completionHandler(.cancelAuthenticationChallenge, nil)
         }
     }
     
