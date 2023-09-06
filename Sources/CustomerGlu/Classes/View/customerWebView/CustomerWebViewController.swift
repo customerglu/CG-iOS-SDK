@@ -341,6 +341,10 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                                         completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
                                     }
                                     return
+                                } else {
+                                    DispatchQueue.main.async {
+                                        completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
+                                    }
                                 }
                             }
                         }
