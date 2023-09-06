@@ -309,7 +309,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     
     private func getLocalCertificateAsString() -> String? {
-        if let filePath = Bundle.module.url(forResource: "cg_ssl", withExtension: "cer") { // path(forResource: "cg_ssl", ofType: "cer") {
+        if let filePath = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer") { // path(forResource: "cg_ssl", ofType: "cer") {
             do {
                 let fileData = try Data(contentsOf: filePath)  // Data(contentsOf: URL(fileURLWithPath: filePath))
                 print("Local certificate as String: \(fileData.base64EncodedString())")
