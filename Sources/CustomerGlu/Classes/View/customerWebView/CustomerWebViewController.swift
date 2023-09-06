@@ -312,13 +312,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         if let filePath = Bundle.module.url(forResource: "cg_ssl", withExtension: "cer") { // path(forResource: "cg_ssl", ofType: "cer") {
             do {
                 let fileData = try Data(contentsOf: filePath)  // Data(contentsOf: URL(fileURLWithPath: filePath))
-                if let fileString = String(data: fileData, encoding: .ascii) {
-                    print("Local Certificate as String \(fileString)")
-                    return fileString
-                } else {
-                    print("Unable to convert data to string.")
-                    return nil
-                }
+                print("Local certificate as String: \(fileData.base64EncodedString())")
+                return fileData.base64EncodedString()
             } catch {
                 print("Error reading file: \(error)")
                 return nil
