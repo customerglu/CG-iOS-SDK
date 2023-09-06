@@ -328,7 +328,9 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
               let serverTrust = challenge.protectionSpace.serverTrust else {
-            completionHandler(.cancelAuthenticationChallenge, nil)
+            DispatchQueue.global(qos: .background).async {
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
             return
         }
         
@@ -343,7 +345,9 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             
             if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
                 print("Certificate is the same")
-                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                DispatchQueue.global(qos: .background).async {
+                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                }
                 return
             }
         }
