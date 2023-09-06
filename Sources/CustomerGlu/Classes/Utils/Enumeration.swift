@@ -14,37 +14,6 @@ extension Bundle {
 }
 #endif
 
-#if SPM
-
-import class Foundation.Bundle
-
-private class BundleFinder {}
-
-extension Bundle {
-    static var modulee: Bundle = {
-            let bundleName = "CustomerGlu"
-
-            let candidates = [
-                // Bundle should be present here when the package is linked into an App.
-                Bundle.main.resourceURL,
-
-                // Bundle should be present here when the package is linked into a framework.
-                Bundle(for: BundleFinder.self).resourceURL,
-
-                // For command-line tools.
-                Bundle.main.bundleURL,
-            ]
-
-            for candidate in candidates {
-                let bundlePath = candidate?.appendingPathComponent(bundleName + ".bundle")
-                if let bundle = bundlePath.flatMap(Bundle.init(url:)) {
-                    return bundle
-                }
-            }
-        }()
-}
-#endif
-
 protocol StoryboardIdentifiable where Self: UIViewController {
     static func getInstance(storyBoardType: StoryboardType) -> UIViewController
 }
