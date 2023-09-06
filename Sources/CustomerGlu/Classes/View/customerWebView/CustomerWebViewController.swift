@@ -338,18 +338,14 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                     if errSecSuccess == status {
                         if let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) {
                             let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-                            print("Server Certificate Data = \(serverCertificateData)")
-                            
-                            if let fileString = String(data: serverCertificateData, encoding: .utf8) {
-                                print("Server Certificate as String: \(fileString)")
-                                if let localCertificateString = self.getLocalCertificateAsString() {
-                                    if fileString == localCertificateString {
-                                        print("Certificate is same")
-                                        DispatchQueue.main.async {
-                                            completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-                                        }
-                                        return
+                            print("Server Certificate as String: \(serverCertificateData.base64EncodedString())")
+                            if let localCertificateString = self.getLocalCertificateAsString() {
+                                if serverCertificateData.base64EncodedString() == localCertificateString {
+                                    print("Certificate is same")
+                                    DispatchQueue.main.async {
+                                        completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
                                     }
+                                    return
                                 }
                             }
                         }
