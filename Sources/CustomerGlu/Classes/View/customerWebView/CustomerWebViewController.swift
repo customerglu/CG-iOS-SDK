@@ -345,8 +345,10 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         
         if isServerTrusted && removeCertificateData.isEqual(to: localCertificateData as Data) {
             print("Certificate matched")
-        } else{
+            completionHandler(.useCredential, URLCredential(trust: serverTrust))
+        } else {
             print("Certificate does not matched")
+            completionHandler(.cancelAuthenticationChallenge, nil)
         }
     }
     
