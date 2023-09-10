@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 import WebKit
 import Lottie
-import CryptoKit
+import Security
 
 public class CustomerWebViewController: UIViewController, WKNavigationDelegate, WKScriptMessageHandler {
     
@@ -308,7 +308,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         // DIAGNOSTICS
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_START_PROVISIONAL, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
     }
-    
+
     private func getLocalCertificateAsString() -> String? {
         if let filePath = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer") {
             do {
@@ -326,33 +326,58 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-              let serverTrust = challenge.protectionSpace.serverTrust else {
-            DispatchQueue.global(qos: .background).async {
-                completionHandler(.cancelAuthenticationChallenge, nil)
-            }
+        guard #available(iOS 12.0, *) else { return }
+        
+        guard let serverTrust = challenge.protectionSpace.serverTrust,
+              let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
             return
         }
         
-        DispatchQueue.global(qos: .background).async {
-            var secResult = SecTrustResultType.invalid
-            let status = SecTrustEvaluate(serverTrust, &secResult)
-            
-            if errSecSuccess == status,
-               let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
-               let localCertificateData = self.getLocalCertificateAsString() {
-                let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-                print("Server Certificate as String: ", serverCertificateData.base64EncodedString(options: []))
-                
-                if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
-                    print("Certificate is the same")
-                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                    return
-                }
-            }
-            completionHandler(.cancelAuthenticationChallenge, nil)
+        let policy = NSMutableArray()
+        policy.add(SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString))
+        let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
+        
+        let removeCertificateData: NSData = SecCertificateCopyData(certificate)
+        guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer"),
+              let localCertificateData: NSData = NSData.init(contentsOf: pathToCertificate) else {
+            return
+        }
+        
+        if isServerTrusted && removeCertificateData.isEqual(to: localCertificateData as Data) {
+            print("Certificate matched")
+        } else{
+            print("Certificate does not matched")
         }
     }
+    
+//    public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+//        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+//              let serverTrust = challenge.protectionSpace.serverTrust else {
+//            DispatchQueue.global(qos: .background).async {
+//                completionHandler(.cancelAuthenticationChallenge, nil)
+//            }
+//            return
+//        }
+//
+//        DispatchQueue.global(qos: .background).async {
+//            var secResult = SecTrustResultType.invalid
+//            let status = SecTrustEvaluate(serverTrust, &secResult)
+//
+//            if errSecSuccess == status,
+//               let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
+//               let localCertificateData = self.getLocalCertificateAsString() {
+//                let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
+//                print("Server Certificate as String: ", serverCertificateData.base64EncodedString(options: []))
+//
+//                if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
+//                    print("Certificate is the same")
+//                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
+//                    return
+//                }
+//            }
+//            completionHandler(.cancelAuthenticationChallenge, nil)
+//        }
+//    }
     
     
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
