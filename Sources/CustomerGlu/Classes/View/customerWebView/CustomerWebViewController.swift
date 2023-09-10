@@ -321,13 +321,15 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         policy.add(SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString))
         let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
         
-        let removeCertificateData: NSData = SecCertificateCopyData(certificate)
+        let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
         guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer"),
               let localCertificateData: NSData = NSData.init(contentsOf: pathToCertificate) else {
             return
         }
         
-        if isServerTrusted && removeCertificateData.isEqual(to: localCertificateData as Data) {
+        print("Some data: \(SecCertificateCopyKey(certificate))")
+        
+        if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
             print("Certificate matched")
             completionHandler(.useCredential, URLCredential(trust: serverTrust))
         } else {
