@@ -309,22 +309,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_START_PROVISIONAL, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
     }
 
-    private func getLocalCertificateAsString() -> String? {
-        if let filePath = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer") {
-            do {
-                let fileData = try Data(contentsOf: filePath)
-                print("Local certificate as String: \(String(data: fileData, encoding: .ascii)?.replacingOccurrences(of: "-----BEGIN CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\r\n-----END CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\r\n", with: "") ?? "Local certificate string found NIL")")
-                return String(data: fileData, encoding: .ascii)?.replacingOccurrences(of: "-----BEGIN CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\r\n-----END CERTIFICATE-----\r\n", with: "").replacingOccurrences(of: "\r\n", with: "")
-            } catch {
-                print("Error reading file: \(error)")
-                return nil 
-            }
-        } else {
-            print("File not found in bundle.")
-            return nil
-        }
-    }
-    
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard #available(iOS 12.0, *) else { return }
         
@@ -351,36 +335,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             completionHandler(.cancelAuthenticationChallenge, nil)
         }
     }
-    
-//    public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-//        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-//              let serverTrust = challenge.protectionSpace.serverTrust else {
-//            DispatchQueue.global(qos: .background).async {
-//                completionHandler(.cancelAuthenticationChallenge, nil)
-//            }
-//            return
-//        }
-//
-//        DispatchQueue.global(qos: .background).async {
-//            var secResult = SecTrustResultType.invalid
-//            let status = SecTrustEvaluate(serverTrust, &secResult)
-//
-//            if errSecSuccess == status,
-//               let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
-//               let localCertificateData = self.getLocalCertificateAsString() {
-//                let serverCertificateData = SecCertificateCopyData(serverCertificate) as Data
-//                print("Server Certificate as String: ", serverCertificateData.base64EncodedString(options: []))
-//
-//                if serverCertificateData.base64EncodedString(options: []) == localCertificateData {
-//                    print("Certificate is the same")
-//                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
-//                    return
-//                }
-//            }
-//            completionHandler(.cancelAuthenticationChallenge, nil)
-//        }
-//    }
-    
     
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         // DIAGNOSTICS
