@@ -316,7 +316,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             let trustResult = SecTrustCopyResult(trust)
             print("trustResult = \(trustResult)")
             if let trustResult = trustResult {
-                print("\(self.getValueFromCFDictionary(trustResult, forKey: "TrustExpirationDate"))")
+                print("TrustExpirationDate: \(self.getValueFromCFDictionary(trustResult, forKey: "TrustExpirationDate"))")
             }
         }
     }
@@ -350,7 +350,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             return
         }
         
-        if let localCertificate = SecCertificateCreateWithData(nil, localCertificateData) {
+        if let localCertificate = SecCertificateCreateWithData(nil, localCertificateData as CFData) {
             self.printLocalCertificateExpiryDate(localCertificate)
         }
         
