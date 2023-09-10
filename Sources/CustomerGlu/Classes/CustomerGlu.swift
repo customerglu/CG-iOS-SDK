@@ -663,6 +663,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             // Get Config
             self.getAppConfig { result in
             }
+            checkSSLCertificateExpiration()
         }
     }
     
@@ -2431,6 +2432,43 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             customAlert.isRetry = false
             customAlert.showOnViewController(topController)
         }
+    }
+    
+    private func checkSSLCertificateExpiration() {
+        guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer"),
+              let certificateData: NSData = NSData.init(contentsOf: pathToCertificate) else {
+            print("Can not generate certificate data form bundle")
+            return
+        }
+        
+        guard let certificate = SecCertificateCreateWithData(nil, certificateData as CFData) else {
+            print("Can not generate certificate from certificate data")
+            return
+        }
+        
+        self.printLocalCertificateExpiryDate(certificate)
+    }
+    
+    private func printLocalCertificateExpiryDate(_ certificate: SecCertificate) {
+        var trust: SecTrust?
+        let status = SecTrustCreateWithCertificates(certificate, SecPolicyCreateBasicX509(), &trust)
+        if status == errSecSuccess, let trust = trust {
+            let trustResult = SecTrustCopyResult(trust)
+            print("trustResult = \(trustResult)")
+            if let trustResult = trustResult {
+                print("TrustExpirationDate: \(self.getValueFromCFDictionary(trustResult, forKey: "TrustExpirationDate"))")
+            }
+        }
+    }
+
+    private func getValueFromCFDictionary(_ dictionary: CFDictionary, forKey key: String) -> Any? {
+        let cfKey = key as CFString
+
+        if let value = CFDictionaryGetValue(dictionary, Unmanaged.passUnretained(cfKey).toOpaque()) {
+            return Unmanaged<AnyObject>.fromOpaque(value).takeUnretainedValue()
+        }
+
+        return nil
     }
 }
 

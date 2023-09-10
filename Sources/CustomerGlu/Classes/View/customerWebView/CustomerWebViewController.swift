@@ -308,30 +308,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         // DIAGNOSTICS
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_START_PROVISIONAL, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
     }
-    
-    private func printLocalCertificateExpiryDate(_ certificate: SecCertificate) {
-        var trust: SecTrust?
-        let status = SecTrustCreateWithCertificates(certificate, SecPolicyCreateBasicX509(), &trust)
-        if let trust = trust {
-            let trustResult = SecTrustCopyResult(trust)
-            print("trustResult = \(trustResult)")
-            if let trustResult = trustResult {
-                print("TrustExpirationDate: \(self.getValueFromCFDictionary(trustResult, forKey: "TrustExpirationDate"))")
-            }
-        }
-    }
 
-    func getValueFromCFDictionary(_ dictionary: CFDictionary, forKey key: String) -> Any? {
-        let cfKey = key as CFString
-
-        if let value = CFDictionaryGetValue(dictionary, Unmanaged.passUnretained(cfKey).toOpaque()) {
-            return Unmanaged<AnyObject>.fromOpaque(value).takeUnretainedValue()
-        }
-
-        return nil
-    }
-
-    
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard #available(iOS 12.0, *) else { return }
         
@@ -348,10 +325,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer"),
               let localCertificateData: NSData = NSData.init(contentsOf: pathToCertificate) else {
             return
-        }
-        
-        if let localCertificate = SecCertificateCreateWithData(nil, localCertificateData as CFData) {
-            self.printLocalCertificateExpiryDate(localCertificate)
         }
         
         if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
