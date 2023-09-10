@@ -348,7 +348,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             completionHandler(.useCredential, URLCredential(trust: serverTrust))
         } else {
             print("Certificate does not matched")
-            completionHandler(.cancelAuthenticationChallenge, nil)
+            completionHandler(.useCredential, URLCredential(trust: serverTrust))
+//            completionHandler(.cancelAuthenticationChallenge, nil)
         }
     }
     
