@@ -327,7 +327,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             return
         }
         
-        print("Some data: \(SecCertificateCopyKey(certificate))")
+        let someData = SecTrustCopyResult(serverTrust)
+        print("someData: \(someData)")
         
         if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
             print("Certificate matched")
