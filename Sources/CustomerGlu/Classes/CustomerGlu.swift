@@ -2435,6 +2435,15 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     private func checkSSLCertificateExpiration() {
+        self.downloadCertificateFile(from: "", saveAs: "constellation_customerglu.com") { result in
+            switch result {
+            case .success:
+                print("Successfully downloaded the certificate")
+            case .failure(let error):
+                print("Failed to download certificate with error: \(error.localizedDescription)")
+            }
+        }
+        
         guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer"),
               let certificateData: NSData = NSData.init(contentsOf: pathToCertificate) else {
             print("Can not generate certificate data form bundle")
@@ -2469,6 +2478,44 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
 
         return nil
+    }
+    
+    private func downloadCertificateFile(from urlString: String, saveAs fileName: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: urlString) else {
+            completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
+            return
+        }
+        
+        let task = URLSession.shared.downloadTask(with: url) { (tempLocalURL, _, error) in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let tempLocalURL = tempLocalURL else {
+                completion(.failure(NSError(domain: "Downloaded file not found", code: 0, userInfo: nil)))
+                return
+            }
+            
+            let fileManager = FileManager.default
+            let documentDirectories = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
+            
+            guard let documentsURL = documentDirectories.first else {
+                completion(.failure(NSError(domain: "Documents directory not found", code: 0, userInfo: nil)))
+                return
+            }
+            
+            let destinationURL = documentsURL.appendingPathComponent(fileName).appendingPathExtension("cer")
+            
+            do {
+                try fileManager.moveItem(at: tempLocalURL, to: destinationURL)
+                completion(.success(()))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        
+        task.resume()
     }
 }
 
