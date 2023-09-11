@@ -323,11 +323,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         
         let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
         
-        if let canConvertRemoteCertificateDataToCertificate = SecCertificateCreateWithData(nil, remoteCertificateData as CFData) {
-            print("Yep, it's working")
-        }
-        
-        guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer"),
+        guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "der"),
               let localCertificateData: NSData = NSData.init(contentsOf: pathToCertificate) else {
             return
         }

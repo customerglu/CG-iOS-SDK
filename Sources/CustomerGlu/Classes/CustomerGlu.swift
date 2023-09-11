@@ -2444,7 +2444,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
         }
         
-        guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "cer"),
+        guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "der"),
               let certificateData: NSData = NSData.init(contentsOf: pathToCertificate) else {
             print("Can not generate certificate data form bundle")
             return
