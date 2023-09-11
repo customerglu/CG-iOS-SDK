@@ -329,6 +329,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         }
         
         self.printLocalCertificateExpiryDate(certificate)
+        self.printLocalCertificateExpiryDate(SecCertificateCreateWithData(nil, localCertificateData)!)
         
         if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
             print("Certificate matched")
