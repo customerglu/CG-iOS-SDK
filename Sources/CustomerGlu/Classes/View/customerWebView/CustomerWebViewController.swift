@@ -328,12 +328,23 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             return
         }
         
+        self.printLocalCertificateExpiryDate(certificate)
+        
         if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
             print("Certificate matched")
             completionHandler(.useCredential, URLCredential(trust: serverTrust))
         } else {
             print("Certificate does not matched")
             completionHandler(.cancelAuthenticationChallenge, nil)
+        }
+    }
+    
+    private func printLocalCertificateExpiryDate(_ certificate: SecCertificate) {
+        var trust: SecTrust?
+        let status = SecTrustCreateWithCertificates(certificate, SecPolicyCreateBasicX509(), &trust)
+        if status == errSecSuccess, let trust = trust {
+            let trustResult = SecTrustCopyResult(trust)
+            print("trustResult = \(trustResult)")
         }
     }
     
