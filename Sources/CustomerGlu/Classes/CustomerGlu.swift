@@ -2450,6 +2450,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             return
         }
         
+        if let data = certificateData.map({ String(format: "%02hhx", $0) }).joined(separator: " ").data(using: .utf8) {
+            print("String is: \(certificateData.map({ String(format: "%02hhx", $0) }).joined(separator: " "))")
+            if let certificate = SecCertificateCreateWithData(nil, data as CFData) {
+                print("Success")
+            }
+        }
+        
         guard let certificate = SecCertificateCreateWithData(nil, certificateData as CFData) else {
             if #available(iOS 11.3, *) {
                 if let error = SecCopyErrorMessageString(errSecDecode, nil) {
