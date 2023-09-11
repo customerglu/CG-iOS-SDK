@@ -322,30 +322,16 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
         
         let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
-        
-        guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "der"),
-              let localCertificateData: NSData = NSData.init(contentsOf: pathToCertificate) else {
+        guard let localCertificateData: NSData = ApplicationManager.getLocalCertificateAsNSData() else {
             return
         }
-        
-        self.printLocalCertificateExpiryDate(certificate)
-        self.printLocalCertificateExpiryDate(SecCertificateCreateWithData(nil, localCertificateData)!)
-        
+    
         if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
             print("Certificate matched")
             completionHandler(.useCredential, URLCredential(trust: serverTrust))
         } else {
             print("Certificate does not matched")
             completionHandler(.cancelAuthenticationChallenge, nil)
-        }
-    }
-    
-    private func printLocalCertificateExpiryDate(_ certificate: SecCertificate) {
-        var trust: SecTrust?
-        let status = SecTrustCreateWithCertificates(certificate, SecPolicyCreateBasicX509(), &trust)
-        if status == errSecSuccess, let trust = trust {
-            let trustResult = SecTrustCopyResult(trust)
-            print("trustResult = \(trustResult)")
         }
     }
     

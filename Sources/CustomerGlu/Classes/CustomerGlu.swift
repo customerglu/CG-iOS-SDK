@@ -2435,88 +2435,31 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     private func checkSSLCertificateExpiration() {
-        self.downloadCertificateFile(from: "", saveAs: "constellation_customerglu.com") { result in
+        guard !CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey).isEmpty else {
+            updateLocalCertificate()
+            return
+        }
+        
+        guard let localCertificate = ApplicationManager.getLocalCertificate() else { return }
+        let expiryDate = ApplicationManager.getExpiryDate(from: localCertificate)
+        
+        switch expiryDate {
+        case _ where expiryDate > Date():
+            updateLocalCertificate()
+        default:
+            print("Certificate is up to date !")
+        }
+    }
+    
+    private func updateLocalCertificate() {
+        ApplicationManager.downloadCertificateFile(from: CGConstants.clientSSLCertificateDownloadURL) { result in
             switch result {
             case .success:
-                print("Successfully downloaded the certificate")
-            case .failure(let error):
-                print("Failed to download certificate with error: \(error.localizedDescription)")
+                print("Successfully updated the local ssl certificate")
+            case .failure(let failure):
+                print("Failed to download with error: \(failure.localizedDescription)")
             }
         }
-        
-        guard let pathToCertificate = Bundle.module.url(forResource: "constellation_customerglu.com", withExtension: "der"),
-              let certificateData: NSData = NSData.init(contentsOf: pathToCertificate) else {
-            print("Can not generate certificate data form bundle")
-            return
-        }
-        
-        guard let certificate = SecCertificateCreateWithData(nil, certificateData as CFData) else {
-            print("Can not generate certificate from certificate data")
-            return
-        }
-
-        
-        self.printLocalCertificateExpiryDate(certificate)
-    }
-    
-    private func printLocalCertificateExpiryDate(_ certificate: SecCertificate) {
-        var trust: SecTrust?
-        let status = SecTrustCreateWithCertificates(certificate, SecPolicyCreateBasicX509(), &trust)
-        if status == errSecSuccess, let trust = trust {
-            let trustResult = SecTrustCopyResult(trust)
-            print("trustResult = \(trustResult)")
-            if let trustResult = trustResult {
-                print("TrustExpirationDate: \(self.getValueFromCFDictionary(trustResult, forKey: "TrustExpirationDate"))")
-            }
-        }
-    }
-
-    private func getValueFromCFDictionary(_ dictionary: CFDictionary, forKey key: String) -> Any? {
-        let cfKey = key as CFString
-
-        if let value = CFDictionaryGetValue(dictionary, Unmanaged.passUnretained(cfKey).toOpaque()) {
-            return Unmanaged<AnyObject>.fromOpaque(value).takeUnretainedValue()
-        }
-
-        return nil
-    }
-    
-    private func downloadCertificateFile(from urlString: String, saveAs fileName: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let url = URL(string: urlString) else {
-            completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
-            return
-        }
-        
-        let task = URLSession.shared.downloadTask(with: url) { (tempLocalURL, _, error) in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let tempLocalURL = tempLocalURL else {
-                completion(.failure(NSError(domain: "Downloaded file not found", code: 0, userInfo: nil)))
-                return
-            }
-            
-            let fileManager = FileManager.default
-            let documentDirectories = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
-            
-            guard let documentsURL = documentDirectories.first else {
-                completion(.failure(NSError(domain: "Documents directory not found", code: 0, userInfo: nil)))
-                return
-            }
-            
-            let destinationURL = documentsURL.appendingPathComponent(fileName).appendingPathExtension("cer")
-            
-            do {
-                try fileManager.moveItem(at: tempLocalURL, to: destinationURL)
-                completion(.success(()))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-        
-        task.resume()
     }
 }
 
