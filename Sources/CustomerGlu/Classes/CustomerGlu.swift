@@ -2451,9 +2451,18 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         
         guard let certificate = SecCertificateCreateWithData(nil, certificateData as CFData) else {
-            print("Can not generate certificate from certificate data")
+            if #available(iOS 11.3, *) {
+                if let error = SecCopyErrorMessageString(errSecDecode, nil) {
+                    print("Failed to create certificate: \(error)")
+                } else {
+                    print("Can not generate certificate from certificate data")
+                }
+            } else {
+                // Fallback on earlier versions
+            }
             return
         }
+
         
         self.printLocalCertificateExpiryDate(certificate)
     }
