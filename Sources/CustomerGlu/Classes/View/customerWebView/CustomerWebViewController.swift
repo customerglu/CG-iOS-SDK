@@ -255,6 +255,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             self.openCGWebView()
         }
         self.isSSLChecked = false
+        self.isSSLSuccess = false
     }
     
     func loadwebView(url: String, x: CGFloat, y: CGFloat) {
@@ -311,6 +312,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
 
     private var isSSLChecked: Bool = false
+    private var isSSLSuccess: Bool = false
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard #available(iOS 12.0, *) else { return }
         
@@ -320,6 +322,13 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         }
         
         guard isSSLChecked == false else {
+            DispatchQueue.global(qos: .background).async {
+                if self.isSSLSuccess {
+                    completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                } else {
+                    completionHandler(.cancelAuthenticationChallenge, nil)
+                }
+            }
             return
         }
         
@@ -335,10 +344,12 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             self.isSSLChecked = true
             if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
                 print("Certificate matched")
+                self.isSSLSuccess = true
                 completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 return
             } else {
                 print("Certificate does not matched")
+                self.isSSLSuccess = false
                 completionHandler(.cancelAuthenticationChallenge, nil)
                 return
             }
