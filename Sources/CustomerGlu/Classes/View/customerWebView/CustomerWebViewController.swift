@@ -330,9 +330,11 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
                 print("Certificate matched")
                 completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
             } else {
                 print("Certificate does not matched")
                 completionHandler(.cancelAuthenticationChallenge, nil)
+                return
             }
         }
     }
