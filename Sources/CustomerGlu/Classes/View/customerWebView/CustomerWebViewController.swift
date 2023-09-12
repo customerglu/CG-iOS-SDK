@@ -333,7 +333,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             } else {
                 print("Certificate does not matched")
                 completionHandler(.cancelAuthenticationChallenge, nil)
-                self.dismiss(animated: true)
+                self.closePage(animated: true, dismissaction: CGDismissAction.SSL_FAILED)
                 return
             }
         }

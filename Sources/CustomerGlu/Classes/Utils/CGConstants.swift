@@ -248,6 +248,7 @@ struct CGDismissAction {
     static let PHYSICAL_BUTTON = "PHYSICAL_BUTTON"
     static let UI_BUTTON = "UI_BUTTON"
     static let CTA_REDIRECT = "CTA_REDIRECT"
+    static let SSL_FAILED = "SSL_FAILED"
     static let DEFAULT = "DEFAULT"
 }
 
