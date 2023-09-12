@@ -319,19 +319,21 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         
         let policy = NSMutableArray()
         policy.add(SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString))
-        let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
+        DispatchQueue.global(qos: .background).async {
+            let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
+            
+            let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
+            guard let localCertificateData: NSData = ApplicationManager.getLocalCertificateAsNSData() else {
+                return
+            }
         
-        let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
-        guard let localCertificateData: NSData = ApplicationManager.getLocalCertificateAsNSData() else {
-            return
-        }
-    
-        if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
-            print("Certificate matched")
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
-        } else {
-            print("Certificate does not matched")
-            completionHandler(.cancelAuthenticationChallenge, nil)
+            if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
+                print("Certificate matched")
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+            } else {
+                print("Certificate does not matched")
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
         }
     }
     
