@@ -320,9 +320,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         }
         
         guard isSSLChecked == false else {
-            DispatchQueue.global(qos: .background).async {
-                completionHandler(.useCredential, URLCredential(trust: serverTrust))
-            }
             return
         }
         
