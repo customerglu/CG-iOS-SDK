@@ -86,6 +86,20 @@ class ApplicationManager {
         return nil
     }
     
+    public static func getRemoteCertificateAsNSData() -> NSData? {
+        let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.remoteSSLCertificateAsStringKey)
+        if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
+            return NSData(data: data)
+        }
+        
+        return nil
+    }
+    
+    public static func saveRemoteCertificateAsNSData(_ nsData: NSData) {
+        let base64String = nsData.base64EncodedString()
+        ApplicationManager.encryptUserDefaultKey(str: base64String, userdefaultKey: CGConstants.remoteSSLCertificateAsStringKey)
+    }
+    
     public static func getLocalCertificate() -> SecCertificate? {
         let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
         if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {

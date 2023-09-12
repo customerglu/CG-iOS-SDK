@@ -52,6 +52,7 @@ struct CGConstants {
     
     static let clientSSLCertificateDownloadURL = "https://assets.customerglu.com/sdk-assets/constellation-ssl-cert/_.customerglu.com.der"
     static let clientSSLCertificateAsStringKey = "clientSSLCertificateAsStringKey"
+    static let remoteSSLCertificateAsStringKey = "remoteSSLCertificateAsStringKey"
 }
 
 struct CGDiagnosticConstants{
