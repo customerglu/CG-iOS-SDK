@@ -255,7 +255,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             self.openCGWebView()
         }
         
-        self.isSSLChecked = false
+//        self.isSSLChecked = false
     }
     
     func loadwebView(url: String, x: CGFloat, y: CGFloat) {
@@ -311,21 +311,28 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_START_PROVISIONAL, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
     }
 
-    private var isSSLChecked: Bool = false
+//    private var isSSLChecked: Bool = false
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard #available(iOS 12.0, *) else { return }
+        
+        let whiteStaticList = ["www.google.nl", "www.yahoo.com"]
+        let whiteList = whiteStaticList.filter { challenge.protectionSpace.host.hasPrefix($0) }
+        if whiteList.count > 0 {
+            completionHandler(URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust:challenge.protectionSpace.serverTrust!))
+            return
+        }
         
         guard let serverTrust = challenge.protectionSpace.serverTrust,
               let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
             return
         }
         
-        guard isSSLChecked == false else {
-            DispatchQueue.global(qos: .background).async {
-                completionHandler(.useCredential, URLCredential(trust: serverTrust))
-            }
-            return
-        }
+//        guard isSSLChecked == false else {
+//            DispatchQueue.global(qos: .background).async {
+//                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+//            }
+//            return
+//        }
         
         let policy = NSMutableArray()
         policy.add(SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString))
@@ -337,7 +344,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 return
             }
             
-            self.isSSLChecked = true
+//            self.isSSLChecked = true
             
             if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
                 print("Certificate matched")
@@ -346,9 +353,9 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             } else {
                 print("Certificate does not matched")
                 completionHandler(.cancelAuthenticationChallenge, nil)
-                DispatchQueue.main.async {
-                    self.closePage(animated: true, dismissaction: CGDismissAction.SSL_FAILED)
-                }
+//                DispatchQueue.main.async {
+//                    self.closePage(animated: true, dismissaction: CGDismissAction.SSL_FAILED)
+//                }
                 return
             }
         }
