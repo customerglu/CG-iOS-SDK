@@ -254,6 +254,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             self.canopencgwebview = false
             self.openCGWebView()
         }
+        self.isSSLChecked = false
     }
     
     func loadwebView(url: String, x: CGFloat, y: CGFloat) {
@@ -319,7 +320,9 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         }
         
         guard isSSLChecked == false else {
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
+            DispatchQueue.global(qos: .background).async {
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+            }
             return
         }
         
