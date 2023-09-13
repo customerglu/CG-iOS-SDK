@@ -73,6 +73,7 @@ public class CGMobileData: Codable {
     public var allowAnonymousRegistration: Bool?
     public var enableSslPinning: Bool?
     public var derCertificate: String?
+    public var allowProxy: Bool?
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -125,6 +126,8 @@ public class CGMobileData: Codable {
         self.allowAnonymousRegistration = try container.decodeIfPresent(Bool.self, forKey: .allowAnonymousRegistration) ?? false
         self.enableSslPinning = try container.decodeIfPresent(Bool.self, forKey: .enableSslPinning) ?? true
         self.derCertificate = try container.decodeIfPresent(String.self, forKey: .derCertificate) ?? ""
+        self.allowProxy = try container.decodeIfPresent(Bool.self, forKey: .allowProxy) ?? true
+    }
     
     required public init() {
     }

@@ -984,7 +984,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                 CustomerGlu.embedsHeight = [String:Any]()
                                 completion(true)
                             }
-                            if let isEUIProxyEnabled = self.appconfigdata?.isEUIProxyEnabled, isEUIProxyEnabled, CustomerGlu.oldCampaignIds != CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString) {
+                            if let allowProxy = self.appconfigdata?.allowProxy, allowProxy, CustomerGlu.oldCampaignIds != CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString) {
                                 CGProxyHelper.shared.getProgram()
                                 CGProxyHelper.shared.getReward()
                             }

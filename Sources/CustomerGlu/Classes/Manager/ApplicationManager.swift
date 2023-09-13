@@ -313,8 +313,4 @@ class ApplicationManager {
         dateformatter.dateFormat = dateFormat
         return dateformatter.string(from: date)
     }
-    
-    public static func encryptUserDefaultKey(str: String, userdefaultKey: String) {
-        ApplicationManager.userDefaults.set(EncryptDecrypt.shared.encryptText(str: str), forKey: userdefaultKey)
-    }
 }
