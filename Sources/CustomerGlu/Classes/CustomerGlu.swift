@@ -2449,7 +2449,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     private func updateLocalCertificate() {
-        guard let appconfigdata = appconfigdata, let sslCertificateLink = appconfigdata.sslCertificate else { return }
+        guard let appconfigdata = appconfigdata, let sslCertificateLink = appconfigdata.derCertificate else { return }
         ApplicationManager.downloadCertificateFile(from: sslCertificateLink) { result in
             switch result {
             case .success:
