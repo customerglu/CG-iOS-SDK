@@ -652,6 +652,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     // MARK: - API Calls Methods
     
     @objc public func initializeSdk() {
+//     
+        
         if !sdkInitialized {
             // So SDK is initialized
             sdkInitialized = true
@@ -676,6 +678,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
            
             // Get Config
             self.getAppConfig { result in
+                self.checkSSLCertificateExpiration()
             }
         }
     }
@@ -2403,7 +2406,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
              */
             let userTopic = "nudges/" + (clientID) + "/" + (userID.sha256())
             let clientTopic = "/state/global/" + (clientID)
-            let host = "hermes.customerglu.com"
+            let host = "dev-hermes.customerglu.com"
             let username = userID
             let password = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
             let mqttIdentifier = decryptUserDefaultKey(userdefaultKey: CGConstants.MQTT_Identifier)
@@ -2449,6 +2452,34 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             customAlert.delegate = self
             customAlert.isRetry = false
             customAlert.showOnViewController(topController)
+        }
+    }
+    
+    private func checkSSLCertificateExpiration() {
+        guard let appconfigdata = appconfigdata, let enableSslPinning = appconfigdata.enableSslPinning, enableSslPinning else { return }
+        
+        guard !CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey).isEmpty else {
+            updateLocalCertificate()
+            return
+        }
+        
+        guard let savedRemoteCertificateAsNSData = ApplicationManager.getRemoteCertificateAsNSData(),
+              let localCertificateAsNSData = ApplicationManager.getLocalCertificateAsNSData(),
+              savedRemoteCertificateAsNSData.isEqual(to: localCertificateAsNSData as Data) else {
+            updateLocalCertificate()
+            return
+        }
+    }
+    
+    private func updateLocalCertificate() {
+        guard let appconfigdata = appconfigdata, let sslCertificateLink = appconfigdata.derCertificate else { return }
+        ApplicationManager.downloadCertificateFile(from: sslCertificateLink) { result in
+            switch result {
+            case .success:
+                print("Successfully updated the local ssl certificate")
+            case .failure(let failure):
+                print("Failed to download with error: \(failure.localizedDescription)")
+            }
         }
     }
 }

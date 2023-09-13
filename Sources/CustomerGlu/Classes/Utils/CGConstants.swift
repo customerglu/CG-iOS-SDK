@@ -50,6 +50,8 @@ struct CGConstants {
     static let MQTT_Enabled_Components_Nudges = "NUDGES"
     static let MQTT_Enabled_Components_EntryPoints = "ENTRYPOINTS"
     
+    static let clientSSLCertificateAsStringKey = "clientSSLCertificateAsStringKey"
+    static let remoteSSLCertificateAsStringKey = "remoteSSLCertificateAsStringKey"
     static let CGGetProgramResponse = "CGGetProgramResponse"
     static let CGGetRewardResponse = "CGGetRewardResponse"
     static let allCampaignsIdsAsString = "allCampaignsIdsAsString"
@@ -249,6 +251,7 @@ struct CGDismissAction {
     static let PHYSICAL_BUTTON = "PHYSICAL_BUTTON"
     static let UI_BUTTON = "UI_BUTTON"
     static let CTA_REDIRECT = "CTA_REDIRECT"
+    static let SSL_FAILED = "SSL_FAILED"
     static let DEFAULT = "DEFAULT"
 }
 

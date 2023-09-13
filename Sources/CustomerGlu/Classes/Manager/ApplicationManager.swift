@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 class ApplicationManager {
-    public static var baseUrl = "api.customerglu.com/"
+    public static var baseUrl = "dev-api.customerglu.com/"
     public static var devbaseUrl = "dev-api.customerglu.com/"
     public static var streamUrl = "stream.customerglu.com/"
     public static var eventUrl = "events.customerglu.com/"
@@ -18,6 +18,7 @@ class ApplicationManager {
     public static var accessToken: String?
     public static var operationQueue = OperationQueue()
     public static var appSessionId = UUID().uuidString
+    public static let userDefaults = UserDefaults.standard
     
     public static func openWalletApi(completion: @escaping (Bool, CGCampaignsModel?) -> Void) {
         if CustomerGlu.sdk_disable! == true {
@@ -84,6 +85,68 @@ class ApplicationManager {
                 completion(false, nil)
             }
         }
+    }
+    
+    public static func getLocalCertificateAsNSData() -> NSData? {
+        let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
+        if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
+            return NSData(data: data)
+        }
+        
+        return nil
+    }
+    
+    public static func getRemoteCertificateAsNSData() -> NSData? {
+        let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.remoteSSLCertificateAsStringKey)
+        if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
+            return NSData(data: data)
+        }
+        
+        return nil
+    }
+    
+    public static func saveRemoteCertificateAsNSData(_ nsData: NSData) {
+        let base64String = nsData.base64EncodedString()
+        ApplicationManager.encryptUserDefaultKey(str: base64String, userdefaultKey: CGConstants.remoteSSLCertificateAsStringKey)
+    }
+    
+    public static func getLocalCertificate() -> SecCertificate? {
+        let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
+        if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
+            let certificateData = NSData(data: data)
+            return SecCertificateCreateWithData(nil, certificateData as CFData)
+        }
+        
+        return nil
+    }
+    
+    public static func downloadCertificateFile(from urlString: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: urlString) else {
+            completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
+            return
+        }
+
+        let task = URLSession.shared.downloadTask(with: url) { (tempLocalURL, _, error) in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            guard let tempLocalURL = tempLocalURL else {
+                completion(.failure(NSError(domain: "Downloaded file not found", code: 0, userInfo: nil)))
+                return
+            }
+
+            let data = NSData(contentsOf: tempLocalURL)
+            if let data = data {
+                ApplicationManager.encryptUserDefaultKey(str: data.base64EncodedString(), userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
+                completion(.success(()))
+            } else {
+                completion(.failure(NSError(domain: "Invalid data conversion", code: 0, userInfo: nil)))
+            }
+        }
+
+        task.resume()
     }
     
     public static func sendEventData(eventName: String, eventProperties: [String: Any]?, completion: @escaping (Bool, CGAddCartModel?) -> Void) {
@@ -249,5 +312,9 @@ class ApplicationManager {
         let dateformatter = DateFormatter()
         dateformatter.dateFormat = dateFormat
         return dateformatter.string(from: date)
+    }
+    
+    public static func encryptUserDefaultKey(str: String, userdefaultKey: String) {
+        ApplicationManager.userDefaults.set(EncryptDecrypt.shared.encryptText(str: str), forKey: userdefaultKey)
     }
 }

@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import WebKit
 import Lottie
+import Security
 
 public class CustomerWebViewController: UIViewController, WKNavigationDelegate, WKScriptMessageHandler {
     
@@ -309,6 +310,45 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         // DIAGNOSTICS
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_START_PROVISIONAL, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
+    }
+
+    public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        guard #available(iOS 12.0, *) else { return } 
+        guard let appConfig = CustomerGlu.getInstance.appconfigdata, let enableSslPinning = appConfig.enableSslPinning, enableSslPinning else { return }
+        
+        guard let serverTrust = challenge.protectionSpace.serverTrust,
+              let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
+            return
+        }
+        
+        let policy = NSMutableArray()
+        policy.add(SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString))
+        DispatchQueue.global(qos: .background).async {
+            let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
+            
+            let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
+            guard let localCertificateData: NSData = ApplicationManager.getLocalCertificateAsNSData() else {
+                return
+            }
+            
+            if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
+                print("Certificate matched")
+                ApplicationManager.saveRemoteCertificateAsNSData(remoteCertificateData)
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
+            } else if let savedRemoteCertificateAsNSData = ApplicationManager.getRemoteCertificateAsNSData(), savedRemoteCertificateAsNSData.isEqual(to: localCertificateData as Data) {
+                print("Certificate matched")
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
+            } else {
+                print("Certificate does not matched")
+                completionHandler(.cancelAuthenticationChallenge, nil)
+                DispatchQueue.main.async {
+                    self.closePage(animated: true, dismissaction: CGDismissAction.SSL_FAILED)
+                }
+                return
+            }
+        }
     }
     
     private func executeCallBack(eventName: String, requestId: String) {
