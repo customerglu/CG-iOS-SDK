@@ -110,20 +110,6 @@ class ApplicationManager {
         return nil
     }
     
-    public static func getExpiryDate(from certificate: SecCertificate) -> Date {
-        ApplicationManager.printLocalCertificateExpiryDate(certificate)
-        return Date()
-    }
-    
-    public static func printLocalCertificateExpiryDate(_ certificate: SecCertificate) {
-        var trust: SecTrust?
-        let status = SecTrustCreateWithCertificates(certificate, SecPolicyCreateBasicX509(), &trust)
-        if status == errSecSuccess, let trust = trust {
-            let trustResult = SecTrustCopyResult(trust)
-            print("trustResult = \(trustResult)")
-        }
-    }
-    
     public static func downloadCertificateFile(from urlString: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))

@@ -71,6 +71,8 @@ public class CGMobileData: Codable {
     public var mqttEnabledComponents: [String]?
     public var allowedRetryCount: Int = 1
     public var allowAnonymousRegistration: Bool?
+    public var enableSslPinning: Bool?
+    public var sslCertificate: String?
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -121,6 +123,8 @@ public class CGMobileData: Codable {
         }
         self.allowedRetryCount = try container.decodeIfPresent(Int.self, forKey: .allowedRetryCount) ?? 1
         self.allowAnonymousRegistration = try container.decodeIfPresent(Bool.self, forKey: .allowAnonymousRegistration) ?? false
+        self.enableSslPinning = try container.decodeIfPresent(Bool.self, forKey: .enableSslPinning) ?? true
+        self.sslCertificate = try container.decodeIfPresent(String.self, forKey: .sslCertificate) ?? ""
     }
     
     required public init() {

@@ -662,8 +662,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
            
             // Get Config
             self.getAppConfig { result in
+                self.checkSSLCertificateExpiration()
             }
-            checkSSLCertificateExpiration()
         }
     }
     
@@ -2440,19 +2440,17 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             return
         }
         
-        guard let localCertificate = ApplicationManager.getLocalCertificate() else { return }
-        let expiryDate = ApplicationManager.getExpiryDate(from: localCertificate)
-        
-        switch expiryDate {
-        case _ where expiryDate > Date():
+        guard let savedRemoteCertificateAsNSData = ApplicationManager.getRemoteCertificateAsNSData(),
+              let localCertificateAsNSData = ApplicationManager.getLocalCertificateAsNSData(),
+              savedRemoteCertificateAsNSData.isEqual(to: localCertificateAsNSData as Data) else {
             updateLocalCertificate()
-        default:
-            print("Certificate is up to date !")
+            return
         }
     }
     
     private func updateLocalCertificate() {
-        ApplicationManager.downloadCertificateFile(from: CGConstants.clientSSLCertificateDownloadURL) { result in
+        guard let appconfigdata = appconfigdata, let sslCertificateLink = appconfigdata.sslCertificate else { return }
+        ApplicationManager.downloadCertificateFile(from: sslCertificateLink) { result in
             switch result {
             case .success:
                 print("Successfully updated the local ssl certificate")

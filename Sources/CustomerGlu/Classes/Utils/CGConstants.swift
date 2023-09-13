@@ -50,7 +50,6 @@ struct CGConstants {
     static let MQTT_Enabled_Components_Nudges = "NUDGES"
     static let MQTT_Enabled_Components_EntryPoints = "ENTRYPOINTS"
     
-    static let clientSSLCertificateDownloadURL = "https://assets.customerglu.com/sdk-assets/constellation-ssl-cert/_.customerglu.com.der"
     static let clientSSLCertificateAsStringKey = "clientSSLCertificateAsStringKey"
     static let remoteSSLCertificateAsStringKey = "remoteSSLCertificateAsStringKey"
 }
