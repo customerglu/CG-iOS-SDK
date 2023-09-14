@@ -127,7 +127,7 @@ public class CGMobileData: Codable {
         self.enableSslPinning = try container.decodeIfPresent(Bool.self, forKey: .enableSslPinning) ?? true
         self.derCertificate = try container.decodeIfPresent(String.self, forKey: .derCertificate) ?? ""
         self.allowProxy = try container.decodeIfPresent(Bool.self, forKey: .allowProxy) ?? true
-    }
+    } 
     
     required public init() {
     }
