@@ -2476,11 +2476,15 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         ApplicationManager.downloadCertificateFile(from: sslCertificateLink) { result in
             switch result {
             case .success:
-                print("Successfully updated the local ssl certificate")
+                CustomerGlu.getInstance.printlog(cglog: "Successfully updated the local ssl certificate", isException: false, methodName: "CustomerGlue-updateLocalCertificate", posttoserver: false)
             case .failure(let failure):
-                print("Failed to download with error: \(failure.localizedDescription)")
+                CustomerGlu.getInstance.printlog(cglog: "Failed to download with error: \(failure.localizedDescription)", isException: false, methodName: "CustomerGlue-updateLocalCertificate", posttoserver: false)
             }
         }
+    }
+    
+    @objc public func isCampaignValid(with campaignId: String) -> Bool {
+        return CustomerGlu.allCampaignsIds.contains(campaignId)
     }
 }
 

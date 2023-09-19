@@ -333,16 +333,16 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             }
             
             if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
-                print("Certificate matched")
+                CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
                 ApplicationManager.saveRemoteCertificateAsNSData(remoteCertificateData)
                 completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 return
             } else if let savedRemoteCertificateAsNSData = ApplicationManager.getRemoteCertificateAsNSData(), savedRemoteCertificateAsNSData.isEqual(to: localCertificateData as Data) {
-                print("Certificate matched")
+                CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
                 completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 return
             } else {
-                print("Certificate does not matched")
+                CustomerGlu.getInstance.printlog(cglog: "Certificate does not matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
                 completionHandler(.cancelAuthenticationChallenge, nil)
                 DispatchQueue.main.async {
                     self.closePage(animated: true, dismissaction: CGDismissAction.SSL_FAILED)
@@ -454,8 +454,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                   let bodyData = bodyString.data(using: .utf8) else { fatalError() }
             
             let bodyStruct = try? JSONDecoder().decode(CGEventModel.self, from: bodyData)
-            print("Body Struct: \(bodyStruct)")
-            print("DATA: \(message.body)")
             // DIAGNOSTICS
             var diagnosticsEventData: [String: Any] = ["eventName": bodyStruct?.eventName ?? "",
                                             "Name": WebViewsKey.callback]
@@ -472,12 +470,10 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             }
             
             if bodyStruct?.eventName == "REQUEST_API_DATA" {
-                print("Got the callback event for REQUEST_API_DATA : \(bodyStruct?.eventName)")
                 executeCallBack(eventName: "REQUEST_API_RESULT", requestId: bodyStruct?.data?.requestId ?? "")
             }
             
             if bodyStruct?.eventName == "REFRESH_API_DATA" {
-                print("Got the callback event for REFRESH_API_DATA : \(bodyStruct?.eventName)")
                 executeCallBack(eventName: "REFRESH_API_DATA_RESULT", requestId: bodyStruct?.data?.requestId ?? "")
             }
             
