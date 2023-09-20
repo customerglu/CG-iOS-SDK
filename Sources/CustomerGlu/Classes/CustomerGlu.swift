@@ -118,7 +118,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     private override init() {
         super.init()
-        preLaunchWebView()
         migrateUserDefaultKey()
         
         if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
@@ -478,17 +477,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    private func preLaunchWebView() {
-        let config = WKWebViewConfiguration()
-        let contentController = WKUserContentController()
-        config.userContentController = contentController
-        config.allowsInlineMediaPlayback = true
-        let webView = WKWebView(frame: .zero, configuration: config)
-        if let url = URL(string: "https://constellation.customerglu.com/preload") {
-            webView.load(URLRequest(url: url))
-        }
-    }
-    
     @objc public func presentToCustomerWebViewController(nudge_url: String, page_type: String, backgroundAlpha: Double, auto_close_webview : Bool, nudgeConfiguration : CGNudgeConfiguration? = nil) {
         
         let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
@@ -679,6 +667,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             // Get Config
             self.getAppConfig { result in
                 self.checkSSLCertificateExpiration()
+                let _ = CGPreloadWKWebViewHelper()
             }
         }
     }
@@ -2471,7 +2460,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    private func updateLocalCertificate() {
+    public func updateLocalCertificate() {
         guard let appconfigdata = appconfigdata, let sslCertificateLink = appconfigdata.derCertificate else { return }
         ApplicationManager.downloadCertificateFile(from: sslCertificateLink) { result in
             switch result {
