@@ -10,23 +10,24 @@ import WebKit
 import Security
 
 class CGPreloadWKWebViewHelper: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
-    let config = WKWebViewConfiguration()
-    let contentController = WKUserContentController()
     var webView = WKWebView()
 
     override init() {
-        super.init()
+        let config = WKWebViewConfiguration()
+        let contentController = WKUserContentController()
         config.userContentController = contentController
         config.allowsInlineMediaPlayback = true
-        webView = WKWebView(frame: .zero, configuration: config)
-        self.webView.navigationDelegate = self
-
+        self.webView = WKWebView(frame: .zero, configuration: config)
+        super.init()
+        
         let window = UIWindow(frame: CGRect(x: -1000, y: -1000, width: 1, height: 1))
         window.addSubview(webView)
-
+        
         if let url = URL(string: "https://constellation.customerglu.com/preload") {
             webView.load(URLRequest(url: url))
         }
+        
+        self.webView.navigationDelegate = self
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
