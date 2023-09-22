@@ -640,11 +640,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     // MARK: - API Calls Methods
     
     @objc public func initializeSdk() {
-//
-        if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
-            rootViewController.present(CGPreloadWKWebViewHelper(), animated: false, completion: nil)
-        }
-         
         if !sdkInitialized {
             // So SDK is initialized
             sdkInitialized = true
@@ -2447,6 +2442,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     private func checkSSLCertificateExpiration() {
+        if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
+            rootViewController.present(CGPreloadWKWebViewHelper(), animated: false, completion: nil)
+        }
+        
         guard let appconfigdata = appconfigdata, let enableSslPinning = appconfigdata.enableSslPinning, enableSslPinning else { return }
         
         guard !CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey).isEmpty else {
