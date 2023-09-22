@@ -25,11 +25,11 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
         view.addSubview(webView)
 
         webView.isHidden = true
-        webView.translatesAutoresizingMaskIntoConstraints = false
-        webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+//        webView.translatesAutoresizingMaskIntoConstraints = false
+//        webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+//        webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+//        webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+//        webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
         if let url = URL(string: "https://constellation.customerglu.com/preload") {
             webView.load(URLRequest(url: url))
