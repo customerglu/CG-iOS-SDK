@@ -641,7 +641,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func initializeSdk() {
 //     
-//        let _ = CGPreloadWKWebViewHelper()
+        let _ = CGPreloadWKWebViewHelper()
+         
         if !sdkInitialized {
             // So SDK is initialized
             sdkInitialized = true
@@ -2471,7 +2472,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    @objc public func isCampaignValid(with campaignId: String) -> Bool {
+    @objc public func isCampaignValid(campaignId: String) -> Bool {
         return CustomerGlu.allCampaignsIds.contains(campaignId)
     }
 }

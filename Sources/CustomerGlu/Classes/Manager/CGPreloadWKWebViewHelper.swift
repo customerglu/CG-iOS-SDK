@@ -23,7 +23,7 @@ class CGPreloadWKWebViewHelper: NSObject, WKScriptMessageHandler, WKNavigationDe
         let window = UIWindow(frame: CGRect(x: -1000, y: -1000, width: 1, height: 1))
         window.addSubview(webView)
         
-        if let url = URL(string: "https://constellation.customerglu.com/preload") {
+        if let url = URL(string: "https://constellation.customerglu.com/reward/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4MTEiLCJnbHVJZCI6Ijk2YjdmYjc3LTU3ZGItNGY2Yi05MzM4LTY0ZThmNzhjNWI5ZiIsImNsaWVudCI6Ijg0YWNmMmFjLWIyZTAtNDkyNy04NjUzLWNiYTJiODM4MTZjMiIsImRldmljZUlkIjoiODExX2RlZmF1bHQiLCJkZXZpY2VUeXBlIjoiYW5kcm9pZCIsImlzTG9nZ2VkSW4iOnRydWUsImlhdCI6MTY5NTI5NTA2NCwiZXhwIjoxNzI2ODMxMDY0fQ.Hzz5jcK18LUvuFpwk35MN4JV0GXrm1sjX0mCPzSS8D4&rewardUserId=fb211c78-3c00-4540-924c-753b91b2d003") {
             webView.load(URLRequest(url: url))
         }
         
@@ -51,56 +51,3 @@ class CGPreloadWKWebViewHelper: NSObject, WKScriptMessageHandler, WKNavigationDe
         }
     }
 }
-
-
-//import UIKit
-//import WebKit
-//
-//class CGPreloadWKWebViewHelper: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
-//    let config = WKWebViewConfiguration()
-//    let contentController = WKUserContentController()
-//    var webView = WKWebView()
-//
-//    override init() {
-//        super.init()
-//        config.userContentController = contentController
-//        config.allowsInlineMediaPlayback = true
-//        webView = WKWebView(frame: .zero, configuration: config)
-//        if let url = URL(string: "https://constellation.customerglu.com/preload") {
-//            webView.load(URLRequest(url: url))
-//        }
-//        self.webView.navigationDelegate = self
-//    }
-//
-//    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-//
-//    }
-//
-//    public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-//        guard #available(iOS 12.0, *) else { return }
-//        guard let appConfig = CustomerGlu.getInstance.appconfigdata, let enableSslPinning = appConfig.enableSslPinning, enableSslPinning else { return }
-//
-//        guard let serverTrust = challenge.protectionSpace.serverTrust,
-//              let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
-//            return
-//        }
-//
-//        let policy = NSMutableArray()
-//        policy.add(SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString))
-//        DispatchQueue.global(qos: .background).async {
-//            let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
-//            let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
-//
-//            guard isServerTrusted == true else {
-//                completionHandler(.cancelAuthenticationChallenge, nil)
-//                return
-//            }
-//
-//            if CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey) != remoteCertificateData.base64EncodedString() {
-//                CustomerGlu.getInstance.updateLocalCertificate()
-//            }
-//
-//            completionHandler(.useCredential, URLCredential(trust: serverTrust))
-//        }
-//    }
-//}

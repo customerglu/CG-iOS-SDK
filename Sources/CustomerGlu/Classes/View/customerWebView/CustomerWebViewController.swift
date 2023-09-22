@@ -333,9 +333,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 return
             }
             
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
-            return
-            
             if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
                 CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
                 ApplicationManager.saveRemoteCertificateAsNSData(remoteCertificateData)
