@@ -640,8 +640,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     // MARK: - API Calls Methods
     
     @objc public func initializeSdk() {
-//     
-        let _ = CGPreloadWKWebViewHelper()
+//
+        if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
+            rootViewController.present(CGPreloadWKWebViewHelper(), animated: false, completion: nil)
+        }
          
         if !sdkInitialized {
             // So SDK is initialized
