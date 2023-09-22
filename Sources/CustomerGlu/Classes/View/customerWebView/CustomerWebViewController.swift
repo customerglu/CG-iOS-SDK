@@ -316,7 +316,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         guard #available(iOS 12.0, *) else { return }
         guard nudgeConfiguration == nil || nudgeConfiguration?.isHyperLink == false else { return }
         guard let appConfig = CustomerGlu.getInstance.appconfigdata, let enableSslPinning = appConfig.enableSslPinning, enableSslPinning else { return }
-         
+        
         guard let serverTrust = challenge.protectionSpace.serverTrust,
               let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
             return
@@ -334,13 +334,13 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             
             if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
                 CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
-//                ApplicationManager.saveRemoteCertificateAsNSData(remoteCertificateData)
+                ApplicationManager.saveRemoteCertificateAsNSData(remoteCertificateData)
                 completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 return
-//            } else if let savedRemoteCertificateAsNSData = ApplicationManager.getRemoteCertificateAsNSData(), savedRemoteCertificateAsNSData.isEqual(to: localCertificateData as Data) {
-//                CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
-//                completionHandler(.useCredential, URLCredential(trust: serverTrust))
-//                return
+            } else if let savedRemoteCertificateAsNSData = ApplicationManager.getRemoteCertificateAsNSData(), savedRemoteCertificateAsNSData.isEqual(to: localCertificateData as Data) {
+                CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
             } else {
                 CustomerGlu.getInstance.printlog(cglog: "Certificate does not matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
                 completionHandler(.cancelAuthenticationChallenge, nil)
