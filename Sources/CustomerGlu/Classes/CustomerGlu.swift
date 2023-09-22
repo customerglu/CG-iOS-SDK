@@ -2442,8 +2442,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     private func checkSSLCertificateExpiration() {
-        if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
-            rootViewController.present(CGPreloadWKWebViewHelper(), animated: false, completion: nil)
+        DispatchQueue.main.async {
+            if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
+                rootViewController.present(CGPreloadWKWebViewHelper(), animated: false, completion: nil)
+            }
         }
         
         guard let appconfigdata = appconfigdata, let enableSslPinning = appconfigdata.enableSslPinning, enableSslPinning else { return }
