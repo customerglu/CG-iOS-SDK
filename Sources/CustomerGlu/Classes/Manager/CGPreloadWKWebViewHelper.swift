@@ -14,6 +14,7 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        modalPresentationStyle = .overFullScreen
 
         let config = WKWebViewConfiguration()
         let contentController = WKUserContentController()
@@ -24,13 +25,19 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
         webView.navigationDelegate = self
         view.addSubview(webView)
 
+        // Adjust the frame or constraints to make the view invisible
         webView.isHidden = true
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            webView.topAnchor.constraint(equalTo: view.topAnchor),
+            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            webView.heightAnchor.constraint(equalToConstant: 0),
+            webView.widthAnchor.constraint(equalToConstant: 0),
+        ])
+
         webView.backgroundColor = .clear
-//        webView.translatesAutoresizingMaskIntoConstraints = false
-//        webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-//        webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-//        webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-//        webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
         if let url = URL(string: "https://constellation.customerglu.com/preload") {
             webView.load(URLRequest(url: url))
@@ -54,6 +61,7 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
         }
     }
 }
+
 
 
 //class CGPreloadWKWebViewHelper: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
