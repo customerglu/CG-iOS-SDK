@@ -2458,13 +2458,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             updateLocalCertificate()
             return
         }
-        
-        guard let savedRemoteCertificateAsNSData = ApplicationManager.getRemoteCertificateAsNSData(),
-              let localCertificateAsNSData = ApplicationManager.getLocalCertificateAsNSData(),
-              savedRemoteCertificateAsNSData.isEqual(to: localCertificateAsNSData as Data) else {
-            updateLocalCertificate()
-            return
-        }
     }
     
     public func updateLocalCertificate() {

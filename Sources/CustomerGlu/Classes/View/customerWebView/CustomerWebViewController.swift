@@ -313,11 +313,10 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
 
     public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        
         guard #available(iOS 12.0, *) else { return }
         guard nudgeConfiguration == nil || nudgeConfiguration?.isHyperLink == false else { return }
         guard let appConfig = CustomerGlu.getInstance.appconfigdata, let enableSslPinning = appConfig.enableSslPinning, enableSslPinning else { return }
-        
+         
         guard let serverTrust = challenge.protectionSpace.serverTrust,
               let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
             return

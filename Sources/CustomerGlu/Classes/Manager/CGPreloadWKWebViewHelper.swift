@@ -28,66 +28,31 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
             webView.load(URLRequest(url: url))
         }
     }
-
+    private var checked: Bool = false
     func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        guard let serverTrust = challenge.protectionSpace.serverTrust,
-              let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
-            completionHandler(.cancelAuthenticationChallenge, nil)
-            return
-        }
+        DispatchQueue.global(qos: .background).async {
+            guard let serverTrust = challenge.protectionSpace.serverTrust,
+                  let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
+                completionHandler(.cancelAuthenticationChallenge, nil)
+                return
+            }
 
-        let knownCertificateData = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
-        let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
-
-        if remoteCertificateData.base64EncodedString() == knownCertificateData {
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
-        } else {
-            completionHandler(.cancelAuthenticationChallenge, nil)
+            let alreadySavedCertificate = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
+            let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
+            
+            if self.checked {
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
+            }
+            
+            if remoteCertificateData.base64EncodedString() == alreadySavedCertificate {
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+            } else {
+                CustomerGlu.getInstance.updateLocalCertificate()
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
+            
+            self.checked = true
         }
     }
 }
-
-
-
-//class CGPreloadWKWebViewHelper: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
-//    var webView = WKWebView()
-//
-//    override init() {
-//        let config = WKWebViewConfiguration()
-//        let contentController = WKUserContentController()
-//        config.userContentController = contentController
-//        config.allowsInlineMediaPlayback = true
-//        self.webView = WKWebView(frame: .zero, configuration: config)
-//        super.init()
-//
-//        let window = UIWindow(frame: CGRect(x: -1000, y: -1000, width: 1, height: 1))
-//        window.addSubview(webView)
-//
-//        if let url = URL(string: "https://constellation.customerglu.com/preload") {
-//            webView.load(URLRequest(url: url))
-//        }
-//
-//        self.webView.navigationDelegate = self
-//    }
-//
-//    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-//        // Handle script messages if needed.
-//    }
-//
-//    public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-//        guard let serverTrust = challenge.protectionSpace.serverTrust,
-//              let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
-//            completionHandler(.cancelAuthenticationChallenge, nil)
-//            return
-//        }
-//
-//        let knownCertificateData = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
-//        let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
-//
-//        if remoteCertificateData.base64EncodedString() == knownCertificateData {
-//            completionHandler(.useCredential, URLCredential(trust: serverTrust))
-//        } else {
-//            completionHandler(.cancelAuthenticationChallenge, nil)
-//        }
-//    }
-//}
