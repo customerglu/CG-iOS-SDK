@@ -2444,7 +2444,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func checkSSLCertificateExpiration() {
         DispatchQueue.main.async {
             if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
-                rootViewController.present(CGPreloadWKWebViewHelper(), animated: false, completion: nil)
+                let viewController = CGPreloadWKWebViewHelper()
+                viewController.view.backgroundColor = .clear
+                viewController.view.isOpaque = false
+                viewController.modalPresentationStyle = .overCurrentContext
+                rootViewController.present(viewController, animated: false, completion: nil)
             }
         }
         

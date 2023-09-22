@@ -14,29 +14,15 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        modalPresentationStyle = .overFullScreen
 
         let config = WKWebViewConfiguration()
         let contentController = WKUserContentController()
         config.userContentController = contentController
         config.allowsInlineMediaPlayback = true
 
-        webView = WKWebView(frame: .init(x: 0, y: 0, width: 20, height: 20), configuration: config)
+        webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
         view.addSubview(webView)
-
-        webView.isHidden = true
-        webView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            webView.topAnchor.constraint(equalTo: view.topAnchor),
-            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            webView.heightAnchor.constraint(equalToConstant: 0),
-            webView.widthAnchor.constraint(equalToConstant: 0),
-        ])
-
-        webView.backgroundColor = .clear
 
         if let url = URL(string: "https://constellation.customerglu.com/preload") {
             webView.load(URLRequest(url: url))
