@@ -25,6 +25,7 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
         view.addSubview(webView)
 
         webView.isHidden = true
+        webView.backgroundColor = .clear
 //        webView.translatesAutoresizingMaskIntoConstraints = false
 //        webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
 //        webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
