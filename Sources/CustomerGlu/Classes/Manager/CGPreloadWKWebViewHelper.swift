@@ -21,11 +21,10 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
         config.userContentController = contentController
         config.allowsInlineMediaPlayback = true
 
-        webView = WKWebView(frame: .zero, configuration: config)
+        webView = WKWebView(frame: .init(x: 0, y: 0, width: 20, height: 20), configuration: config)
         webView.navigationDelegate = self
         view.addSubview(webView)
 
-        // Adjust the frame or constraints to make the view invisible
         webView.isHidden = true
         webView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
