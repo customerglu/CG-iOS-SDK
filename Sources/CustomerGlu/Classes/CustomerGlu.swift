@@ -2223,7 +2223,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
             eventInfo[APIParameterKey.entry_point_data] = entry_point_data
-            ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo) { success, _ in
+            ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: content_campaign_id) { success, _ in
                 if success {
                     CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "postAnalyticsEventForEntryPoints", posttoserver: false)
                 } else {
@@ -2273,7 +2273,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         nudge[APIParameterKey.type] = type
         eventInfo[APIParameterKey.nudge] = nudge
         
-        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo) { success, _ in
+        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: campaign_id) { success, _ in
             if success {
                 CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "postAnalyticsEventForNotification", posttoserver: false)
             } else {
