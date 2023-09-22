@@ -641,7 +641,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func initializeSdk() {
 //     
-        let _ = CGPreloadWKWebViewHelper()
+//        let _ = CGPreloadWKWebViewHelper()
         if !sdkInitialized {
             // So SDK is initialized
             sdkInitialized = true
