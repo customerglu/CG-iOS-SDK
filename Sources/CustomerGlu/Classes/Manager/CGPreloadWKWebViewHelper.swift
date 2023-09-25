@@ -30,6 +30,8 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
     }
     private var checked: Bool = false
     func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        guard let appConfig = CustomerGlu.getInstance.appconfigdata, let enableSslPinning = appConfig.enableSslPinning, enableSslPinning else { return }
+        
         DispatchQueue.global(qos: .background).async {
             guard let serverTrust = challenge.protectionSpace.serverTrust,
                   let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
