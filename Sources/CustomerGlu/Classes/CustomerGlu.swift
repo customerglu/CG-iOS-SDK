@@ -1869,7 +1869,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
             sendEntryPointsIdLists()
             
-            guard CustomerGlu.getInstance.activescreenname != className else {
+            guard CustomerGlu.getInstance.activescreenname != className, CustomerGlu.getInstance.activescreenname.isEmpty, className.isEmpty else {
                 showPopup(className: className)
                 return
             }
