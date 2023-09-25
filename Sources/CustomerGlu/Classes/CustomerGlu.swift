@@ -1869,28 +1869,24 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
             sendEntryPointsIdLists()
             
+            CustomerGlu.getInstance.activescreenname = className
             
-            if CustomerGlu.getInstance.activescreenname != className || CustomerGlu.getInstance.activescreenname.isEmpty || className.isEmpty {
-                
-                CustomerGlu.getInstance.activescreenname = className
-                
-                for floatBtn in self.arrFloatingButton {
-                    floatBtn.hideFloatingButton(ishidden: true)
-                    if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                        if  !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                            floatBtn.hideFloatingButton(ishidden: false)
-                            callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
-                        }
-                    } else if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
-                        if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
-                            floatBtn.hideFloatingButton(ishidden: false)
-                            callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED",event_name: "ENTRY_POINT_LOAD")
-                        }
-                    } else if (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                        if !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                            floatBtn.hideFloatingButton(ishidden: false)
-                            callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
-                        }
+            for floatBtn in self.arrFloatingButton {
+                floatBtn.hideFloatingButton(ishidden: true)
+                if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                    if  !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                        floatBtn.hideFloatingButton(ishidden: false)
+                        callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
+                    }
+                } else if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
+                    if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
+                        floatBtn.hideFloatingButton(ishidden: false)
+                        callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED",event_name: "ENTRY_POINT_LOAD")
+                    }
+                } else if (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                    if !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                        floatBtn.hideFloatingButton(ishidden: false)
+                        callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
                     }
                 }
             }
