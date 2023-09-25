@@ -126,7 +126,7 @@ public class CGMobileData: Codable {
         self.allowAnonymousRegistration = try container.decodeIfPresent(Bool.self, forKey: .allowAnonymousRegistration) ?? false
         self.enableSslPinning = try container.decodeIfPresent(Bool.self, forKey: .enableSslPinning) ?? true
         self.derCertificate = try container.decodeIfPresent(String.self, forKey: .derCertificate) ?? ""
-        self.allowProxy = try container.decodeIfPresent(Bool.self, forKey: .allowProxy) ?? true
+        self.allowProxy = try container.decodeIfPresent(Bool.self, forKey: .allowProxy) ?? false
     } 
     
     required public init() {

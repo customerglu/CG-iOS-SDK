@@ -1869,6 +1869,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
             sendEntryPointsIdLists()
             
+            guard CustomerGlu.getInstance.activescreenname != className else {
+                showPopup(className: className)
+                return
+            }
+            
             CustomerGlu.getInstance.activescreenname = className
             
             for floatBtn in self.arrFloatingButton {
