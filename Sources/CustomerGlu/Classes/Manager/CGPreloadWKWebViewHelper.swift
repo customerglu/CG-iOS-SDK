@@ -28,7 +28,7 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
             webView.load(URLRequest(url: url))
         }
     }
-    private var checked: Bool = false
+    
     func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard let appConfig = CustomerGlu.getInstance.appconfigdata, let enableSslPinning = appConfig.enableSslPinning, enableSslPinning else { return }
         
@@ -39,22 +39,8 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
                 return
             }
 
-            let alreadySavedCertificate = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
             let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
-            
-            if self.checked {
-                completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                return
-            }
-            
-            if remoteCertificateData.base64EncodedString() == alreadySavedCertificate {
-                completionHandler(.useCredential, URLCredential(trust: serverTrust))
-            } else {
-                CustomerGlu.getInstance.updateLocalCertificate()
-                completionHandler(.cancelAuthenticationChallenge, nil)
-            }
-            
-            self.checked = true
+            ApplicationManager.encryptUserDefaultKey(str: remoteCertificateData.base64EncodedString(), userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
         }
     }
 }
