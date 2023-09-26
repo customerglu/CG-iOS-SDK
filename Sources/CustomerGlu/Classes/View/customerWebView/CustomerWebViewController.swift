@@ -353,10 +353,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 return
             } else {
                 CustomerGlu.getInstance.printlog(cglog: "Certificate does not matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
-                completionHandler(.cancelAuthenticationChallenge, nil)
-                DispatchQueue.main.async {
-                    self.closePage(animated: true, dismissaction: CGDismissAction.SSL_FAILED)
-                }
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 return
             }
         }
