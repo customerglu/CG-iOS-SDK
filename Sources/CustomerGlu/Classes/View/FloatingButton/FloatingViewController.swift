@@ -240,9 +240,6 @@ class FloatingButtonController: UIViewController {
             }
         } else {
             
-            // Old implementation without action data.
-            CustomerGlu.getInstance.callEventPublishNudge(data: floatInfo!, className: CustomerGlu.getInstance.activescreenname, actionType: "OPEN",event_name: "ENTRY_POINT_CLICK")
-            
             let nudgeConfiguration = CGNudgeConfiguration()
             nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
             nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
@@ -252,6 +249,8 @@ class FloatingButtonController: UIViewController {
             
             CustomerGlu.getInstance.openCampaignById(campaign_id: (floatInfo?.mobile.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
         }
+        
+        CustomerGlu.getInstance.callEventPublishNudge(data: floatInfo!, className: CustomerGlu.getInstance.activescreenname, actionType: "OPEN",event_name: "ENTRY_POINT_CLICK")
     }
     
     @objc func keyboardDidShow(note: NSNotification) {
