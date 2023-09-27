@@ -13,4 +13,5 @@ class CGEventModel: Codable {
 }
 
 class CGEventData: Codable {
+    var requestId: String?
 }

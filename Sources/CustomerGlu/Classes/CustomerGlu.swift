@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import UIKit
 import Lottie
+import WebKit
 
 let gcmMessageIDKey = "gcm.message_id"
 
@@ -82,7 +83,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     @objc public static var lightBackground = UIColor.white
     @objc public static var darkBackground = UIColor.black
     @objc public static var sdk_version = APIParameterKey.cgsdkversionvalue
-    
+    public static var allCampaignsIds: [String] = []
     internal var activescreenname = ""
     public static var bannersHeight: [String: Any]? = nil
     public static var embedsHeight: [String: Any]? = nil
@@ -108,6 +109,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     @objc public var cgUserData = CGUser()
     private var sdkInitialized: Bool = false
     private static var isAnonymousFlowAllowed: Bool = false
+    public static var oldCampaignIds = ""
     
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
@@ -116,7 +118,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     private override init() {
         super.init()
-        
         migrateUserDefaultKey()
         
         if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
@@ -623,6 +624,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_DARK_LOTTIE_FILE_PATH)
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_LIGHT_EMBEDLOTTIE_FILE_PATH)
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_DARK_EMBEDLOTTIE_FILE_PATH)
+        userDefaults.removeObject(forKey: CGConstants.allCampaignsIdsAsString)
+        userDefaults.removeObject(forKey: CGConstants.CGGetRewardResponse)
+        userDefaults.removeObject(forKey: CGConstants.CGGetProgramResponse)
         CustomerGlu.getInstance.cgUserData = CGUser()
         ApplicationManager.appSessionId = UUID().uuidString
         CGSentryHelper.shared.logoutSentryUser()
@@ -660,6 +664,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
            
             // Get Config
             self.getAppConfig { result in
+                self.checkSSLCertificateExpiration()
             }
         }
     }
@@ -909,7 +914,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     self.encryptUserDefaultKey(str: response.data?.user?.userId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
                     self.encryptUserDefaultKey(str: response.data?.user?.anonymousId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
                     
-                    self.cgUserData = response.data?.user ?? CGUser()
+                    self.cgUserData = response.data?.user ??     CGUser()
                     var data: Data?
                     do {
                         data = try JSONEncoder().encode(self.cgUserData)
@@ -926,6 +931,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                         }
                         self.initializeMqtt()
                     }
+                    CustomerGlu.oldCampaignIds = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString)
                     
                     ApplicationManager.openWalletApi { success, response in
                         if success {
@@ -963,6 +969,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                 CustomerGlu.bannersHeight = [String:Any]()
                                 CustomerGlu.embedsHeight = [String:Any]()
                                 completion(true)
+                            }
+                            if let allowProxy = self.appconfigdata?.allowProxy, allowProxy, CustomerGlu.oldCampaignIds != CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString) {
+                                CGProxyHelper.shared.getProgram()
+                                CGProxyHelper.shared.getReward()
                             }
                         } else {
                             CustomerGlu.bannersHeight = [String:Any]()
@@ -2213,7 +2223,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
             eventInfo[APIParameterKey.entry_point_data] = entry_point_data
-            ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo) { success, _ in
+            ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: content_campaign_id) { success, _ in
                 if success {
                     CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "postAnalyticsEventForEntryPoints", posttoserver: false)
                 } else {
@@ -2263,7 +2273,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         nudge[APIParameterKey.type] = type
         eventInfo[APIParameterKey.nudge] = nudge
         
-        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo) { success, _ in
+        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: campaign_id) { success, _ in
             if success {
                 CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "postAnalyticsEventForNotification", posttoserver: false)
             } else {
@@ -2429,6 +2439,41 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             customAlert.isRetry = false
             customAlert.showOnViewController(topController)
         }
+    }
+    
+    private func checkSSLCertificateExpiration() {
+        DispatchQueue.main.async {
+            if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
+                let viewController = CGPreloadWKWebViewHelper()
+                viewController.view.backgroundColor = .clear
+                viewController.view.isOpaque = false
+                viewController.modalPresentationStyle = .overCurrentContext
+                rootViewController.present(viewController, animated: false, completion: nil)
+            }
+        }
+        
+        guard let appconfigdata = appconfigdata, let enableSslPinning = appconfigdata.enableSslPinning, enableSslPinning else { return }
+        
+        guard !CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey).isEmpty else {
+            updateLocalCertificate()
+            return
+        }
+    }
+    
+    public func updateLocalCertificate() {
+        guard let appconfigdata = appconfigdata, let sslCertificateLink = appconfigdata.derCertificate else { return }
+        ApplicationManager.downloadCertificateFile(from: sslCertificateLink) { result in
+            switch result {
+            case .success:
+                CustomerGlu.getInstance.printlog(cglog: "Successfully updated the local ssl certificate", isException: false, methodName: "CustomerGlue-updateLocalCertificate", posttoserver: false)
+            case .failure(let failure):
+                CustomerGlu.getInstance.printlog(cglog: "Failed to download with error: \(failure.localizedDescription)", isException: false, methodName: "CustomerGlue-updateLocalCertificate", posttoserver: false)
+            }
+        }
+    }
+    
+    @objc public func isCampaignValid(campaignId: String) -> Bool {
+        return CustomerGlu.allCampaignsIds.contains(campaignId)
     }
 }
 

@@ -361,16 +361,14 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 nudgeConfiguration.absoluteHeight = dict.absoluteHeight ?? 0.0
                 
                 CustomerGlu.getInstance.openCampaignById(campaign_id: dict.campaignId, nudgeConfiguration: nudgeConfiguration)
-                
-                let bannerViews = CustomerGlu.entryPointdata.filter {
-                    $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId ?? ""
-                }
-                
-                if bannerViews.count != 0 {
-                    let name = bannerViews[0].name ?? ""
-                    CustomerGlu.getInstance.postAnalyticsEventForEntryPoints(event_name: "ENTRY_POINT_CLICK", entry_point_id: dict._id, entry_point_name: name, entry_point_container: bannerViews[0].mobile.container.type, content_campaign_id: dict.url, open_container:dict.openLayout, action_c_campaign_id: dict.campaignId)
-                }
-                
+            }
+            let bannerViews = CustomerGlu.entryPointdata.filter {
+                $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId ?? ""
+            }
+            
+            if bannerViews.count != 0 {
+                let name = bannerViews[0].name ?? ""
+                CustomerGlu.getInstance.postAnalyticsEventForEntryPoints(event_name: "ENTRY_POINT_CLICK", entry_point_id: dict._id, entry_point_name: name, entry_point_container: bannerViews[0].mobile.container.type, content_campaign_id: dict.url, open_container:dict.openLayout, action_c_campaign_id: dict.campaignId)
             }
         }
     }

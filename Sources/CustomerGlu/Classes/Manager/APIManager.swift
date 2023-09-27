@@ -80,6 +80,12 @@ internal class MethodandPath: Codable {
         case .onboardingSDKTestSteps:
             self.method = "POST"
             self.path = "integrations/v1/onboarding/sdk/test-steps"
+        case .getReward:
+            self.method = "POST"
+            self.path = "reward/v2/user/reward"
+        case .getProgram:
+            self.method = "POST"
+            self.path = "reward/v2/user/program"
         }
     }
 }
@@ -98,6 +104,8 @@ enum CGService {
     case cgNudgeIntegration
     case onboardingSDKNotificationConfig
     case onboardingSDKTestSteps
+    case getReward
+    case getProgram
 }
 
 // Parameter Key's for all API's
@@ -285,7 +293,7 @@ class APIManager {
     
     private static func serviceCall<T: Decodable>(for type: CGService, parametersDict: NSDictionary, dispatchGroup: DispatchGroup = DispatchGroup(), completion: @escaping (Result<T, CGNetworkError>) -> Void) {
         let methodandpath = MethodandPath(serviceType: type)
-        var requestData = CGRequestData(baseurl: methodandpath.baseurl, methodandpath: methodandpath, parametersDict: parametersDict, dispatchGroup: dispatchGroup, retryCount: CustomerGlu.getInstance.appconfigdata?.allowedRetryCount ?? 1)
+        var requestData = CGRequestData(baseurl: methodandpath.baseurl, methodandpath: methodandpath, parametersDict: parametersDict, dispatchGroup: dispatchGroup, retryCount: CustomerGlu.getInstance.appconfigdata?.allowedRetryCount ?? 1) 
         
         // Call Login API with API Router
         let block: (_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void = { (status, data, error) in
@@ -298,6 +306,8 @@ class APIManager {
                     } else {
                         if let error, error == .badURLRetry {
                             completion(.failure(CGNetworkError.badURLRetry))
+                        } else if type == .getReward || type == .getProgram {
+                            completion(.success(APIManager.dictionaryToString(data) as! T))
                         } else if let object = dictToObject(dict: data, type: T.self) {
                             completion(.success(object))
                         } else {
@@ -322,6 +332,18 @@ class APIManager {
         blockOperationForService(withRequestData: requestData)
     }
     
+    static func dictionaryToString(_ dictionary: [String: Any]) -> String? {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: dictionary, options: [.prettyPrinted])
+            if let jsonString = String(data: jsonData, encoding: .ascii) {
+                return jsonString
+            }
+        } catch {
+            print("Error converting dictionary to string: \(error)")
+        }
+        return nil
+    }
+        
     static func userRegister(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
         serviceCall(for: .userRegister, parametersDict: queryParameters,completion: completion)
     }
@@ -374,6 +396,14 @@ class APIManager {
         serviceCall(for: .onboardingSDKTestSteps, parametersDict: queryParameters, completion: completion)
     }
     
+    static func getReward(queryParameters: NSDictionary, completion: @escaping (Result<String?, CGNetworkError>) -> Void) {
+        serviceCall(for: .getReward, parametersDict: queryParameters, completion: completion)
+    }
+    
+    static func getProgram(queryParameters: NSDictionary, completion: @escaping (Result<String?, CGNetworkError>) -> Void) {
+        serviceCall(for: .getProgram, parametersDict: queryParameters, completion: completion)
+    }
+    
     // MARK: - Private Class Methods
     
     // Recursive Method
@@ -420,17 +450,17 @@ class APIManager {
     
     static private func dictToObject <T: Decodable>(dict: Dictionary<String, Any>, type: T.Type) -> T? {
         do {
-            // Convert Dictionary to JSON Data
             let jsonData = try JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted)
-            // Decode data to model object
             let jsonDecoder = JSONDecoder()
             let object = try jsonDecoder.decode(type, from: jsonData)
             return object
-        } catch let error { // response with error
-            print("JSON decode failed: \(error.localizedDescription)")
+        } catch let error {
+            CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "dictToObject", posttoserver: false)
             return nil
         }
     }
+    
+    
 }
 
 // We create a partial mock by subclassing the original class

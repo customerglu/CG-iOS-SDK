@@ -18,6 +18,7 @@ class ApplicationManager {
     public static var accessToken: String?
     public static var operationQueue = OperationQueue()
     public static var appSessionId = UUID().uuidString
+    public static let userDefaults = UserDefaults.standard
     
     public static func openWalletApi(completion: @escaping (Bool, CGCampaignsModel?) -> Void) {
         if CustomerGlu.sdk_disable! == true {
@@ -37,6 +38,12 @@ class ApplicationManager {
             case .success(let response):
                 // Save this - To open / not open wallet incase of failure / invalid campaignId in loadCampaignById
                 CustomerGlu.getInstance.setCampaignsModel(response)
+                CustomerGlu.allCampaignsIds = response.campaigns?.compactMap { $0.campaignId } ?? []
+                let responseCampaignIds = response.campaigns?.compactMap { $0.campaignId }.joined(separator: ", ")
+                if let allCampaignAsString = responseCampaignIds {
+                    ApplicationManager.encryptUserDefaultKey(str: allCampaignAsString, userdefaultKey: CGConstants.allCampaignsIdsAsString)
+                }
+                
                 completion(true, response)
                 
             case .failure(let error):
@@ -45,6 +52,10 @@ class ApplicationManager {
             }
         }
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_LOAD_CAMPAIGN_END, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
+    }
+    
+    static func encryptUserDefaultKey(str: String, userdefaultKey: String) {
+        UserDefaults.standard.set(EncryptDecrypt.shared.encryptText(str: str), forKey: userdefaultKey)
     }
     
     public static func loadAllCampaignsApi(type: String, value: String, loadByparams: NSDictionary, completion: @escaping (Bool, CGCampaignsModel?) -> Void) {
@@ -74,6 +85,68 @@ class ApplicationManager {
                 completion(false, nil)
             }
         }
+    }
+    
+    public static func getLocalCertificateAsNSData() -> NSData? {
+        let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
+        if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
+            return NSData(data: data)
+        }
+        
+        return nil
+    }
+    
+    public static func getRemoteCertificateAsNSData() -> NSData? {
+        let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.remoteSSLCertificateAsStringKey)
+        if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
+            return NSData(data: data)
+        }
+        
+        return nil
+    }
+    
+    public static func saveRemoteCertificateAsNSData(_ nsData: NSData) {
+        let base64String = nsData.base64EncodedString()
+        ApplicationManager.encryptUserDefaultKey(str: base64String, userdefaultKey: CGConstants.remoteSSLCertificateAsStringKey)
+    }
+    
+    public static func getLocalCertificate() -> SecCertificate? {
+        let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
+        if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
+            let certificateData = NSData(data: data)
+            return SecCertificateCreateWithData(nil, certificateData as CFData)
+        }
+        
+        return nil
+    }
+    
+    public static func downloadCertificateFile(from urlString: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: urlString) else {
+            completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
+            return
+        }
+
+        let task = URLSession.shared.downloadTask(with: url) { (tempLocalURL, _, error) in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            guard let tempLocalURL = tempLocalURL else {
+                completion(.failure(NSError(domain: "Downloaded file not found", code: 0, userInfo: nil)))
+                return
+            }
+
+            let data = NSData(contentsOf: tempLocalURL)
+            if let data = data {
+                ApplicationManager.encryptUserDefaultKey(str: data.base64EncodedString(), userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
+                completion(.success(()))
+            } else {
+                completion(.failure(NSError(domain: "Invalid data conversion", code: 0, userInfo: nil)))
+            }
+        }
+
+        task.resume()
     }
     
     public static func sendEventData(eventName: String, eventProperties: [String: Any]?, completion: @escaping (Bool, CGAddCartModel?) -> Void) {
@@ -200,7 +273,7 @@ class ApplicationManager {
         return false
     }
     
-    public static func sendAnalyticsEvent(eventNudge: [String: Any], completion: @escaping (Bool, CGAddCartModel?) -> Void) {
+    public static func sendAnalyticsEvent(eventNudge: [String: Any], campaignId: String, completion: @escaping (Bool, CGAddCartModel?) -> Void) {
         if CustomerGlu.sdk_disable! == true {
             return
         }
@@ -219,7 +292,7 @@ class ApplicationManager {
         platform_details[APIParameterKey.app_platform] = CustomerGlu.app_platform
         platform_details[APIParameterKey.sdk_version] = CustomerGlu.sdk_version
         eventInfo[APIParameterKey.platform_details] = platform_details
-        
+        eventInfo[APIParameterKey.campaign_id] = campaignId
         
         APIManager.sendAnalyticsEvent(queryParameters: eventInfo as NSDictionary) { result in
             switch result {

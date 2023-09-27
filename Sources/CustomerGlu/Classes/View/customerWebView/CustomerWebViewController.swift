@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import WebKit
 import Lottie
+import Security
 
 public class CustomerWebViewController: UIViewController, WKNavigationDelegate, WKScriptMessageHandler {
     
@@ -34,6 +35,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     public var alpha = 0.0
     var campaign_id = ""
     private var dismissactionglobal = CGDismissAction.UI_BUTTON
+    
     
     let contentController = WKUserContentController()
     let config = WKWebViewConfiguration()
@@ -106,7 +108,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     public override func viewDidLoad() {
         super.viewDidLoad()
-        
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(rotated),
                                                name: UIDevice.orientationDidChangeNotification,
@@ -127,7 +128,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             
         }
         
-        contentController.add(self, name: WebViewsKey.callback) //name is the key you want the app to listen to.
+        contentController.add(self, name: WebViewsKey.callback) //name is the key you want the app to listen to.\
         config.userContentController = contentController
         config.allowsInlineMediaPlayback = true
         
@@ -256,6 +257,9 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     
     func loadwebView(url: String, x: CGFloat, y: CGFloat) {
+        
+        
+        
         webView.navigationDelegate = self
         if url != "" || !url.isEmpty {
             self.loadedurl = url
@@ -266,7 +270,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CG_INVALID_CAMPAIGN_ID").rawValue), object: nil, userInfo: eventInfo)
             }
             webView.backgroundColor = CustomerGlu.getInstance.checkIsDarkMode() ? CustomerGlu.darkBackground: CustomerGlu.lightBackground
-            var darkUrl = url
+            var darkUrl = url // .replacingOccurrences(of: "dev-constellation.customerglu.com", with: "87f2-2406-7400-54-4114-8cd9-776e-b643-2f25.ngrok-free.app")
             if let nudgeConfiguration = nudgeConfiguration, !nudgeConfiguration.isHyperLink {
                 darkUrl = url + "&darkMode=" + (CustomerGlu.getInstance.checkIsDarkMode() ? "true" : "false")
             }
@@ -306,6 +310,75 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         // DIAGNOSTICS
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_START_PROVISIONAL, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: [:])
+    }
+
+    public func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        guard #available(iOS 12.0, *) else { return }
+        guard let serverTrust = challenge.protectionSpace.serverTrust,
+              let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
+            return
+        }
+        
+        guard nudgeConfiguration == nil || nudgeConfiguration?.isHyperLink == false else {
+            DispatchQueue.global(qos: .background).async {
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+            }
+            return
+        }
+        guard let appConfig = CustomerGlu.getInstance.appconfigdata, let enableSslPinning = appConfig.enableSslPinning, enableSslPinning else {
+            DispatchQueue.global(qos: .background).async {
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+            }
+            return
+        }
+        
+        let policy = NSMutableArray()
+        policy.add(SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString))
+        DispatchQueue.global(qos: .background).async {
+            let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
+            
+            let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
+            guard let localCertificateData: NSData = ApplicationManager.getLocalCertificateAsNSData() else {
+                return
+            }
+            
+            if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
+                CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
+                ApplicationManager.saveRemoteCertificateAsNSData(remoteCertificateData)
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
+            } else if let savedRemoteCertificateAsNSData = ApplicationManager.getRemoteCertificateAsNSData(), savedRemoteCertificateAsNSData.isEqual(to: localCertificateData as Data) {
+                CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
+            } else {
+                CustomerGlu.getInstance.printlog(cglog: "Certificate does not matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
+                completionHandler(.useCredential, URLCredential(trust: serverTrust))
+                return
+            }
+        }
+    }
+    
+    private func executeCallBack(eventName: String, requestId: String) {
+        let functionName = "sdkCallback"
+
+        let object = """
+        {
+            "eventName": "\(eventName)",
+            "data": {
+                "requestId": "\(requestId)",
+                "rewardsResponse": \(CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CGGetRewardResponse)),
+                "programsResponse": \(CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CGGetProgramResponse))
+            }
+        }
+        """
+        let javascriptCode = "\(functionName)(\(object));"
+        
+        webView.evaluateJavaScript(javascriptCode) { (result, error) in
+            if let error = error {
+                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "executeCallBack", posttoserver: false)
+            }
+        }
     }
     
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -388,7 +461,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                   let bodyData = bodyString.data(using: .utf8) else { fatalError() }
             
             let bodyStruct = try? JSONDecoder().decode(CGEventModel.self, from: bodyData)
-            
             // DIAGNOSTICS
             var diagnosticsEventData: [String: Any] = ["eventName": bodyStruct?.eventName ?? "",
                                             "Name": WebViewsKey.callback]
@@ -402,6 +474,14 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 } else {
                     self.navigationController?.popViewController(animated: true)
                 }
+            }
+            
+            if bodyStruct?.eventName == "REQUEST_API_DATA" {
+                executeCallBack(eventName: "REQUEST_API_RESULT", requestId: bodyStruct?.data?.requestId ?? "")
+            }
+            
+            if bodyStruct?.eventName == "REFRESH_API_DATA" {
+                executeCallBack(eventName: "REFRESH_API_DATA_RESULT", requestId: bodyStruct?.data?.requestId ?? "")
             }
             
             // Moved this piece of code out so it can be used for ClientTesting
@@ -694,7 +774,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         webview_content[APIParameterKey.relative_height] = relative_height
         eventInfo[APIParameterKey.webview_content] = webview_content
         
-        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo) { success, _ in
+        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: campaign_id) { success, _ in
             if success {
                 CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "WebView-postAnalyticsEventForWebView", posttoserver: false)
             } else {

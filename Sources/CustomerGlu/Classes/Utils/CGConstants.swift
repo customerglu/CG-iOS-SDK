@@ -49,6 +49,12 @@ struct CGConstants {
     static let MQTT_Enabled_Components_State_Sync = "STATE_SYNC"
     static let MQTT_Enabled_Components_Nudges = "NUDGES"
     static let MQTT_Enabled_Components_EntryPoints = "ENTRYPOINTS"
+    
+    static let clientSSLCertificateAsStringKey = "clientSSLCertificateAsStringKey"
+    static let remoteSSLCertificateAsStringKey = "remoteSSLCertificateAsStringKey"
+    static let CGGetProgramResponse = "CGGetProgramResponse"
+    static let CGGetRewardResponse = "CGGetRewardResponse"
+    static let allCampaignsIdsAsString = "allCampaignsIdsAsString"
 }
 
 struct CGDiagnosticConstants{
@@ -179,7 +185,7 @@ struct APIParameterKey {
     static let appSessionId = "appSessionId"
     static let userAgent = "userAgent"
     static let eventName = "eventName"
-    static let cgsdkversionvalue = "2.3.12"
+    static let cgsdkversionvalue = "2.3.13"
     static let analytics_version_value = "4.0.0"
     static let analytics_version = "analytics_version"
     static let dismiss_trigger = "dismiss_trigger"
@@ -245,6 +251,7 @@ struct CGDismissAction {
     static let PHYSICAL_BUTTON = "PHYSICAL_BUTTON"
     static let UI_BUTTON = "UI_BUTTON"
     static let CTA_REDIRECT = "CTA_REDIRECT"
+    static let SSL_FAILED = "SSL_FAILED"
     static let DEFAULT = "DEFAULT"
 }
 
