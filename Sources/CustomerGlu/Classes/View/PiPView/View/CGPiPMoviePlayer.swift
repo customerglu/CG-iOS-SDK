@@ -12,6 +12,7 @@ import UIKit
 public protocol CGPiPMoviePlayerProtocol: NSObject {
     func onPiPCloseClicked()
     func onPiPExpandClicked()
+    func onPiPPlayerClicked()
 }
 
 class CGPiPMoviePlayer : UIView {
@@ -46,6 +47,12 @@ class CGPiPMoviePlayer : UIView {
     
     //Setup Movie
     func setupPiPMoviePlayerCTAs(){
+        
+        //Setup player click listener
+        let pipPlayerTap = UITapGestureRecognizer(target: self, action: #selector(self.onPiPPlayerTapped(_:)))
+        self.addGestureRecognizer(pipPlayerTap)
+        
+        
         // Setup the Close CTA
         closeCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: 86, height: 86))
         closeCTA?.image = UIImage(named: "ic_close.png")
@@ -100,6 +107,12 @@ class CGPiPMoviePlayer : UIView {
         if let delegate = self.delegate {
             muteCTA?.image = UIImage(named: isPiPVideoMute() ?  "ic_unmute.png" : "ic_mute.png")
             isPiPVideoMute() ? unMuteVideo() : muteVideo()
+        }
+    }
+    
+    @objc func onPiPPlayerTapped(_ sender: UITapGestureRecognizer? = nil){
+        if let delegate = self.delegate {
+            delegate.onPiPPlayerClicked()
         }
     }
     
