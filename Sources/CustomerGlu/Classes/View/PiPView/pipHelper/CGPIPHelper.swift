@@ -18,18 +18,41 @@ class CGPIPHelper : NSObject {
             return false;
         }
         
-        var pipSavedDate =  CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CG_PIP_DATE) ?? "NA"
+        var pipSavedDate =   UserDefaults.standard.object(forKey: CGConstants.CG_PIP_DATE) as? String
         
         // User launches the pip First Time
-        if pipSavedDate.isEmpty || pipSavedDate == "NA"
+        if pipSavedDate == nil
         {
             return true;
-        }else{
+        }
+        else{
             let date = Date()
+            let df = DateFormatter()
+            df.dateFormat = "dd"
+            var day = df.string(from: date) as String
+            
+            
+            
+            if !day.elementsEqual(pipSavedDate ?? "")
+            {
+                //save as Date
+                UserDefaults.standard.set(curday, forKey: CGConstants.CG_PIP_DATE)
+                return true
+            }
+        
+            
+           
+
+          
+//            let df = DateFormatter()
+//            df.dateFormat = "dd/MM/yyyy HH:mm"
+//            print(df.string(from: date))
+            
             
             
         }
         
         return false;
     }
+    
 }
