@@ -17,7 +17,18 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
     
     private var window = PiPWindow()
     
- 
+    required init?(coder aDecoder: NSCoder) {
+        fatalError()
+    }
+    init(btnInfo: CGData) {
+        super.init(nibName: nil, bundle: nil)
+        pipInfo = btnInfo
+        window.windowLevel = UIWindow.Level(rawValue: CGFloat.greatestFiniteMagnitude)
+        window.isHidden = false
+        window.rootViewController = self
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow(note:)), name: UIResponder.keyboardDidShowNotification, object: nil)
+    }
     
     
     override func viewDidLoad() {
@@ -106,7 +117,10 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
         
     }
     
-
+    @objc func keyboardDidShow(note: NSNotification) {
+        window.windowLevel = UIWindow.Level(rawValue: 0)
+        window.windowLevel = UIWindow.Level(rawValue: CGFloat.greatestFiniteMagnitude)
+    }
 }
 
 private class PiPWindow: UIWindow {

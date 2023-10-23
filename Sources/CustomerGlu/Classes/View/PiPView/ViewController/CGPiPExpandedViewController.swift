@@ -18,13 +18,18 @@ import UIKit
 class CGPiPExpandedViewController : UIViewController, CGPiPMoviePlayerProtocol {
    
  
-    
-    
-    var floatInfo: CGData?
+    var pipInfo: CGData?
   
     @IBOutlet weak var expandedViewCTA: UIButton!
     @IBOutlet weak var movieView: CGPiPMoviePlayer!
     
+    required init?(coder aDecoder: NSCoder) {
+        fatalError()
+    }
+    init(btnInfo: CGData) {
+        super.init(nibName: nil, bundle: nil)
+        pipInfo = btnInfo
+    }
     override func loadView() {
         movieView.delegate = self
     }

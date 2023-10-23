@@ -1769,7 +1769,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func addPIPViewToUI(pipInfo: CGData)
     {
         DispatchQueue.main.async {
-            self.arrPIPViews.append(CGPictureInPictureViewController())
+            self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
         }
     }
     
