@@ -1773,6 +1773,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    
     internal func hideFloatingButtons() {
         for floatBtn in self.arrFloatingButton {
             floatBtn.hideFloatingButton(ishidden: true)
@@ -1898,29 +1899,59 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             
             CustomerGlu.getInstance.activescreenname = className
             
-            for floatBtn in self.arrFloatingButton {
-                floatBtn.hideFloatingButton(ishidden: true)
-                if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                    if  !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                        floatBtn.hideFloatingButton(ishidden: false)
-                        callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
-                    }
-                } else if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
-                    if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
-                        floatBtn.hideFloatingButton(ishidden: false)
-                        callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED",event_name: "ENTRY_POINT_LOAD")
-                    }
-                } else if (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                    if !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                        floatBtn.hideFloatingButton(ishidden: false)
-                        callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
-                    }
-                }
-            }
+            screenNameLogicForFloatingButton(className: className)
+            screenNameLogicForPIPView(className: className)
             
             showPopup(className: className)
         }
     }
+    private func screenNameLogicForFloatingButton(className:String)
+    {
+        for floatBtn in self.arrFloatingButton {
+            floatBtn.hideFloatingButton(ishidden: true)
+            if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                if  !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                    floatBtn.hideFloatingButton(ishidden: false)
+                    callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
+                }
+            } else if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
+                if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
+                    floatBtn.hideFloatingButton(ishidden: false)
+                    callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED",event_name: "ENTRY_POINT_LOAD")
+                }
+            } else if (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                if !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                    floatBtn.hideFloatingButton(ishidden: false)
+                    callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
+                }
+            }
+        }
+    }
+    
+    private func screenNameLogicForPIPView(className:String)
+    {
+        for pipView in self.arrPIPViews {
+           // pipView.hidePIPView(ishidden: true)
+            if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                if  !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                //    pipView.hidePIPView(ishidden: false)
+                  
+                }
+            } else if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
+                if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
+                    //   pipView.hidePIPView(ishidden: false)
+                  
+                }
+            } else if (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                if !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                //    floatBtn.hidePIPView(ishidden: false)
+                   
+                }
+            }
+        }
+    }
+    
+    
     public func sendEntryPointsIdLists()
     {
         let user_id = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
