@@ -36,7 +36,7 @@ class CGPIPHelper : NSObject {
             if !day.elementsEqual(pipSavedDate ?? "")
             {
                 //save as Date
-                UserDefaults.standard.set(curday, forKey: CGConstants.CG_PIP_DATE)
+                UserDefaults.standard.set(day, forKey: CGConstants.CG_PIP_DATE)
                 return true
             }
         

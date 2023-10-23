@@ -16,6 +16,9 @@ import UIKit
  */
 
 class CGPiPExpandedViewController : UIViewController, CGPiPMoviePlayerProtocol {
+   
+ 
+    
     
     var floatInfo: CGData?
   
@@ -33,7 +36,9 @@ class CGPiPExpandedViewController : UIViewController, CGPiPMoviePlayerProtocol {
     func onPiPExpandClicked() {
         dismiss(animated: true)
     }
+    func onPiPPlayerClicked() {
     
+    }
     @IBAction func onPiPCTAClicked(_ sender: Any) {
         
     }
