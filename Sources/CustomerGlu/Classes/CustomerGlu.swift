@@ -47,6 +47,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     var spinner = SpinnerView()
     var progressView = LottieAnimationView()
     var arrFloatingButton = [FloatingButtonController]()
+    var arrPIPViews = [CGPictureInPictureViewController]()
     
     // Singleton Instance
     @objc public static var getInstance = CustomerGlu()
@@ -956,6 +957,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                         self.entryPointInfoAddDelete(entryPoint: floatingButtons)
                                         self.addFloatingBtns()
                                         self.postBannersCount()
+                                        self.addPIPViews()
                                         NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("EntryPointLoaded").rawValue), object: nil, userInfo: nil)
                                         completion(true)
                                         
@@ -1764,6 +1766,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    private func addPIPViewToUI(pipInfo: CGData)
+    {
+        DispatchQueue.main.async {
+            self.arrPIPViews.append(CGPictureInPictureViewController())
+        }
+    }
+    
     internal func hideFloatingButtons() {
         for floatBtn in self.arrFloatingButton {
             floatBtn.hideFloatingButton(ishidden: true)
@@ -1956,6 +1965,27 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(0), execute: {
                 CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
             })
+            
+        }
+    }
+    
+    private func addPIPViews()
+    {
+        let pipViews = popupDict.filter
+        {
+            $0.type == "PIP"
+        }
+        if pipViews.count != 0
+        {
+            for pip in pipViews {
+                let pip = CustomerGlu.entryPointdata.filter {
+                    $0._id == pip._id
+                }
+                
+                
+                    self.addPIPViewToUI(pipInfo: pip[0])
+                
+            }
             
         }
     }

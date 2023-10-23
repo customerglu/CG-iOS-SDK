@@ -8,6 +8,7 @@
 import Foundation
 
 struct CGConstants {
+    static let CG_PIP_DATE = "cg_pip_date"
     static let ERROR = "CUSTOMERGLU Error:"
     static let JSON_ERROR = "CUSTOMERGLU: json parsing error:"
     static let CUSTOMERGLU_TOKEN = "CustomerGlu_Token_Encrypt"
@@ -213,6 +214,7 @@ struct APIParameterKey {
     static let action_type = "action_type"
     static let open_container = "open_container"
     static let open_content = "open_content"
+
 }
 
 // Default NotificationsKey

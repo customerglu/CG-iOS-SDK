@@ -17,6 +17,9 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
     
     private var window = PiPWindow()
     
+ 
+    
+    
     override func viewDidLoad() {
         let view = UIView()
         
