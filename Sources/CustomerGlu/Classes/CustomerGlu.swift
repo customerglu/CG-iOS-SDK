@@ -106,6 +106,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var darkLoaderURL = ""
     public static var lightEmbedLoaderURL = ""
     public static var darkEmbedLoaderURL = ""
+    public static var PiPVideoURL = ""
     @objc public var cgUserData = CGUser()
     private var sdkInitialized: Bool = false
     private static var isAnonymousFlowAllowed: Bool = false
@@ -1849,6 +1850,23 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
         }
     }
+    
+    /**
+            PiP DownloadManager
+     
+     */
+    func downloadPiPVideo(videoURL: String){
+        if videoURL.count > 0 && URL(string: videoURL) != nil {
+            CustomerGlu.PiPVideoURL = videoURL
+            let url = URL(string: videoURL)
+            CGFileDownloader.loadFileAsync(url: url!) { [self] (path, error) in
+                if (error == nil){
+                    encryptUserDefaultKey(str: path ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
+                }
+            }
+        }
+    }
+    
     
     @objc public func configureDomainCodeMsg(code: Int, message: String){
         CustomerGlu.doamincode = code

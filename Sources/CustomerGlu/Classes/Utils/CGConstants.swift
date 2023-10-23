@@ -16,6 +16,7 @@ struct CGConstants {
     static let CUSTOMERGLU_DARK_LOTTIE_FILE_PATH = "CustomerGlu_Dark_Lottiepath"
     static let CUSTOMERGLU_LIGHT_EMBEDLOTTIE_FILE_PATH = "CustomerGlu_Light_Embed_Lottiepath"
     static let CUSTOMERGLU_DARK_EMBEDLOTTIE_FILE_PATH = "CustomerGlu_Dark_Embed_Lottiepath"
+    static let CUSTOMERGLU_PIP_PATH = "CustomerGlu_PiP_VideoPath"
     static let DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"
     static let Analitics_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
     static let MIDDLE_NOTIFICATIONS = "middle-default"
