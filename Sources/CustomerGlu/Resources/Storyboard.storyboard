@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -260,6 +259,58 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="syE-Qq-hxc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2230" y="44"/>
+        </scene>
+        <!--PiP Expanded View Controller-->
+        <scene sceneID="xXq-Bl-b7u">
+            <objects>
+                <viewController storyboardIdentifier="CGPiPExpandedViewController" id="IeM-Fs-OIN" customClass="CGPiPExpandedViewController" customModule="CustomerGlu" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="W88-AA-nkp"/>
+                        <viewControllerLayoutGuide type="bottom" id="mae-6N-H85"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="r5R-Wu-6dg">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7Sy-G5-Sc7">
+                                <rect key="frame" x="16" y="811" width="382" height="35"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Button"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="16"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="onPiPCTAClicked:" destination="IeM-Fs-OIN" eventType="touchUpInside" id="ZJZ-Mq-IUa"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KNV-Es-kcD" customClass="CGPiPMoviePlayer" customModule="CustomerGlu">
+                                <rect key="frame" x="0.0" y="48" width="414" height="747"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="mae-6N-H85" firstAttribute="top" secondItem="7Sy-G5-Sc7" secondAttribute="bottom" constant="16" id="5cu-Sj-WMv"/>
+                            <constraint firstAttribute="trailing" secondItem="KNV-Es-kcD" secondAttribute="trailing" id="B7t-J6-nqw"/>
+                            <constraint firstItem="KNV-Es-kcD" firstAttribute="top" secondItem="W88-AA-nkp" secondAttribute="bottom" id="Jtt-w8-SEH"/>
+                            <constraint firstAttribute="trailing" secondItem="7Sy-G5-Sc7" secondAttribute="trailing" constant="16" id="O3S-4Y-ic1"/>
+                            <constraint firstItem="KNV-Es-kcD" firstAttribute="leading" secondItem="r5R-Wu-6dg" secondAttribute="leading" id="R8d-At-cw7"/>
+                            <constraint firstItem="7Sy-G5-Sc7" firstAttribute="leading" secondItem="r5R-Wu-6dg" secondAttribute="leading" constant="16" id="k3W-Ph-Pfs"/>
+                            <constraint firstItem="7Sy-G5-Sc7" firstAttribute="top" secondItem="KNV-Es-kcD" secondAttribute="bottom" constant="16" id="noO-cJ-5Y3"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="expandedViewCTA" destination="7Sy-G5-Sc7" id="5vQ-lj-HQl"/>
+                        <outlet property="movieView" destination="KNV-Es-kcD" id="z7X-u1-E9b"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="zlX-zT-CWg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3074" y="44"/>
         </scene>
     </scenes>
     <resources>
