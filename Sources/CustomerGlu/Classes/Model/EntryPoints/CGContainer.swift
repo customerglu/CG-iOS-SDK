@@ -15,6 +15,8 @@ public struct CGContainer: Codable{
     var type : String!
     var width : String!
     var borderRadius: String!
+    var vertical_padding: String?
+    var horizontal_padding: String?
     
     /**
      * Instantiate the instance using the passed dictionary values to set the properties values
@@ -27,6 +29,12 @@ public struct CGContainer: Codable{
         height = dictionary["height"] as? String
         if let iosData = dictionary["ios"] as? [String:Any]{
             ios = CGAndroid(fromDictionary: iosData)
+        }
+        if let vertical_padding = dictionary["vertical_padding"] as? String{
+            self.vertical_padding = dictionary["vertical_padding"] as? String ?? "0"
+        }
+        if let horizontal_padding = dictionary["horizontal_padding"] as? String{
+            self.horizontal_padding = dictionary["horizontal_padding"] as? String ?? "0"
         }
         position = dictionary["position"] as? String
         type = dictionary["type"] as? String
@@ -45,6 +53,12 @@ public struct CGContainer: Codable{
         }
         if bannerId != nil{
             dictionary["bannerId"] = bannerId
+        }
+        if vertical_padding != nil{
+            dictionary["vertical_padding"] = vertical_padding
+        }
+        if horizontal_padding != nil{
+            dictionary["horizontal_padding"] = horizontal_padding
         }
         if height != nil{
             dictionary["height"] = height

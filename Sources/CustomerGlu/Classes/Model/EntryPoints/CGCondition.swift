@@ -14,6 +14,9 @@ public struct CGCondition: Codable{
     var draggable : Bool!
     var priority : Int!
     var showCount : CGShowCount!
+    var pip : CGPIP?
+    
+    
     
     
     /**
