@@ -8,13 +8,6 @@
 import Foundation
 import UIKit
 
-/***
-    - Implement Simple Dragable view
-    - Setup tab and click listener
- 
- 
- */
-
 class CGPiPExpandedViewController : UIViewController, CGPiPMoviePlayerProtocol {
    
  

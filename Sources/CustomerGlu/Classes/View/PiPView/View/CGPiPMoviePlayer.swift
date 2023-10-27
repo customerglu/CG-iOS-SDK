@@ -16,12 +16,24 @@ public protocol CGPiPMoviePlayerProtocol: NSObject {
 }
 
 class CGPiPMoviePlayer : UIView {
+    
+    public enum PiPType: Int {
+       case compactPlayer = 1002
+       case normalPlayer = 1001
+    }
         
     var player: AVPlayer?
     var closeCTA:  UIImageView?
     var muteCTA: UIImageView?
     var expandCTA: UIImageView?
     var delegate: CGPiPMoviePlayerProtocol?
+    var pipType: PiPType = PiPType.normalPlayer
+    
+
+    convenience init(pipType: PiPType){
+        self.init(frame: CGRect.zero)
+        self.pipType = pipType
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -37,6 +49,16 @@ class CGPiPMoviePlayer : UIView {
     // Setup Movie Player with Video in Data format
     func setupMoviePlayer(data: Data){
         backgroundColor = .black
+        
+        let screenRect = UIScreen.main.bounds
+        var screenWidth = screenRect.size.width
+        let screenHeight = screenRect.size.height
+        
+        if pipType == PiPType.compactPlayer {
+            screenWidth = screenWidth * 0.40
+            self.frame.size.width = screenWidth
+            self.frame.size.height = 1.78 * screenWidth
+        }
         
         player = AVPlayer(url: data.convertToURL())
         let playerVideoLayer = AVPlayerLayer(player: player)

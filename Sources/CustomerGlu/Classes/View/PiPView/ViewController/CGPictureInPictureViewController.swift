@@ -49,26 +49,29 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
         let midX = Int(UIScreen.main.bounds.midX)
         let midY = Int(UIScreen.main.bounds.midY)
         
-        let pipMoviePlayer = CGPiPMoviePlayer()
+        let pipMoviePlayer = CGPiPMoviePlayer(pipType: CGPiPMoviePlayer.PiPType.compactPlayer)
+        
+        let pipMoviePlayerHeight = Int(pipMoviePlayer.frame.size.height)
+        let pipMoviePlayerWidth = Int(pipMoviePlayer.frame.size.width)
         
         if pipInfo?.mobile.container.position == "BOTTOM-LEFT" {
-            pipMoviePlayer.frame = CGRect(x: sideSpace, y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
+            pipMoviePlayer.frame = CGRect(x: sideSpace, y: screenHeight - (finalHeight + bottomSpace), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "BOTTOM-RIGHT" {
-            pipMoviePlayer.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
+            pipMoviePlayer.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: screenHeight - (finalHeight + bottomSpace), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "BOTTOM-CENTER" {
-            pipMoviePlayer.frame = CGRect(x: midX - (finalWidth / 2), y: screenHeight - (finalHeight + bottomSpace), width: finalWidth, height: finalHeight)
+            pipMoviePlayer.frame = CGRect(x: midX - (finalWidth / 2), y: screenHeight - (finalHeight + bottomSpace), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "TOP-LEFT" {
-            pipMoviePlayer.frame = CGRect(x: sideSpace, y: topSpace, width: finalWidth, height: finalHeight)
+            pipMoviePlayer.frame = CGRect(x: sideSpace, y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "TOP-RIGHT" {
-            pipMoviePlayer.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: topSpace, width: finalWidth, height: finalHeight)
+            pipMoviePlayer.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "TOP-CENTER" {
-            pipMoviePlayer.frame = CGRect(x: midX - (finalWidth / 2), y: topSpace, width: finalWidth, height: finalHeight)
+            pipMoviePlayer.frame = CGRect(x: midX - (finalWidth / 2), y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "CENTER-LEFT" {
-            pipMoviePlayer.frame = CGRect(x: sideSpace, y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
+            pipMoviePlayer.frame = CGRect(x: sideSpace, y: midY - (finalHeight / 2), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "CENTER-RIGHT" {
-            pipMoviePlayer.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
+            pipMoviePlayer.frame = CGRect(x: screenWidth - (finalWidth + sideSpace), y: midY - (finalHeight / 2), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else {
-            pipMoviePlayer.frame = CGRect(x: midX - (finalWidth / 2), y: midY - (finalHeight / 2), width: finalWidth, height: finalHeight)
+            pipMoviePlayer.frame = CGRect(x: midX - (finalWidth / 2), y: midY - (finalHeight / 2), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         }
  
          pipMoviePlayer.contentMode = .scaleToFill

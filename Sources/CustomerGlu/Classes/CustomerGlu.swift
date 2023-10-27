@@ -1741,6 +1741,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CustomerGlu.bottomSafeAreaColor = bottomSafeAreaColor
     }
     
+    
     @objc public func configureSafeArea(topHeight: Int, bottomHeight: Int, topSafeAreaLightColor: UIColor, bottomSafeAreaLightColor: UIColor, topSafeAreaDarkColor: UIColor, bottomSafeAreaDarkColor: UIColor) {
         var eventData: [String: Any] = [:]
         eventData["topHeight"] = topHeight
