@@ -1194,6 +1194,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 if popupData.count > 0 {
                     DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(0), execute: {
                         CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
+                        CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
                     })
                 }
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("EntryPointLoaded").rawValue), object:    nil, userInfo: nil)
@@ -1954,17 +1955,17 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
            // pipView.hidePIPView(ishidden: true)
             if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
                 if  !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                //    pipView.hidePIPView(ishidden: false)
+                    pipView.hidePiPButton(ishidden: false)
                   
                 }
             } else if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
                 if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
-                    //   pipView.hidePIPView(ishidden: false)
+                       pipView.hidePiPButton(ishidden: false)
                   
                 }
             } else if (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
                 if !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                //    floatBtn.hidePIPView(ishidden: false)
+                    pipView.hidePiPButton(ishidden: false)
                    
                 }
             }

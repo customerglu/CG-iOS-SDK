@@ -111,7 +111,7 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
             }
             if is_remove == true {
                 // need to implement the converter
-//                CustomerGlu.getInstance.updateShowCount(showCount: finalPiPView[0], eventData: floatInfo!)
+                CustomerGlu.getInstance.updateShowCount(showCount: finalPiPView[0], eventData: pipInfo!)
             }
             if let index = CustomerGlu.getInstance.arrFloatingButton.firstIndex(where: {$0 === self}) {
                 CustomerGlu.getInstance.arrFloatingButton.remove(at: index)
