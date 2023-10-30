@@ -519,6 +519,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         topController.present(customerWebViewVC, animated: true, completion: {
             self.hideFloatingButtons()
+            self.hidePiPViews()
         })
     }
     
@@ -610,6 +611,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_CLEAR_GLU_DATA_CALLED, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData )
         dismissFloatingButtons(is_remove: true)
+        
         self.arrFloatingButton.removeAll()
         popupDict.removeAll()
         CustomerGlu.entryPointdata.removeAll()
@@ -1772,6 +1774,23 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         DispatchQueue.main.async {
             self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
         }
+    }
+    
+    
+    internal func hidePiPViews(){
+        for pipView in self.arrPIPViews {
+            pipView.hidePiPButton(ishidden: true)
+        }
+    }
+    
+    internal func dismissPiPViews(is_remove: Bool){
+        for pipView in self.arrPIPViews {
+            pipView.dismissPiPButton(is_remove: is_remove)
+        }
+    }
+    
+    internal func showPiPViews() {
+        CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
     }
     
     

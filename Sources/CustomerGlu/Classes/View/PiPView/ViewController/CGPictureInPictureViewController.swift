@@ -102,6 +102,32 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
         }
     }
     
+    
+    public func dismissPiPButton(is_remove: Bool){
+        if CustomerGlu.getInstance.arrPIPViews.contains(self) {
+            
+            let finalPiPView = CustomerGlu.getInstance.popupDict.filter {
+                $0._id == pipInfo?._id
+            }
+            if is_remove == true {
+                // need to implement the converter
+//                CustomerGlu.getInstance.updateShowCount(showCount: finalPiPView[0], eventData: floatInfo!)
+            }
+            if let index = CustomerGlu.getInstance.arrFloatingButton.firstIndex(where: {$0 === self}) {
+                CustomerGlu.getInstance.arrFloatingButton.remove(at: index)
+                window.dismiss()
+            }
+        }
+    }
+    
+    public func hidePiPButton(ishidden: Bool) {
+        window.pipMoviePlayer?.isHidden = ishidden
+        self.pipMediaPlayer.isHidden = ishidden
+        window.isUserInteractionEnabled = !ishidden
+        self.pipMediaPlayer.isUserInteractionEnabled = !ishidden
+    }
+    
+    
     @objc func draggedView(_ sender: UIPanGestureRecognizer) {
         let translation = sender.translation(in: pipMediaPlayer)
         pipMediaPlayer.center = CGPoint(x: pipMediaPlayer.center.x + translation.x, y: pipMediaPlayer.center.y + translation.y)
