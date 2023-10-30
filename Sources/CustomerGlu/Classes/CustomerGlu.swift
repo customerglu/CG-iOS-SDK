@@ -953,7 +953,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                         
                                         // FLOATING Buttons
                                         let floatingButtons = CustomerGlu.entryPointdata.filter {
-                                            $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP"
+                                            $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" ||
+                                            $0.mobile.container.type == "PIP"
                                         }
                                         
                                         self.entryPointInfoAddDelete(entryPoint: floatingButtons)
@@ -1178,7 +1179,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 
                 // FLOATING Buttons
                 let floatingButtons = CustomerGlu.entryPointdata.filter {
-                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP"
+                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" || $0.mobile.container.type == "PIP"
                 }
                 
                 entryPointInfoAddDelete(entryPoint: floatingButtons)
