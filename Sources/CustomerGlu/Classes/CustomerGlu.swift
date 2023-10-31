@@ -1093,6 +1093,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                 
                                 self.entryPointInfoAddDelete(entryPoint: floatingButtons)
                                 self.addFloatingBtns()
+                                self.addPIPViews()
                                 self.postBannersCount()
                                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("EntryPointLoaded").rawValue), object: nil, userInfo: nil)
                                 completion(true)
@@ -1184,6 +1185,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 
                 entryPointInfoAddDelete(entryPoint: floatingButtons)
                 addFloatingBtns()
+                addPIPViews()
                 postBannersCount()
                 
                 /*

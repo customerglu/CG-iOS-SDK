@@ -33,6 +33,7 @@ class CGPiPMoviePlayer : UIView {
     convenience init(pipType: PiPType){
         self.init(frame: CGRect.zero)
         self.pipType = pipType
+        setupMoviePlayer(data: Data())
     }
     
     override init(frame: CGRect) {
@@ -48,17 +49,9 @@ class CGPiPMoviePlayer : UIView {
     
     // Setup Movie Player with Video in Data format
     func setupMoviePlayer(data: Data){
-        backgroundColor = .black
+        backgroundColor = .green
         
-        let screenRect = UIScreen.main.bounds
-        var screenWidth = screenRect.size.width
-        let screenHeight = screenRect.size.height
-        
-        if pipType == PiPType.compactPlayer {
-            screenWidth = screenWidth * 0.40
-            self.frame.size.width = screenWidth
-            self.frame.size.height = 1.78 * screenWidth
-        }
+       
         
         player = AVPlayer(url: data.convertToURL())
         let playerVideoLayer = AVPlayerLayer(player: player)
