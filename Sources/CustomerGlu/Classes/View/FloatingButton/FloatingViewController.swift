@@ -294,9 +294,11 @@ extension UIView {
 
 extension UIWindow {
     func dismiss() {
-        isHidden = true
-        if #available(iOS 13, *) {
-            windowScene = nil
+        DispatchQueue.main.async{
+            self.isHidden = true
+            if #available(iOS 13, *) {
+                self.windowScene = nil
+            }
         }
     }
 }
