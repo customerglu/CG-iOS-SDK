@@ -1594,6 +1594,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: loadAllCampign)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(navController, animated: true, completion: nil)
         }
     }
@@ -1661,6 +1662,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(customerWebViewVC, animated: false, completion: nil)
         }
     }
@@ -1682,6 +1684,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: loadAllCampign)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(navController, animated: true, completion: nil)
         }
     }
@@ -1702,6 +1705,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: loadAllCampign)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(navController, animated: true, completion: nil)
         }
     }
@@ -1958,24 +1962,29 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     private func screenNameLogicForPIPView(className:String)
     {
+        var isHidden = true;
         for pipView in self.arrPIPViews {
            // pipView.hidePIPView(ishidden: true)
             if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
                 if  !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                    pipView.hidePiPButton(ishidden: false)
+                    isHidden = false;
+                    pipView.hidePiPButton(ishidden: isHidden)
                   
                 }
             } else if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
                 if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
-                       pipView.hidePiPButton(ishidden: false)
-                  
+                    isHidden = false;
+                    pipView.hidePiPButton(ishidden: isHidden)
                 }
             } else if (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
                 if !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                    pipView.hidePiPButton(ishidden: false)
-                   
+                    isHidden = false;
+                    pipView.hidePiPButton(ishidden: isHidden)
                 }
             }
+        }
+        if isHidden {
+            self.hidePiPViews()
         }
     }
     
@@ -2260,6 +2269,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         topController.present(customerWebViewVC, animated: true) {
             CustomerGlu.getInstance.hideFloatingButtons()
+            self.hidePiPViews()
         }
     }
     
@@ -2483,6 +2493,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: clientTestingVC)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(navController, animated: true, completion: nil)
         }
     }
