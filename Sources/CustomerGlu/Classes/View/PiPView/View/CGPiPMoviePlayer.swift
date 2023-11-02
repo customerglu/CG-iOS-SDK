@@ -27,6 +27,7 @@ class CGPiPMoviePlayer : UIView {
     var muteCTA: UIImageView?
     var expandCTA: UIImageView?
     var delegate: CGPiPMoviePlayerProtocol?
+    var playerVideoLayer: CALayer?
     var pipType: PiPType = PiPType.normalPlayer
     
 
@@ -45,19 +46,34 @@ class CGPiPMoviePlayer : UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func setupFrame(){
+        playerVideoLayer?.frame = self.bounds
+    }
+    
+    
+    override func layoutSublayers(of layer: CALayer) {
+      super.layoutSublayers(of: layer)
+        playerVideoLayer?.frame = self.bounds
+    }
     
     
     // Setup Movie Player with Video in Data format
     func setupMoviePlayer(data: Data){
-        backgroundColor = .green
+        backgroundColor = .black
         
-       
+        let videoPath = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
         
-        player = AVPlayer(url: data.convertToURL())
-        let playerVideoLayer = AVPlayerLayer(player: player)
+        let videoPathURL = URL(fileURLWithPath: videoPath)
         
-        self.layer.addSublayer(playerVideoLayer)
-        playerVideoLayer.frame = self.frame
+        self.player = AVPlayer(url: videoPathURL)
+        playerVideoLayer = AVPlayerLayer(player: player)
+        
+        self.playerVideoLayer?.frame = self.bounds
+    
+        self.layer.addSublayer(playerVideoLayer!)
+        self.player?.play()
+        
+        setupPiPMoviePlayerCTAs()
     }
     
     //Setup Movie
@@ -67,42 +83,60 @@ class CGPiPMoviePlayer : UIView {
         let pipPlayerTap = UITapGestureRecognizer(target: self, action: #selector(self.onPiPPlayerTapped(_:)))
         self.addGestureRecognizer(pipPlayerTap)
         
+        let ctaDimensions = 24
+        
         
         // Setup the Close CTA
-        closeCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: 86, height: 86))
-        closeCTA?.image = UIImage(named: "ic_close.png")
-        self.addSubview(closeCTA!)
         
-        closeCTA?.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16.0).isActive = true
-        closeCTA?.topAnchor.constraint(equalTo: self.topAnchor, constant: 16.0).isActive = true
         
-        let closeTap = UITapGestureRecognizer(target: self, action: #selector(self.closeTapped(_:)))
-        closeCTA?.addGestureRecognizer(closeTap)
+        if closeCTA == nil {
+            closeCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: ctaDimensions, height: ctaDimensions))
+            closeCTA?.image = UIImage(named: "ic_close.png")
+            self.addSubview(closeCTA!)
+            
+            closeCTA?.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16.0).isActive = true
+            closeCTA?.topAnchor.constraint(equalTo: self.topAnchor, constant: 16.0).isActive = true
+            
+            let closeTap = UITapGestureRecognizer(target: self, action: #selector(self.closeTapped(_:)))
+            closeCTA?.addGestureRecognizer(closeTap)
+        }
         
         
         //Setup the Expand CTA
-        expandCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: 86, height: 86))
-        expandCTA?.image = UIImage(named: "ic_expand.png")
-        self.addSubview(expandCTA!)
         
-        expandCTA?.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16.0).isActive = true
-        expandCTA?.topAnchor.constraint(equalTo: self.topAnchor, constant: 16.0).isActive = true
-        
-        let expandTap = UITapGestureRecognizer(target: self, action: #selector(self.expandTapped(_:)))
-        expandCTA?.addGestureRecognizer(expandTap)
+        if expandCTA == nil {
+            expandCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: ctaDimensions, height: ctaDimensions))
+            expandCTA?.image = UIImage(named: "ic_expand.png")
+            self.addSubview(expandCTA!)
+            
+            expandCTA?.rightAnchor.constraint(equalTo: self.rightAnchor, constant: 16.0).isActive = true
+            expandCTA?.topAnchor.constraint(equalTo: self.topAnchor, constant: 16.0).isActive = true
+            
+            let expandTap = UITapGestureRecognizer(target: self, action: #selector(self.expandTapped(_:)))
+            expandCTA?.addGestureRecognizer(expandTap)
+        }
         
         
         
         //Setup the Mute / UnMute CTA
-        muteCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: 86, height: 86))
-        muteCTA?.image = UIImage(named: "ic_mute.png")
-        self.addSubview(muteCTA!)
         
-        muteCTA?.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16.0).isActive = true
-        muteCTA?.topAnchor.constraint(equalTo: self.topAnchor, constant: 16.0).isActive = true
+        if muteCTA == nil {
+            muteCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: ctaDimensions, height: ctaDimensions))
+            muteCTA?.image = UIImage(named: "ic_mute.png")
+            self.addSubview(muteCTA!)
+            
+            
+//            if let muteLeadingConstraint = muteCTA?.rightAnchor.constraint(equalTo: self.leadingAnchor, constant: 16.0){
+//                muteCTA?.addConstraint(muteLeadingConstraint)
+//            }
+//
+//            if let muteBottomConstraint = muteCTA?.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: 16.0){
+//                muteCTA?.addConstraint(muteBottomConstraint)
+//            }
         
-        let muteTap = UITapGestureRecognizer(target: self, action: #selector(self.muteTapped(_:)))
-        muteCTA?.addGestureRecognizer(muteTap)
+            let muteTap = UITapGestureRecognizer(target: self, action: #selector(self.muteTapped(_:)))
+            muteCTA?.addGestureRecognizer(muteTap)
+        }
         
     }
     

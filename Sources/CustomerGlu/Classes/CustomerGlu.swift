@@ -1777,6 +1777,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     {
         DispatchQueue.main.async {
             self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+            
+            if let videoURL = pipInfo.mobile.content[0].url {
+                self.downloadPiPVideo(videoURL: videoURL)
+            }
         }
     }
     

@@ -42,47 +42,38 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
         let widthPer  = screenWidth
         let heightPer = 1.78 * screenWidth
         
-        let finalHeight = (screenHeight * heightPer)/100
-        let finalWidth = (screenWidth * widthPer)/100
         
         let bottomSpace = (screenHeight * 5)/100
         let sideSpace = Int((screenWidth * 5)/100)
         let topSpace = Int((screenHeight * 5)/100)
-        let midX = Int(UIScreen.main.bounds.midX)
-        let midY = Int(UIScreen.main.bounds.midY)
         
         let pipMoviePlayer = CGPiPMoviePlayer(pipType: CGPiPMoviePlayer.PiPType.compactPlayer)
+        pipMoviePlayer.backgroundColor = .black
         
         let pipMoviePlayerHeight = Int(heightPer)
         let pipMoviePlayerWidth = Int(widthPer)
+    
         
         if pipInfo?.mobile.container.position == "BOTTOM-LEFT" {
-            pipMoviePlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (finalHeight + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMoviePlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "BOTTOM-RIGHT" {
-            pipMoviePlayer.frame = CGRect(x: Int(screenWidth) - (Int(finalWidth) + sideSpace), y: Int(screenHeight - (finalHeight + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
-        } else if pipInfo?.mobile.container.position == "BOTTOM-CENTER" {
-            pipMoviePlayer.frame = CGRect(x: midX - (Int(finalWidth) / 2), y: Int(screenHeight - (finalHeight + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
-        } else if pipInfo?.mobile.container.position == "TOP-LEFT" {
+            pipMoviePlayer.frame = CGRect(x: Int(screenWidth - CGFloat(pipMoviePlayerWidth) + CGFloat(sideSpace)), y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+        }  else if pipInfo?.mobile.container.position == "TOP-LEFT" {
             pipMoviePlayer.frame = CGRect(x: sideSpace, y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "TOP-RIGHT" {
-            pipMoviePlayer.frame = CGRect(x: Int(screenWidth) - (Int(finalWidth) + sideSpace), y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
-        } else if pipInfo?.mobile.container.position == "TOP-CENTER" {
-            pipMoviePlayer.frame = CGRect(x: midX - (Int(finalWidth) / 2), y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
-        } else if pipInfo?.mobile.container.position == "CENTER-LEFT" {
-            pipMoviePlayer.frame = CGRect(x: sideSpace, y: midY - (Int(finalHeight) / 2), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
-        } else if pipInfo?.mobile.container.position == "CENTER-RIGHT" {
-            pipMoviePlayer.frame = CGRect(x: Int(screenWidth) - (Int(finalWidth) + sideSpace), y: midY - (Int(finalHeight) / 2), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMoviePlayer.frame = CGRect(x: Int(CGFloat(screenWidth) - (CGFloat(pipMoviePlayerWidth) + CGFloat(sideSpace))), y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else {
-            pipMoviePlayer.frame = CGRect(x: midX - (Int(finalWidth) / 2), y: midY - (Int(finalHeight) / 2), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMoviePlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         }
  
          pipMoviePlayer.contentMode = .scaleToFill
          pipMoviePlayer.clipsToBounds = true
-         pipMoviePlayer.backgroundColor = UIColor.clear
-         pipMoviePlayer.layer.shadowColor = UIColor.black.cgColor
+         pipMoviePlayer.backgroundColor = UIColor.black
+        pipMoviePlayer.layer.shadowColor = UIColor.black.cgColor
          pipMoviePlayer.layer.shadowRadius = 3
-         pipMoviePlayer.layer.shadowOpacity = 0.8
-         pipMoviePlayer.layer.shadowOffset = CGSize.zero
+         pipMoviePlayer.layer.shadowOpacity = 1
+         pipMoviePlayer.layer.cornerRadius = 8
+         pipMoviePlayer.layer.shadowOffset = CGSize(width: 15, height: 15)
          pipMoviePlayer.autoresizingMask = []
          pipMoviePlayer.delegate = self
     
@@ -123,17 +114,31 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
     }
     
     public func hidePiPButton(ishidden: Bool) {
-//        window.pipMoviePlayer?.isHidden = ishidden
-//        self.pipMediaPlayer.isHidden = ishidden
-//        window.isUserInteractionEnabled = !ishidden
-//        self.pipMediaPlayer.isUserInteractionEnabled = !ishidden
+        window.pipMoviePlayer?.isHidden = ishidden
+        self.pipMediaPlayer.isHidden = ishidden
+        window.isUserInteractionEnabled = !ishidden
+        self.pipMediaPlayer.isUserInteractionEnabled = !ishidden
     }
     
     
     @objc func draggedView(_ sender: UIPanGestureRecognizer) {
-        let translation = sender.translation(in: pipMediaPlayer)
-        pipMediaPlayer.center = CGPoint(x: pipMediaPlayer.center.x + translation.x, y: pipMediaPlayer.center.y + translation.y)
-                sender.setTranslation(CGPoint.zero, in: pipMediaPlayer)
+        
+        if let pipMediSuperView  = pipMediaPlayer.superview {
+            let point: CGPoint = sender.location(in: pipMediSuperView)
+            
+            let boundsRect = CGRect(x: pipMediSuperView.bounds.origin.x - 50 , y: pipMediSuperView.bounds.origin.y - 50, width: pipMediSuperView.frame.width , height: pipMediSuperView.frame.height)
+            
+            if boundsRect.contains(point) {
+                pipMediaPlayer.center = point
+            }
+        }
+        
+//        let translation = sender.translation(in: pipMediaPlayer)
+//        if pipMediaPlayer.superview!.bounds.contains(pipMediaPlayer.frame)
+//        {
+//            pipMediaPlayer.center = CGPoint(x: pipMediaPlayer.center.x + translation.x, y: pipMediaPlayer.center.y + translation.y)
+//            sender.setTranslation(CGPoint.zero, in: pipMediaPlayer)
+//        }
     }
     
     func onPiPCloseClicked() {
@@ -152,6 +157,10 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
         window.windowLevel = UIWindow.Level(rawValue: 0)
         window.windowLevel = UIWindow.Level(rawValue: CGFloat.greatestFiniteMagnitude)
     }
+    
+    override func viewDidLayoutSubviews() {
+        pipMediaPlayer.setupFrame()
+    }
 }
 
 private class PiPWindow: UIWindow {
@@ -164,6 +173,8 @@ private class PiPWindow: UIWindow {
             self.windowScene = (UIApplication.shared.connectedScenes.first as? UIWindowScene)!
         }
         backgroundColor = .clear
+        pipMoviePlayer?.backgroundColor = .black
+        pipMoviePlayer?.layer.cornerRadius = 8
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -178,5 +189,6 @@ private class PiPWindow: UIWindow {
             let pipMoviePoint = convert(point, to: pipMoviePlayer)
             return pipMoviePlayer.point(inside: pipMoviePoint, with: event)
     }
+    
     
 }
