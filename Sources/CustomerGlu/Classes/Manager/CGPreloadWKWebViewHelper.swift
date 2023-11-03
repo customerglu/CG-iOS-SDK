@@ -9,12 +9,11 @@ import Foundation
 import WebKit
 import Security
 
-class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
+class CGPreloadWKWebViewHelper: NSObject, WKNavigationDelegate {
     var webView: WKWebView!
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
+     func viewDidLoad() {
+    
         let config = WKWebViewConfiguration()
         let contentController = WKUserContentController()
         config.userContentController = contentController
@@ -22,7 +21,6 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
-        view.addSubview(webView)
 
         if let url = URL(string: "https://constellation.customerglu.com/preload") {
             webView.load(URLRequest(url: url))
@@ -44,4 +42,5 @@ class CGPreloadWKWebViewHelper: UIViewController, WKNavigationDelegate {
             completionHandler(.useCredential, URLCredential(trust: serverTrust))
         }
     }
+    
 }
