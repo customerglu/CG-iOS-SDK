@@ -1780,10 +1780,17 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func addPIPViewToUI(pipInfo: CGData)
     {
         DispatchQueue.main.async {
-            self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
-            
-            if let videoURL = pipInfo.mobile.content[0].url {
-                self.downloadPiPVideo(videoURL: videoURL)
+    
+            if self.arrPIPViews.count == 0 {
+                var newPipInfo = pipInfo
+                newPipInfo.mobile.container.position = "BOTTOM-RIGHT"
+                newPipInfo.mobile.conditions.draggable = true
+                
+                self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+                
+                if let videoURL = pipInfo.mobile.content[0].url {
+                    self.downloadPiPVideo(videoURL: videoURL)
+                }
             }
         }
     }
@@ -1985,6 +1992,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         if isHidden {
             self.hidePiPViews()
+        }else{
+            if  arrPIPViews.count > 0 && arrPIPViews[0].pipMediaPlayer.isHidden == false && arrPIPViews[0].pipMediaPlayer.superview != nil {
+                arrPIPViews[0].pipMediaPlayer.resume()
+            }
         }
     }
     
@@ -2050,9 +2061,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     $0._id == pip._id
                 }
                 
-                
                     self.addPIPViewToUI(pipInfo: pip[0])
-                
             }
             
         }
@@ -2563,10 +2572,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         DispatchQueue.main.async {
             if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
                 let viewController = CGPreloadWKWebViewHelper()
-                viewController.view.backgroundColor = .clear
-                viewController.view.isOpaque = false
-                viewController.modalPresentationStyle = .overCurrentContext
-                rootViewController.present(viewController, animated: false, completion: nil)
+                viewController.viewDidLoad()
             }
         }
         

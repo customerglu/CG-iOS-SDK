@@ -8,18 +8,44 @@
 import Foundation
 import UIKit
 
-class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProtocol{
+class CGPictureInPictureViewController : UIViewController {
   
-    
-    
     var pipInfo: CGData?
-    private(set) var pipMediaPlayer: CGPiPMoviePlayer!
-    
+    private(set) var pipMediaPlayer: CGVideoPlayer!
     private var window = PiPWindow()
+    
+    
+    
+    // CTA Buttons
+    lazy var closeButton: UIButton = {
+        let button = UIButton(frame: .zero)
+        button.setImage(UIImage(named: "ic_close", in: .module, compatibleWith: nil), for: .normal)
+        button.setImage(UIImage(named: "ic_close", in: .module, compatibleWith: nil), for: .selected)
+        return button
+    }()
+   
+    lazy var muteButton: UIButton = {
+        let button = UIButton(frame: .zero)
+        button.setImage(UIImage(named: "ic_mute", in: .module, compatibleWith: nil), for: .normal)
+        button.setImage(UIImage(named: "ic_mute", in: .module, compatibleWith: nil), for: .selected)
+        return button
+    }()
+    
+    lazy var expandButton: UIButton = {
+        let button = UIButton(frame: .zero)
+        button.setImage(UIImage(named: "ic_expand", in: .module, compatibleWith: nil), for: .normal)
+        button.setImage(UIImage(named: "ic_expand", in: .module, compatibleWith: nil), for: .selected)
+        return button
+    }()
+    
+    
     
     required init?(coder aDecoder: NSCoder) {
         fatalError()
     }
+    
+    
+    // Initialising PIP implementation
     init(btnInfo: CGData) {
         super.init(nibName: nil, bundle: nil)
         pipInfo = btnInfo
@@ -30,6 +56,22 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow(note:)), name: UIResponder.keyboardDidShowNotification, object: nil)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        if let pipMediaPlayer = pipMediaPlayer{
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+                pipMediaPlayer.play(with: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH))
+                if pipMediaPlayer.isPlayerPaused(){
+                    pipMediaPlayer.resume()
+                }
+                
+                self.muteButton.isHidden = false
+                self.expandButton.isHidden = false
+                self.closeButton.isHidden = false
+                
+            })
+        }
+    }
+    
     
     override func viewDidLoad() {
         let view = UIView()
@@ -38,7 +80,7 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
         var screenWidth = screenRect.size.width
         let screenHeight = screenRect.size.height
         
-        screenWidth = screenWidth * 0.40
+        screenWidth = screenWidth * 0.35
         let widthPer  = screenWidth
         let heightPer = 1.78 * screenWidth
         
@@ -47,52 +89,132 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
         let sideSpace = Int((screenWidth * 5)/100)
         let topSpace = Int((screenHeight * 5)/100)
         
-        let pipMoviePlayer = CGPiPMoviePlayer(pipType: CGPiPMoviePlayer.PiPType.compactPlayer)
-        pipMoviePlayer.backgroundColor = .black
+        pipMediaPlayer = CGVideoPlayer()
+        pipMediaPlayer?.setVideoShouldLoop(with: true)
         
         let pipMoviePlayerHeight = Int(heightPer)
         let pipMoviePlayerWidth = Int(widthPer)
-    
         
         if pipInfo?.mobile.container.position == "BOTTOM-LEFT" {
-            pipMoviePlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMediaPlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "BOTTOM-RIGHT" {
-            pipMoviePlayer.frame = CGRect(x: Int(screenWidth - CGFloat(pipMoviePlayerWidth) + CGFloat(sideSpace)), y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMediaPlayer.frame = CGRect(x: Int(screenRect.size.width - (CGFloat(pipMoviePlayerWidth) + CGFloat(sideSpace))), y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         }  else if pipInfo?.mobile.container.position == "TOP-LEFT" {
-            pipMoviePlayer.frame = CGRect(x: sideSpace, y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMediaPlayer.frame = CGRect(x: sideSpace, y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "TOP-RIGHT" {
-            pipMoviePlayer.frame = CGRect(x: Int(CGFloat(screenWidth) - (CGFloat(pipMoviePlayerWidth) + CGFloat(sideSpace))), y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMediaPlayer.frame = CGRect(x: Int(screenRect.size.width - (CGFloat(pipMoviePlayerWidth) + CGFloat(sideSpace))), y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else {
-            pipMoviePlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMediaPlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         }
- 
-         pipMoviePlayer.contentMode = .scaleToFill
-         pipMoviePlayer.clipsToBounds = true
-         pipMoviePlayer.backgroundColor = UIColor.black
-        pipMoviePlayer.layer.shadowColor = UIColor.black.cgColor
-         pipMoviePlayer.layer.shadowRadius = 3
-         pipMoviePlayer.layer.shadowOpacity = 1
-         pipMoviePlayer.layer.cornerRadius = 8
-         pipMoviePlayer.layer.shadowOffset = CGSize(width: 15, height: 15)
-         pipMoviePlayer.autoresizingMask = []
-         pipMoviePlayer.delegate = self
-    
-         
-         if pipInfo?.mobile.container.borderRadius != nil {
-             let radius = NumberFormatter().number(from: (pipInfo?.mobile.container.borderRadius)!)
-             pipMoviePlayer.layer.cornerRadius = radius as! CGFloat
-             pipMoviePlayer.clipsToBounds = true
-         }
-         
-         view.addSubview(pipMoviePlayer)
-         self.view = view
-         self.pipMediaPlayer = pipMoviePlayer
-         window.pipMoviePlayer = pipMoviePlayer
+                
+        pipMediaPlayer.layer.cornerRadius = 16.0
+        pipMediaPlayer.clipsToBounds = true
+        pipMediaPlayer.playerLayer.zPosition = 5
         
+        
+        pipMediaPlayer?.layer.masksToBounds = true
+    
+        
+        self.view = view
+        view.addSubview(pipMediaPlayer)
+        window.pipMoviePlayer = pipMediaPlayer
+        
+        
+        if let pipIsMute = pipInfo?.mobile.conditions.pip?.muteOnDefaultPIP, pipIsMute {
+            pipMediaPlayer.mute()
+        }
+    
         if(pipInfo?.mobile.conditions.draggable == true){
             let panGesture = UIPanGestureRecognizer(target: self, action: #selector(self.draggedView(_:)))
             pipMediaPlayer.addGestureRecognizer(panGesture)
+        }else{
+            let pipMediaPlayerTapped = UITapGestureRecognizer(target: self, action: #selector(didTapOnMediaPlayer))
+            pipMediaPlayer.addGestureRecognizer(pipMediaPlayerTapped)
         }
+        
+        NotificationCenter.default.addObserver(
+              self,
+              selector: #selector(applicationDidBecomeActive(notification:)),
+              name: UIApplication.didBecomeActiveNotification,
+              object: nil)
+        
+        setupPiPCTAs()
+        
+    }
+    
+       
+    @objc func applicationDidBecomeActive(notification: NSNotification) {
+        if  pipMediaPlayer.isHidden == false && pipMediaPlayer.superview != nil{
+            pipMediaPlayer.resume()
+        }
+        
+    }
+    
+    
+    public func setupPiPCTAs(){
+        muteButton.frame = CGRect(x: pipMediaPlayer.frame.width - (22 + 8) ,y:pipMediaPlayer.frame.size.height - (22 + 8) ,width:22,height:22)
+        closeButton.frame = CGRect(x: 8 ,y:8,width:22,height:22)
+        expandButton.frame = CGRect(x: pipMediaPlayer.frame.width - (22 + 8 ) ,y:8,width:22,height:22)
+        
+        
+        self.muteButton.isHidden = true
+        self.expandButton.isHidden = true
+        self.closeButton.isHidden = true
+        
+        pipMediaPlayer?.addSubview(muteButton)
+        pipMediaPlayer?.addSubview(expandButton)
+        pipMediaPlayer?.addSubview(closeButton)
+        
+        
+        
+        
+        let muteTapped = UITapGestureRecognizer(target: self, action: #selector(didTapOnMute))
+        let expandTapped = UITapGestureRecognizer(target: self, action: #selector(didTapOnExpand))
+        let closeTapped = UITapGestureRecognizer(target: self, action: #selector(didTapOnClose))
+        
+        muteButton.addGestureRecognizer(muteTapped)
+        expandButton.addGestureRecognizer(expandTapped)
+        closeButton.addGestureRecognizer(closeTapped)
+    }
+    
+    @objc func didTapOnMediaPlayer(){
+         launchPiPExpandedView()
+     }
+
+
+    @objc func didTapOnMute(){
+        pipMediaPlayer.isPlayerMuted() ? pipMediaPlayer.unmute() : pipMediaPlayer.mute()
+        
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+            
+        })
+        muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
+        
+        muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .selected)
+     }
+    
+    @objc func didTapOnExpand(){
+        launchPiPExpandedView()
+     }
+    
+    @objc func didTapOnClose(){
+        self.hidePiPButton(ishidden: true)
+    }
+    
+    func launchPiPExpandedView(){
+      dismissPiPButton(is_remove: true)
+        dismiss(animated: true)
+        DispatchQueue.main.async {
+            let clientTestingVC = StoryboardType.main.instantiate(vcType: CGPiPExpandedViewController.self)
+            clientTestingVC.pipInfo = self.pipInfo
+            guard let topController = UIViewController.topViewController() else {
+                return
+            }
+            clientTestingVC.modalPresentationStyle = .fullScreen
+            topController.present(clientTestingVC, animated: true, completion: nil)
+        }
+    
     }
     
     
@@ -103,20 +225,22 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
                 $0._id == pipInfo?._id
             }
             if is_remove == true {
-                // need to implement the converter
                 CustomerGlu.getInstance.updateShowCount(showCount: finalPiPView[0], eventData: pipInfo!)
             }
-            if let index = CustomerGlu.getInstance.arrFloatingButton.firstIndex(where: {$0 === self}) {
-                CustomerGlu.getInstance.arrFloatingButton.remove(at: index)
+            if let index = CustomerGlu.getInstance.arrPIPViews.firstIndex(where: {$0 === self}) {
+                CustomerGlu.getInstance.arrPIPViews.remove(at: index)
                 window.dismiss()
             }
         }
     }
+
+    
     
     public func hidePiPButton(ishidden: Bool) {
         window.pipMoviePlayer?.isHidden = ishidden
         self.pipMediaPlayer.isHidden = ishidden
         window.isUserInteractionEnabled = !ishidden
+        self.pipMediaPlayer.pause()
         self.pipMediaPlayer.isUserInteractionEnabled = !ishidden
     }
     
@@ -132,40 +256,19 @@ class CGPictureInPictureViewController : UIViewController, CGPiPMoviePlayerProto
                 pipMediaPlayer.center = point
             }
         }
-        
-//        let translation = sender.translation(in: pipMediaPlayer)
-//        if pipMediaPlayer.superview!.bounds.contains(pipMediaPlayer.frame)
-//        {
-//            pipMediaPlayer.center = CGPoint(x: pipMediaPlayer.center.x + translation.x, y: pipMediaPlayer.center.y + translation.y)
-//            sender.setTranslation(CGPoint.zero, in: pipMediaPlayer)
-//        }
     }
     
-    func onPiPCloseClicked() {
-        self.removeFromParent()
-    }
-    
-    func onPiPExpandClicked() {
-        
-    }
-    
-    func onPiPPlayerClicked() {
-        
-    }
     
     @objc func keyboardDidShow(note: NSNotification) {
         window.windowLevel = UIWindow.Level(rawValue: 0)
         window.windowLevel = UIWindow.Level(rawValue: CGFloat.greatestFiniteMagnitude)
     }
     
-    override func viewDidLayoutSubviews() {
-        pipMediaPlayer.setupFrame()
-    }
 }
 
 private class PiPWindow: UIWindow {
     
-    var pipMoviePlayer: CGPiPMoviePlayer?
+    var pipMoviePlayer: CGVideoPlayer?
     
     init(){
         super.init(frame: UIScreen.main.bounds)
