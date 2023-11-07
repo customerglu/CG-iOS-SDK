@@ -1781,16 +1781,22 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     {
         DispatchQueue.main.async {
     
-            if self.arrPIPViews.count == 0 {
-                var newPipInfo = pipInfo
-                newPipInfo.mobile.container.position = "BOTTOM-RIGHT"
-                newPipInfo.mobile.conditions.draggable = true
-                
-                self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
-                
-                if let videoURL = pipInfo.mobile.content[0].url {
+           
+            if self.arrPIPViews.count == 0, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
+                if let videoURL = pipInfo.mobile.content[0].url,CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH).isEmpty {
                     self.downloadPiPVideo(videoURL: videoURL)
+                    return
                 }
+                
+                
+                if CGPIPHelper.shared.checkShowOnDailyRefresh(){
+                    let dailyRefreshShip = CGPIPHelper.shared.checkShowOnDailyRefresh()
+                    
+                    print("Daily Refresh \(dailyRefreshShip)")
+                    self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+                }
+                
+               
             }
         }
     }
@@ -2048,7 +2054,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    private func addPIPViews()
+    internal func addPIPViews()
     {
         let pipViews = popupDict.filter
         {

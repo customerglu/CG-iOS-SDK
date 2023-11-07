@@ -52,10 +52,13 @@ class CGPiPExpandedViewController : UIViewController {
     }
     
     
+    override func viewDidAppear(_ animated: Bool) {
+        
+    }
+    
     
     func setupVideoPlayer(){
         movieView = CGVideoPlayer()
-        movieView?.setVideoShouldLoop(with: false)
         self.view.addSubview(movieView!)
         
         movieView?.translatesAutoresizingMaskIntoConstraints = false
@@ -93,12 +96,13 @@ class CGPiPExpandedViewController : UIViewController {
             expandButton.heightAnchor.constraint(equalToConstant: 36),
             expandButton.widthAnchor.constraint(equalToConstant: 36),
             expandedViewCTA.topAnchor.constraint(equalTo: movieView!.bottomAnchor, constant: 24),
-            expandedViewCTA.heightAnchor.constraint(equalToConstant: 36)
+            expandedViewCTA.heightAnchor.constraint(equalToConstant: 48)
         ])
         
         muteButton.addTarget(self, action: #selector(didTapOnMute(_:)), for: .touchUpInside)
         expandButton.addTarget(self, action: #selector(didTapOnExpand(_:)), for: .touchUpInside)
         closeButton.addTarget(self, action: #selector(didTapOnClose(_:)), for: .touchUpInside)
+        movieView?.setVideoShouldLoop(with: false)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1 , execute: {
             self.movieView?.play(with: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH))
@@ -116,9 +120,18 @@ class CGPiPExpandedViewController : UIViewController {
     
     @objc func didTapOnExpand(_ buttton: UIButton){
         dismiss(animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
+            CustomerGlu.getInstance.addPIPViews()
+        })
      }
     
     @objc func didTapOnClose(_ buttton: UIButton){
+        let finalPiPView = CustomerGlu.getInstance.popupDict.filter {
+            $0._id == pipInfo?._id
+        }
+        
+        CustomerGlu.getInstance.updateShowCount(showCount: finalPiPView[0], eventData: pipInfo!)
+        
         dismiss(animated: true)
      }
     
@@ -129,6 +142,8 @@ class CGPiPExpandedViewController : UIViewController {
     @IBAction func onPiPCTAClicked(_ sender: Any) {
         if let actionData = pipInfo?.mobile.content[0].action, let type = actionData.type {
             if type == WebViewsKey.open_deeplink {
+                
+               
                 
                 //Incase of Handled by CG is true
                 if actionData.isHandledBySDK == true {
@@ -147,6 +162,8 @@ class CGPiPExpandedViewController : UIViewController {
                                               "data": ["deepLink": actionData.url]]
             
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_DEEPLINK_EVENT").rawValue), object: nil, userInfo: postdata)
+                closePiPExpandedView()
+                dismiss(animated: true)
                 
             } else if type == WebViewsKey.open_weblink {
                 
@@ -159,7 +176,11 @@ class CGPiPExpandedViewController : UIViewController {
                 nudgeConfiguration.absoluteHeight = pipInfo?.mobile.content[0].absoluteHeight ?? 0.0
                 nudgeConfiguration.isHyperLink = true
                 
-                CustomerGlu.getInstance.openURLWithNudgeConfig(url: actionData.url, nudgeConfiguration: nudgeConfiguration)
+                closePiPExpandedView()
+                dismiss(animated: true)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                    CustomerGlu.getInstance.openURLWithNudgeConfig(url: actionData.url, nudgeConfiguration: nudgeConfiguration)
+                })
             } else {
                 //Incase of failure / API contract breach
                 // Check to open wallet or not in fallback case
@@ -177,10 +198,21 @@ class CGPiPExpandedViewController : UIViewController {
                     nudgeConfiguration.relativeHeight = pipInfo?.mobile.content[0].relativeHeight ?? 0.0
                     nudgeConfiguration.absoluteHeight = pipInfo?.mobile.content[0].absoluteHeight ?? 0.0
                     
-                    CustomerGlu.getInstance.openCampaignById(campaign_id: campaignId, nudgeConfiguration: nudgeConfiguration)
+                    closePiPExpandedView()
+                    self.dismiss(animated: true)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                        CustomerGlu.getInstance.openCampaignById(campaign_id: campaignId, nudgeConfiguration: nudgeConfiguration)
+                    })
+                  
+                   
+                    
                 } else {
                     //Incase Campaign Id is nil / unavailable
-                    CustomerGlu.getInstance.openWallet()
+                    closePiPExpandedView()
+                    dismiss(animated: true)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                        CustomerGlu.getInstance.openWallet()
+                    })
                 }
             }
         } else {
@@ -192,9 +224,21 @@ class CGPiPExpandedViewController : UIViewController {
             nudgeConfiguration.relativeHeight = pipInfo?.mobile.content[0].relativeHeight ?? 0.0
             nudgeConfiguration.absoluteHeight = pipInfo?.mobile.content[0].absoluteHeight ?? 0.0
             
-            CustomerGlu.getInstance.openCampaignById(campaign_id: (pipInfo?.mobile.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
+            closePiPExpandedView()
+            dismiss(animated: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                CustomerGlu.getInstance.openCampaignById(campaign_id: (self.pipInfo?.mobile.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
+            })
         }
         
+       
+    }
+    
+    
+    func closePiPExpandedView(){
+        if let movieView = self.movieView, !movieView.isPlayerPaused() {
+            movieView.pause()
+        }
     }
     
 }

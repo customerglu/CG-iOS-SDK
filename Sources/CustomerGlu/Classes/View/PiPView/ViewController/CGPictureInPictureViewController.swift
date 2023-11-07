@@ -59,6 +59,9 @@ class CGPictureInPictureViewController : UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         if let pipMediaPlayer = pipMediaPlayer{
             DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+                if let pipIsMute = self.pipInfo?.mobile.conditions.pip?.muteOnDefaultPIP, pipIsMute {
+                    pipMediaPlayer.mute()
+                }
                 pipMediaPlayer.play(with: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH))
                 if pipMediaPlayer.isPlayerPaused(){
                     pipMediaPlayer.resume()
@@ -120,9 +123,7 @@ class CGPictureInPictureViewController : UIViewController {
         window.pipMoviePlayer = pipMediaPlayer
         
         
-        if let pipIsMute = pipInfo?.mobile.conditions.pip?.muteOnDefaultPIP, pipIsMute {
-            pipMediaPlayer.mute()
-        }
+       
     
         if(pipInfo?.mobile.conditions.draggable == true){
             let panGesture = UIPanGestureRecognizer(target: self, action: #selector(self.draggedView(_:)))
@@ -165,9 +166,6 @@ class CGPictureInPictureViewController : UIViewController {
         pipMediaPlayer?.addSubview(expandButton)
         pipMediaPlayer?.addSubview(closeButton)
         
-        
-        
-        
         let muteTapped = UITapGestureRecognizer(target: self, action: #selector(didTapOnMute))
         let expandTapped = UITapGestureRecognizer(target: self, action: #selector(didTapOnExpand))
         let closeTapped = UITapGestureRecognizer(target: self, action: #selector(didTapOnClose))
@@ -203,9 +201,9 @@ class CGPictureInPictureViewController : UIViewController {
     }
     
     func launchPiPExpandedView(){
-      dismissPiPButton(is_remove: true)
-        dismiss(animated: true)
-        DispatchQueue.main.async {
+        dismissPiPButton(is_remove: true)
+//        hidePiPButton(ishidden: true)
+        DispatchQueue.main.asyncAfter(deadline: .now(), execute: {
             let clientTestingVC = StoryboardType.main.instantiate(vcType: CGPiPExpandedViewController.self)
             clientTestingVC.pipInfo = self.pipInfo
             guard let topController = UIViewController.topViewController() else {
@@ -213,7 +211,7 @@ class CGPictureInPictureViewController : UIViewController {
             }
             clientTestingVC.modalPresentationStyle = .fullScreen
             topController.present(clientTestingVC, animated: true, completion: nil)
-        }
+        })
     
     }
     
@@ -229,6 +227,9 @@ class CGPictureInPictureViewController : UIViewController {
             }
             if let index = CustomerGlu.getInstance.arrPIPViews.firstIndex(where: {$0 === self}) {
                 CustomerGlu.getInstance.arrPIPViews.remove(at: index)
+                pipMediaPlayer.pause()
+                self.pipMediaPlayer.unRegisterLooper()
+                pipMediaPlayer.layer.removeFromSuperlayer()
                 window.dismiss()
             }
         }
@@ -242,6 +243,14 @@ class CGPictureInPictureViewController : UIViewController {
         window.isUserInteractionEnabled = !ishidden
         self.pipMediaPlayer.pause()
         self.pipMediaPlayer.isUserInteractionEnabled = !ishidden
+    }
+    
+    public func showPiPView(){
+        window.pipMoviePlayer?.isHidden = false
+        self.pipMediaPlayer.isHidden = false
+        window.isUserInteractionEnabled = true
+        self.pipMediaPlayer.pause()
+        self.pipMediaPlayer.isUserInteractionEnabled = true
     }
     
     

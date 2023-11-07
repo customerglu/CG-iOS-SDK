@@ -208,33 +208,48 @@ public class CGVideoPlayer: UIView {
         if let playerItem = notification.object as? AVPlayerItem {
             if self.shouldVideoLoop {
                 playerItem.seek(to: CMTime.zero, completionHandler: nil)
-                player?.play()
+                if let player = self.player {
+                    player.play()
+                }
                 isPlayerMuted() ? self.mute() : self.unmute()
             }
         }
     }
 
     
+    public func unRegisterLooper(){
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     
     
     public func resume() {
-        self.isPaused = false
-        player?.rate = 1.1
+        if let player = self.player {
+            self.isPaused = false
+            player.rate = 1.1
+        }
     }
     
     public func pause() {
-        self.isPaused = true
-        player?.pause()
+        if let player = self.player {
+            self.isPaused = true
+            player.pause()
+        }
     }
     
     public func mute() {
         isMuted = true
-        player?.isMuted = true
+        if let player = self.player {
+            player.isMuted = true
+        }
     }
+    
     
     public func unmute() {
         isMuted = false
-        player?.isMuted = false
+        if let player = self.player {
+            player.isMuted = false
+        }
     }
 
     public func isPlayerMuted() -> Bool {
