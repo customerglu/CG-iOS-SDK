@@ -11,6 +11,7 @@ class CGPIPHelper : NSObject {
     static let shared = CGPIPHelper()
     var isDismmissed = false;
     
+    
     func  checkShowOnDailyRefresh() -> Bool
     {
         if isDismmissed

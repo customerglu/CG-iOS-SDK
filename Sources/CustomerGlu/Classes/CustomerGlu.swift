@@ -112,7 +112,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private var sdkInitialized: Bool = false
     private static var isAnonymousFlowAllowed: Bool = false
     public static var oldCampaignIds = ""
-    
+    public static var delayForPIP = 0
+    public static var verticalPadding = 0
+    public static var horizontalPadding = 0
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
     
@@ -1790,10 +1792,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 
                 
                 if CGPIPHelper.shared.checkShowOnDailyRefresh(){
-                    let dailyRefreshShip = CGPIPHelper.shared.checkShowOnDailyRefresh()
-                    
-                    print("Daily Refresh \(dailyRefreshShip)")
-                    self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+                    var delay = CustomerGlu.delayForPIP/1000
+                    DispatchQueue.main.asyncAfter(deadline: .now() + CGFloat(delay)) {
+                        self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+
+                    }
                 }
                 
                
@@ -1808,6 +1811,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    internal func addDelayForPIP(delay:Int){
+        CustomerGlu.delayForPIP = delay
+    }
+    internal func addMarginForPIP(horizontal:Int,vertical:Int){
+        CustomerGlu.horizontalPadding = horizontal
+        CustomerGlu.verticalPadding = vertical
+    }
     internal func dismissPiPViews(is_remove: Bool){
         for pipView in self.arrPIPViews {
             pipView.dismissPiPButton(is_remove: is_remove)
@@ -1917,6 +1927,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             CGFileDownloader.loadFileAsync(url: url!) { [self] (path, error) in
                 if (error == nil){
                     encryptUserDefaultKey(str: path ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
+                    addPIPViews()
+                    
                 }
             }
         }
