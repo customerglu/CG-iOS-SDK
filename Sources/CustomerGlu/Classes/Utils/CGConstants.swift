@@ -9,6 +9,7 @@ import Foundation
 
 struct CGConstants {
     static let CG_PIP_DATE = "cg_pip_date"
+    static let CG_PIP_VID_SYNC_DATA = "cg-pip-vid-sync"
     static let ERROR = "CUSTOMERGLU Error:"
     static let JSON_ERROR = "CUSTOMERGLU: json parsing error:"
     static let CUSTOMERGLU_TOKEN = "CustomerGlu_Token_Encrypt"
@@ -187,7 +188,7 @@ struct APIParameterKey {
     static let appSessionId = "appSessionId"
     static let userAgent = "userAgent"
     static let eventName = "eventName"
-    static let cgsdkversionvalue = "2.3.13"
+    static let cgsdkversionvalue = "2.4.2"
     static let analytics_version_value = "4.0.0"
     static let analytics_version = "analytics_version"
     static let dismiss_trigger = "dismiss_trigger"

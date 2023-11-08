@@ -117,6 +117,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var horizontalPadding = 0
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
+    private var pipVideoLocalPath: String = ""
     
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     
@@ -129,7 +130,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 getEntryPointData()
             }
         }
-        
+        if !(decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH).isEmpty){
+            self.pipVideoLocalPath = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
+        }
         let jsonString = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERDATA)
         let jsonData = Data(jsonString.utf8)
         let decoder = JSONDecoder()
@@ -160,6 +163,15 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
         }
+    }
+    
+    internal func getPiPLocalPath()-> String{
+        return pipVideoLocalPath
+    }
+    
+    internal func updatePiPLocalPath(path : String){
+        self.pipVideoLocalPath = path
+        encryptUserDefaultKey(str: path, userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
     }
     
     @objc public func gluSDKDebuggingMode(enabled: Bool) {
@@ -1785,7 +1797,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
            
             if self.arrPIPViews.count == 0, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
-                if let videoURL = pipInfo.mobile.content[0].url,CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH).isEmpty {
+                if let videoURL = pipInfo.mobile.content[0].url,CGPIPHelper.shared.allowdVideoRefreshed() {
                     self.downloadPiPVideo(videoURL: videoURL)
                     return
                 }
@@ -1802,6 +1814,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                
             }
         }
+    }
+    
+    internal func displayPiPFromCollapseCTA(with pipInfo: CGData){
+        self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
     }
     
     
@@ -1926,9 +1942,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let url = URL(string: videoURL)
             CGFileDownloader.loadFileAsync(url: url!) { [self] (path, error) in
                 if (error == nil){
-                    encryptUserDefaultKey(str: path ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
+                    updatePiPLocalPath(path: path ?? "")
                     addPIPViews()
-                    
                 }
             }
         }

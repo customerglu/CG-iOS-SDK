@@ -62,7 +62,7 @@ class CGPictureInPictureViewController : UIViewController {
                 if let pipIsMute = self.pipInfo?.mobile.conditions.pip?.muteOnDefaultPIP, pipIsMute {
                     pipMediaPlayer.mute()
                 }
-                pipMediaPlayer.play(with: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH))
+                pipMediaPlayer.play(with: CustomerGlu.getInstance.getPiPLocalPath())
                 if pipMediaPlayer.isPlayerPaused(){
                     pipMediaPlayer.resume()
                 }
@@ -112,7 +112,6 @@ class CGPictureInPictureViewController : UIViewController {
                 
         pipMediaPlayer.layer.cornerRadius = 16.0
         pipMediaPlayer.clipsToBounds = true
-        pipMediaPlayer.playerLayer.zPosition = 5
         
         
         pipMediaPlayer?.layer.masksToBounds = true
@@ -197,13 +196,13 @@ class CGPictureInPictureViewController : UIViewController {
      }
     
     @objc func didTapOnClose(){
-        self.hidePiPButton(ishidden: true)
+        self.dismissPiPButton(is_remove: true)
     }
     
     func launchPiPExpandedView(){
         dismissPiPButton(is_remove: true)
 //        hidePiPButton(ishidden: true)
-        DispatchQueue.main.asyncAfter(deadline: .now(), execute: {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
             let clientTestingVC = StoryboardType.main.instantiate(vcType: CGPiPExpandedViewController.self)
             clientTestingVC.pipInfo = self.pipInfo
             guard let topController = UIViewController.topViewController() else {
@@ -218,19 +217,15 @@ class CGPictureInPictureViewController : UIViewController {
     
     public func dismissPiPButton(is_remove: Bool){
         if CustomerGlu.getInstance.arrPIPViews.contains(self) {
-            
-            let finalPiPView = CustomerGlu.getInstance.popupDict.filter {
-                $0._id == pipInfo?._id
-            }
-            if is_remove == true {
-                CustomerGlu.getInstance.updateShowCount(showCount: finalPiPView[0], eventData: pipInfo!)
-            }
             if let index = CustomerGlu.getInstance.arrPIPViews.firstIndex(where: {$0 === self}) {
                 CustomerGlu.getInstance.arrPIPViews.remove(at: index)
                 pipMediaPlayer.pause()
                 self.pipMediaPlayer.unRegisterLooper()
-                pipMediaPlayer.layer.removeFromSuperlayer()
-                window.dismiss()
+                self.window.dismiss()
+                DispatchQueue.main.async {
+//                    self.pipMediaPlayer.layer.removeFromSuperlayer()
+                    
+                }
             }
         }
     }

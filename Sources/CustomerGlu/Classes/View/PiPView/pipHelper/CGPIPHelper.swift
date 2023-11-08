@@ -19,24 +19,44 @@ class CGPIPHelper : NSObject {
             return false;
         }
         
-        var pipSavedDate =   UserDefaults.standard.object(forKey: CGConstants.CG_PIP_DATE) as? String
-        let date = Date()
-        let df = DateFormatter()
-        var day = df.string(from: date) as String
+        var pipSavedDate =   UserDefaults.standard.string(forKey: CGConstants.CG_PIP_DATE)
+        let currentDate = Date.getCurrentDate()
         
         // User launches the pip First Time
-        if pipSavedDate == nil
+        if pipSavedDate == nil, ((pipSavedDate?.isEmpty) != nil)
         {
-          
-            UserDefaults.standard.set(day, forKey: CGConstants.CG_PIP_DATE)
-            return true;
+                UserDefaults.standard.set(currentDate, forKey: CGConstants.CG_PIP_DATE)
+                return true;
         }
         else{
-            
-            if !day.elementsEqual(pipSavedDate ?? "")
+            if !currentDate.elementsEqual(pipSavedDate ?? "")
             {
                 //save as Date
-                UserDefaults.standard.set(day, forKey: CGConstants.CG_PIP_DATE)
+                UserDefaults.standard.set(currentDate, forKey: CGConstants.CG_PIP_DATE)
+                return true
+            }
+            
+            
+        }
+        
+        return false;
+    }
+    
+    func allowdVideoRefreshed() -> Bool {
+        var pipvVidSavedDate =   UserDefaults.standard.string(forKey: CGConstants.CG_PIP_VID_SYNC_DATA)
+        
+        let currentDate = Date.getCurrentDate()
+        // User launches the pip First Time
+        if pipvVidSavedDate == nil, ((pipvVidSavedDate?.isEmpty) != nil)
+        {
+                UserDefaults.standard.set(currentDate, forKey: CGConstants.CG_PIP_VID_SYNC_DATA)
+                return true;
+        }
+        else{
+            if !currentDate.elementsEqual(pipvVidSavedDate ?? "")
+            {
+                //save as Date
+                UserDefaults.standard.set(currentDate, forKey: CGConstants.CG_PIP_VID_SYNC_DATA)
                 return true
             }
             
@@ -47,3 +67,4 @@ class CGPIPHelper : NSObject {
     }
     
 }
+

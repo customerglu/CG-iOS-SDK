@@ -61,7 +61,7 @@ class CGPiPMoviePlayer : UIView {
     func setupMoviePlayer(data: Data){
         backgroundColor = .black
         
-        let videoPath = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
+        let videoPath = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CustomerGlu.getInstance.getPiPLocalPath())
         
         let videoPathURL = URL(fileURLWithPath: videoPath)
         

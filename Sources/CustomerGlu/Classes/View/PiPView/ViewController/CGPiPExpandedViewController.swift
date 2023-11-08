@@ -105,7 +105,7 @@ class CGPiPExpandedViewController : UIViewController {
         movieView?.setVideoShouldLoop(with: false)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1 , execute: {
-            self.movieView?.play(with: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH))
+            self.movieView?.play(with: CustomerGlu.getInstance.getPiPLocalPath())
         })
     }
     
@@ -114,24 +114,17 @@ class CGPiPExpandedViewController : UIViewController {
     @objc func didTapOnMute(_ buttton: UIButton){
         (movieView?.isPlayerMuted())! ? movieView?.unmute() : movieView?.mute()
         muteButton.setImage( (movieView?.isPlayerMuted())! ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
-        
         muteButton.setImage( (movieView?.isPlayerMuted())! ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .selected)
      }
     
     @objc func didTapOnExpand(_ buttton: UIButton){
         dismiss(animated: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
-            CustomerGlu.getInstance.addPIPViews()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: { [self] in
+            CustomerGlu.getInstance.displayPiPFromCollapseCTA(with: pipInfo!)
         })
      }
     
     @objc func didTapOnClose(_ buttton: UIButton){
-        let finalPiPView = CustomerGlu.getInstance.popupDict.filter {
-            $0._id == pipInfo?._id
-        }
-        
-        CustomerGlu.getInstance.updateShowCount(showCount: finalPiPView[0], eventData: pipInfo!)
-        
         dismiss(animated: true)
      }
     
@@ -178,7 +171,7 @@ class CGPiPExpandedViewController : UIViewController {
                 
                 closePiPExpandedView()
                 dismiss(animated: true)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                     CustomerGlu.getInstance.openURLWithNudgeConfig(url: actionData.url, nudgeConfiguration: nudgeConfiguration)
                 })
             } else {
@@ -200,7 +193,7 @@ class CGPiPExpandedViewController : UIViewController {
                     
                     closePiPExpandedView()
                     self.dismiss(animated: true)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                         CustomerGlu.getInstance.openCampaignById(campaign_id: campaignId, nudgeConfiguration: nudgeConfiguration)
                     })
                   
@@ -210,7 +203,7 @@ class CGPiPExpandedViewController : UIViewController {
                     //Incase Campaign Id is nil / unavailable
                     closePiPExpandedView()
                     dismiss(animated: true)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                         CustomerGlu.getInstance.openWallet()
                     })
                 }
@@ -226,7 +219,7 @@ class CGPiPExpandedViewController : UIViewController {
             
             closePiPExpandedView()
             dismiss(animated: true)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                 CustomerGlu.getInstance.openCampaignById(campaign_id: (self.pipInfo?.mobile.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
             })
         }
