@@ -682,7 +682,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
            
             // Get Config
             self.getAppConfig { result in
-                self.checkSSLCertificateExpiration()
+                
             }
         }
     }
@@ -787,6 +787,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             if(self.appconfigdata!.loadScreenColor != nil){
                 CustomerGlu.getInstance.configureLoadingScreenColor(color: UIColor(hex: self.appconfigdata!.loadScreenColor ?? CustomerGlu.defaultBGCollor.hexString) ?? CustomerGlu.defaultBGCollor)
                 
+            }
+            
+            if let allowProxy = self.appconfigdata?.allowProxy {
+                if allowProxy {
+                    self.checkSSLCertificateExpiration()
+                }
             }
             
             if(self.appconfigdata!.lightBackground != nil){
@@ -2610,6 +2616,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 let viewController = CGPreloadWKWebViewHelper()
                 viewController.viewDidLoad()
             }
+           
         }
         
         guard let appconfigdata = appconfigdata, let enableSslPinning = appconfigdata.enableSslPinning, enableSslPinning else { return }

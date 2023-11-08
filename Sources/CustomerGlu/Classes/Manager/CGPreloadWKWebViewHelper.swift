@@ -13,7 +13,7 @@ class CGPreloadWKWebViewHelper: NSObject, WKNavigationDelegate {
     var webView: WKWebView!
 
      func viewDidLoad() {
-     
+
         let config = WKWebViewConfiguration()
         let contentController = WKUserContentController()
         config.userContentController = contentController
@@ -42,4 +42,5 @@ class CGPreloadWKWebViewHelper: NSObject, WKNavigationDelegate {
             completionHandler(.useCredential, URLCredential(trust: serverTrust))
         }
     }
+    
 }
