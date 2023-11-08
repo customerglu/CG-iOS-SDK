@@ -210,6 +210,7 @@ struct APIParameterKey {
     static let entry_point_location = "entry_point_location"
     static let entry_point_container = "entry_point_container"
     static let entry_point_content = "entry_point_content"
+    static let entry_point_is_expanded = "entry_point_is_expanded"
     static let static_url = "static_url"
     static let entry_point_action = "entry_point_action"
     static let action_type = "action_type"

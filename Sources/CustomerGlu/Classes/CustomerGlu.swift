@@ -2275,7 +2275,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
         if(event_name == "ENTRY_POINT_LOAD" && data.mobile.container.type == "POPUP"){
             postAnalyticsEventForEntryPoints(event_name: event_name, entry_point_id: data.mobile.content[0]._id, entry_point_name: data.name , entry_point_container: data.mobile.container.type, content_campaign_id: data.mobile.content[0].campaignId, open_container: data.mobile.content[0].openLayout, action_c_campaign_id: data.mobile.content[0].campaignId)
-        }else{
+        } else if(event_name == "ENTRY_POINT_LOAD" && data.mobile.container.type == "PIP")
+        {
+            postAnalyticsEventForEntryPoints(event_name: event_name, entry_point_id: data.mobile.content[0]._id, entry_point_name: data.name , entry_point_container: data.mobile.container.type, content_campaign_id: data.mobile.content[0].url, open_container: data.mobile.content[0].openLayout, action_c_campaign_id: data.mobile.content[0].campaignId)
+        }
+        
+        else{
             postAnalyticsEventForEntryPoints(event_name: event_name, entry_point_id: data.mobile.content[0]._id, entry_point_name: data.name , entry_point_container: data.mobile.container.type, content_campaign_id: data.mobile.content[0].url, open_container: data.mobile.content[0].openLayout, action_c_campaign_id: data.mobile.content[0].campaignId)
         }
         
@@ -2321,6 +2326,28 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         topController.present(customerWebViewVC, animated: true) {
             CustomerGlu.getInstance.hideFloatingButtons()
             self.hidePiPViews()
+        }
+    }
+    
+    internal func postAnalyticsEventForPIP(event_name:String, entry_point_id:String, entry_point_name:String, entry_point_container:String,content_campaign_id:String = "",entry_point_is_expanded:String)
+    {
+        var eventInfo = [String: Any]()
+        eventInfo[APIParameterKey.event_name] = event_name
+        var entry_point_data = [String: Any]()
+        
+        entry_point_data[APIParameterKey.entry_point_id] = entry_point_id
+        entry_point_data[APIParameterKey.entry_point_name] = entry_point_name
+        entry_point_data[APIParameterKey.entry_point_is_expanded] = entry_point_is_expanded
+        entry_point_data[APIParameterKey.entry_point_location] = CustomerGlu.getInstance.activescreenname
+        
+        eventInfo[APIParameterKey.entry_point_data] = entry_point_data
+
+        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: content_campaign_id) { success, _ in
+            if success {
+                CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "postAnalyticsEventForEntryPoints", posttoserver: false)
+            } else {
+                CustomerGlu.getInstance.printlog(cglog: "Fail to call sendAnalyticsEvent ", isException: false, methodName: "postAnalyticsEventForBanner", posttoserver: true)
+            }
         }
     }
     
