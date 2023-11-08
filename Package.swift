@@ -18,7 +18,6 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(url: "https://github.com/getsentry/sentry-cocoa.git", from: "7.31.4"),
         .package(url: "https://github.com/airbnb/lottie-ios.git", from: "4.1.3")
     ],
     targets: [
@@ -27,8 +26,7 @@ let package = Package(
         .target(
             name: "CustomerGlu",
             dependencies: [
-                .product(name: "Lottie", package: "lottie-ios"),
-                .product(name: "Sentry", package: "sentry-cocoa")
+                .product(name: "Lottie", package: "lottie-ios")
             ],
             resources: [
                 .process("Resources")

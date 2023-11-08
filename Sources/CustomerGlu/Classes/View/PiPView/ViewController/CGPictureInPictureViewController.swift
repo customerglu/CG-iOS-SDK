@@ -8,13 +8,11 @@
 import Foundation
 import UIKit
 
-class CGPictureInPictureViewController : UIViewController {
-  
+class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener {
+   
     var pipInfo: CGData?
     private(set) var pipMediaPlayer: CGVideoPlayer!
     private var window = PiPWindow()
-    
-    
     
     // CTA Buttons
     lazy var closeButton: UIButton = {
@@ -37,8 +35,7 @@ class CGPictureInPictureViewController : UIViewController {
         button.setImage(UIImage(named: "ic_expand", in: .module, compatibleWith: nil), for: .selected)
         return button
     }()
-    
-    
+
     
     required init?(coder aDecoder: NSCoder) {
         fatalError()
@@ -67,10 +64,6 @@ class CGPictureInPictureViewController : UIViewController {
                     pipMediaPlayer.resume()
                 }
                 
-                self.muteButton.isHidden = false
-                self.expandButton.isHidden = false
-                self.closeButton.isHidden = false
-                
             })
         }
     }
@@ -93,6 +86,7 @@ class CGPictureInPictureViewController : UIViewController {
         let topSpace = Int(CustomerGlu.verticalPadding)
         
         pipMediaPlayer = CGVideoPlayer()
+        pipMediaPlayer?.setCGVideoPlayerListener(delegate: self)
         pipMediaPlayer?.setVideoShouldLoop(with: true)
         
         let pipMoviePlayerHeight = Int(heightPer)
@@ -112,18 +106,11 @@ class CGPictureInPictureViewController : UIViewController {
                 
         pipMediaPlayer.layer.cornerRadius = 16.0
         pipMediaPlayer.clipsToBounds = true
-        
-        
         pipMediaPlayer?.layer.masksToBounds = true
-    
-        
         self.view = view
         view.addSubview(pipMediaPlayer)
         window.pipMoviePlayer = pipMediaPlayer
         
-        
-       
-    
         if(pipInfo?.mobile.conditions.draggable == true){
             let panGesture = UIPanGestureRecognizer(target: self, action: #selector(self.draggedView(_:)))
             pipMediaPlayer.addGestureRecognizer(panGesture)
@@ -139,7 +126,6 @@ class CGPictureInPictureViewController : UIViewController {
               object: nil)
         
         setupPiPCTAs()
-        
     }
     
        
@@ -147,7 +133,6 @@ class CGPictureInPictureViewController : UIViewController {
         if  pipMediaPlayer.isHidden == false && pipMediaPlayer.superview != nil{
             pipMediaPlayer.resume()
         }
-        
     }
     
     
@@ -172,6 +157,8 @@ class CGPictureInPictureViewController : UIViewController {
         muteButton.addGestureRecognizer(muteTapped)
         expandButton.addGestureRecognizer(expandTapped)
         closeButton.addGestureRecognizer(closeTapped)
+    
+        hidePiPCTAs()
     }
     
     @objc func didTapOnMediaPlayer(){
@@ -179,15 +166,23 @@ class CGPictureInPictureViewController : UIViewController {
      }
 
 
+    func hidePiPCTAs(){
+        muteButton.isHidden = true
+        expandButton.isHidden = true
+        closeButton.isHidden = true
+    }
+    
+    
+    func showPiPCTAs(){
+        expandButton.isHidden = false
+        muteButton.isHidden = false
+        closeButton.isHidden = false
+    }
+    
+    
     @objc func didTapOnMute(){
         pipMediaPlayer.isPlayerMuted() ? pipMediaPlayer.unmute() : pipMediaPlayer.mute()
-        
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
-            
-        })
         muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
-        
         muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .selected)
      }
     
@@ -221,15 +216,15 @@ class CGPictureInPictureViewController : UIViewController {
                 pipMediaPlayer.pause()
                 self.pipMediaPlayer.unRegisterLooper()
                 self.window.dismiss()
-                DispatchQueue.main.async {
-//                    self.pipMediaPlayer.layer.removeFromSuperlayer()
-                    
-                }
             }
         }
     }
 
-    
+    func showPlayerCTA() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: {
+            self.showPiPCTAs()
+        })
+    }
     
     public func hidePiPButton(ishidden: Bool) {
         window.pipMoviePlayer?.isHidden = ishidden
@@ -248,13 +243,12 @@ class CGPictureInPictureViewController : UIViewController {
     }
     
     
+    
     @objc func draggedView(_ sender: UIPanGestureRecognizer) {
         
         if let pipMediSuperView  = pipMediaPlayer.superview {
             let point: CGPoint = sender.location(in: pipMediSuperView)
-            
             let boundsRect = CGRect(x: pipMediSuperView.bounds.origin.x - 50 , y: pipMediSuperView.bounds.origin.y - 50, width: pipMediSuperView.frame.width , height: pipMediSuperView.frame.height)
-            
             if boundsRect.contains(point) {
                 pipMediaPlayer.center = point
             }

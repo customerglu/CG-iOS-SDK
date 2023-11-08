@@ -18,7 +18,9 @@ public enum CGMediaPlayingBehaviour {
     case autoPlayOnLoad
     case playOnDemand
 }
-
+public protocol CGVideoplayerListener{
+    func showPlayerCTA()
+}
 public class CGVideoPlayer: UIView {
     
     public override class var layerClass: AnyClass {
@@ -44,6 +46,7 @@ public class CGVideoPlayer: UIView {
     private var isPaused = false
     private var isMuted = false
     private var shouldVideoLoop = false
+    var delegate: CGVideoplayerListener?
     
     // One of the value from here containing the actual playable media in avassets
     // Read more: https://developer.apple.com/documentation/avfoundation/avasset?language=objc
@@ -85,6 +88,11 @@ public class CGVideoPlayer: UIView {
         }
     }
     
+    
+    public func setCGVideoPlayerListener(delegate: CGVideoplayerListener){
+        self.delegate = delegate
+    }
+    
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
         guard context == &playerItemContext else {
@@ -118,6 +126,9 @@ public class CGVideoPlayer: UIView {
         case .autoPlayOnLoad:
             player?.play()
             isPlayerMuted() ? self.mute() : unmute()
+            if let delegate = self.delegate {
+                delegate.showPlayerCTA()
+            }
         case .playOnDemand:
             break
         }

@@ -64,10 +64,8 @@ class CGPiPMoviePlayer : UIView {
         let videoPath = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CustomerGlu.getInstance.getPiPLocalPath())
         
         let videoPathURL = URL(fileURLWithPath: videoPath)
-        
         self.player = AVPlayer(url: videoPathURL)
         playerVideoLayer = AVPlayerLayer(player: player)
-        
         self.playerVideoLayer?.frame = self.bounds
     
         self.layer.addSublayer(playerVideoLayer!)
@@ -85,10 +83,7 @@ class CGPiPMoviePlayer : UIView {
         
         let ctaDimensions = 24
         
-        
         // Setup the Close CTA
-        
-        
         if closeCTA == nil {
             closeCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: ctaDimensions, height: ctaDimensions))
             closeCTA?.image = UIImage(named: "ic_close.png")
@@ -103,7 +98,6 @@ class CGPiPMoviePlayer : UIView {
         
         
         //Setup the Expand CTA
-        
         if expandCTA == nil {
             expandCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: ctaDimensions, height: ctaDimensions))
             expandCTA?.image = UIImage(named: "ic_expand.png")
