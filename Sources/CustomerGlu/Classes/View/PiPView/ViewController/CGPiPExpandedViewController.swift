@@ -2,7 +2,7 @@
 //  CGPiPViewController.swift
 //  
 //
-//  Created by Kausthubh adhikari on 15/10/23.
+//  Created by Kausthubh adhikari on 20/10/23.
 //
 
 import Foundation
@@ -10,7 +10,6 @@ import UIKit
 
 class CGPiPExpandedViewController : UIViewController {
    
- 
     var pipInfo: CGData?
   
     @IBOutlet weak var expandedViewCTA: UIButton!
@@ -51,10 +50,6 @@ class CGPiPExpandedViewController : UIViewController {
        
     }
     
-    
-    override func viewDidAppear(_ animated: Bool) {
-        
-    }
     
     
     func setupVideoPlayer(){
