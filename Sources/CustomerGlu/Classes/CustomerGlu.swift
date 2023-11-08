@@ -1836,7 +1836,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    internal func addDelayForPIP(delay:Int){
+    @objc public func addDelayForPIP(delay:Int){
         CustomerGlu.delayForPIP = delay
     }
     @objc public func addMarginForPIP(horizontal:Int,vertical:Int){
