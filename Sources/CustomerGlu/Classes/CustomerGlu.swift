@@ -1817,7 +1817,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     internal func displayPiPFromCollapseCTA(with pipInfo: CGData){
-        self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+        var delay = CustomerGlu.delayForPIP/1000
+        DispatchQueue.main.asyncAfter(deadline: .now() + CGFloat(delay)){
+            self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+        }
     }
     
     
@@ -1830,7 +1833,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal func addDelayForPIP(delay:Int){
         CustomerGlu.delayForPIP = delay
     }
-    internal func addMarginForPIP(horizontal:Int,vertical:Int){
+    @objc public func addMarginForPIP(horizontal:Int,vertical:Int){
         CustomerGlu.horizontalPadding = horizontal
         CustomerGlu.verticalPadding = vertical
     }

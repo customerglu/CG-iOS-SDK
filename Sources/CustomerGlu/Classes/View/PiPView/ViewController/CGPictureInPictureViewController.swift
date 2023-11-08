@@ -88,9 +88,9 @@ class CGPictureInPictureViewController : UIViewController {
         let heightPer = 1.78 * screenWidth
         
         
-        let bottomSpace = (screenHeight * 5)/100
-        let sideSpace = Int((screenWidth * 5)/100)
-        let topSpace = Int((screenHeight * 5)/100)
+        let bottomSpace = CustomerGlu.verticalPadding
+        let sideSpace = Int(CustomerGlu.horizontalPadding)
+        let topSpace = Int(CustomerGlu.verticalPadding)
         
         pipMediaPlayer = CGVideoPlayer()
         pipMediaPlayer?.setVideoShouldLoop(with: true)
@@ -99,15 +99,15 @@ class CGPictureInPictureViewController : UIViewController {
         let pipMoviePlayerWidth = Int(widthPer)
         
         if pipInfo?.mobile.container.position == "BOTTOM-LEFT" {
-            pipMediaPlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMediaPlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + CGFloat(bottomSpace))), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "BOTTOM-RIGHT" {
-            pipMediaPlayer.frame = CGRect(x: Int(screenRect.size.width - (CGFloat(pipMoviePlayerWidth) + CGFloat(sideSpace))), y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMediaPlayer.frame = CGRect(x: Int(screenRect.size.width - (CGFloat(pipMoviePlayerWidth) + CGFloat(sideSpace))), y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + CGFloat(bottomSpace))), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         }  else if pipInfo?.mobile.container.position == "TOP-LEFT" {
             pipMediaPlayer.frame = CGRect(x: sideSpace, y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else if pipInfo?.mobile.container.position == "TOP-RIGHT" {
             pipMediaPlayer.frame = CGRect(x: Int(screenRect.size.width - (CGFloat(pipMoviePlayerWidth) + CGFloat(sideSpace))), y: topSpace, width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         } else {
-            pipMediaPlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + bottomSpace)), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
+            pipMediaPlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + CGFloat(bottomSpace))), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         }
                 
         pipMediaPlayer.layer.cornerRadius = 16.0
@@ -201,7 +201,6 @@ class CGPictureInPictureViewController : UIViewController {
     
     func launchPiPExpandedView(){
         dismissPiPButton(is_remove: true)
-//        hidePiPButton(ishidden: true)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
             let clientTestingVC = StoryboardType.main.instantiate(vcType: CGPiPExpandedViewController.self)
             clientTestingVC.pipInfo = self.pipInfo
