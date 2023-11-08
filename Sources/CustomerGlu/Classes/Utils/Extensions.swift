@@ -261,3 +261,27 @@ extension CellIdentifierProtocol where Self: UIView {
     }
 }
 
+extension Data {
+    func convertToURL() -> URL {
+        let tempUrl = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("video").appendingPathExtension(".mp4")
+        do {
+            try self.write(to: tempUrl, options: [.atomic])
+        }catch{
+            print("Issue in conversion of Data to URL")
+        }
+        return tempUrl
+    }
+}
+
+extension Date {
+ static func getCurrentDate() -> String {
+
+        let dateFormatter = DateFormatter()
+
+        dateFormatter.dateFormat = "dd/MM/yyyy"
+
+        return dateFormatter.string(from: Date())
+
+    }
+}
+

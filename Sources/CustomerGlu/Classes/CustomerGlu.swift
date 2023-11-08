@@ -47,6 +47,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     var spinner = SpinnerView()
     var progressView = LottieAnimationView()
     var arrFloatingButton = [FloatingButtonController]()
+    var arrPIPViews = [CGPictureInPictureViewController]()
     
     // Singleton Instance
     @objc public static var getInstance = CustomerGlu()
@@ -106,13 +107,17 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var darkLoaderURL = ""
     public static var lightEmbedLoaderURL = ""
     public static var darkEmbedLoaderURL = ""
+    public static var PiPVideoURL = ""
     @objc public var cgUserData = CGUser()
     private var sdkInitialized: Bool = false
     private static var isAnonymousFlowAllowed: Bool = false
     public static var oldCampaignIds = ""
-    
+    public static var delayForPIP = 0
+    public static var verticalPadding = 0
+    public static var horizontalPadding = 0
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
+    private var pipVideoLocalPath: String = ""
     
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     
@@ -125,7 +130,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 getEntryPointData()
             }
         }
-        
+        if !(decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH).isEmpty){
+            self.pipVideoLocalPath = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
+        }
         let jsonString = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERDATA)
         let jsonData = Data(jsonString.utf8)
         let decoder = JSONDecoder()
@@ -156,6 +163,15 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
         }
+    }
+    
+    internal func getPiPLocalPath()-> String{
+        return pipVideoLocalPath
+    }
+    
+    internal func updatePiPLocalPath(path : String){
+        self.pipVideoLocalPath = path
+        encryptUserDefaultKey(str: path, userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
     }
     
     @objc public func gluSDKDebuggingMode(enabled: Bool) {
@@ -517,6 +533,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         topController.present(customerWebViewVC, animated: true, completion: {
             self.hideFloatingButtons()
+            self.hidePiPViews()
         })
     }
     
@@ -608,6 +625,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_CLEAR_GLU_DATA_CALLED, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData )
         dismissFloatingButtons(is_remove: true)
+        
         self.arrFloatingButton.removeAll()
         popupDict.removeAll()
         CustomerGlu.entryPointdata.removeAll()
@@ -955,12 +973,14 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                         
                                         // FLOATING Buttons
                                         let floatingButtons = CustomerGlu.entryPointdata.filter {
-                                            $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP"
+                                            $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" ||
+                                            $0.mobile.container.type == "PIP"
                                         }
                                         
                                         self.entryPointInfoAddDelete(entryPoint: floatingButtons)
                                         self.addFloatingBtns()
                                         self.postBannersCount()
+                                        self.addPIPViews()
                                         NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("EntryPointLoaded").rawValue), object: nil, userInfo: nil)
                                         completion(true)
                                         
@@ -1093,6 +1113,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                 
                                 self.entryPointInfoAddDelete(entryPoint: floatingButtons)
                                 self.addFloatingBtns()
+                                self.addPIPViews()
                                 self.postBannersCount()
                                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("EntryPointLoaded").rawValue), object: nil, userInfo: nil)
                                 completion(true)
@@ -1179,11 +1200,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 
                 // FLOATING Buttons
                 let floatingButtons = CustomerGlu.entryPointdata.filter {
-                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP"
+                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" || $0.mobile.container.type == "PIP"
                 }
                 
                 entryPointInfoAddDelete(entryPoint: floatingButtons)
                 addFloatingBtns()
+                addPIPViews()
                 postBannersCount()
                 
                 /*
@@ -1194,6 +1216,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
                 if popupData.count > 0 {
                     DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(0), execute: {
+                        CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
                         CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
                     })
                 }
@@ -1591,6 +1614,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: loadAllCampign)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(navController, animated: true, completion: nil)
         }
     }
@@ -1658,6 +1682,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(customerWebViewVC, animated: false, completion: nil)
         }
     }
@@ -1679,6 +1704,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: loadAllCampign)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(navController, animated: true, completion: nil)
         }
     }
@@ -1699,6 +1725,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: loadAllCampign)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(navController, animated: true, completion: nil)
         }
     }
@@ -1744,6 +1771,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CustomerGlu.bottomSafeAreaColor = bottomSafeAreaColor
     }
     
+    
     @objc public func configureSafeArea(topHeight: Int, bottomHeight: Int, topSafeAreaLightColor: UIColor, bottomSafeAreaLightColor: UIColor, topSafeAreaDarkColor: UIColor, bottomSafeAreaDarkColor: UIColor) {
         var eventData: [String: Any] = [:]
         eventData["topHeight"] = topHeight
@@ -1768,6 +1796,63 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             self.arrFloatingButton.append(FloatingButtonController(btnInfo: btnInfo))
         }
     }
+    
+    private func addPIPViewToUI(pipInfo: CGData)
+    {
+        DispatchQueue.main.async {
+    
+           
+            if self.arrPIPViews.count == 0, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
+                if let videoURL = pipInfo.mobile.content[0].url,CGPIPHelper.shared.allowdVideoRefreshed() {
+                    self.downloadPiPVideo(videoURL: videoURL)
+                    return
+                }
+                
+                
+                if CGPIPHelper.shared.checkShowOnDailyRefresh(){
+                    var delay = CustomerGlu.delayForPIP/1000
+                    DispatchQueue.main.asyncAfter(deadline: .now() + CGFloat(delay)) {
+                        self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+
+                    }
+                }
+                
+               
+            }
+        }
+    }
+    
+    internal func displayPiPFromCollapseCTA(with pipInfo: CGData){
+        var delay = CustomerGlu.delayForPIP/1000
+        DispatchQueue.main.asyncAfter(deadline: .now() + CGFloat(delay)){
+            self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+        }
+    }
+    
+    
+    internal func hidePiPViews(){
+        for pipView in self.arrPIPViews {
+            pipView.hidePiPButton(ishidden: true)
+        }
+    }
+    
+    internal func addDelayForPIP(delay:Int){
+        CustomerGlu.delayForPIP = delay
+    }
+    @objc public func addMarginForPIP(horizontal:Int,vertical:Int){
+        CustomerGlu.horizontalPadding = horizontal
+        CustomerGlu.verticalPadding = vertical
+    }
+    internal func dismissPiPViews(is_remove: Bool){
+        for pipView in self.arrPIPViews {
+            pipView.dismissPiPButton(is_remove: is_remove)
+        }
+    }
+    
+    internal func showPiPViews() {
+        CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
+    }
+    
     
     internal func hideFloatingButtons() {
         for floatBtn in self.arrFloatingButton {
@@ -1856,6 +1941,24 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    /**
+            PiP DownloadManager
+     
+     */
+    func downloadPiPVideo(videoURL: String){
+        if videoURL.count > 0 && URL(string: videoURL) != nil {
+            CustomerGlu.PiPVideoURL = videoURL
+            let url = URL(string: videoURL)
+            CGFileDownloader.loadFileAsync(url: url!) { [self] (path, error) in
+                if (error == nil){
+                    updatePiPLocalPath(path: path ?? "")
+                    addPIPViews()
+                }
+            }
+        }
+    }
+    
+    
     @objc public func configureDomainCodeMsg(code: Int, message: String){
         CustomerGlu.doamincode = code
         CustomerGlu.textMsg = message
@@ -1877,29 +1980,68 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             
             CustomerGlu.getInstance.activescreenname = className
             
-            for floatBtn in self.arrFloatingButton {
-                floatBtn.hideFloatingButton(ishidden: true)
-                if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                    if  !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                        floatBtn.hideFloatingButton(ishidden: false)
-                        callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
-                    }
-                } else if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
-                    if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
-                        floatBtn.hideFloatingButton(ishidden: false)
-                        callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED",event_name: "ENTRY_POINT_LOAD")
-                    }
-                } else if (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                    if !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
-                        floatBtn.hideFloatingButton(ishidden: false)
-                        callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
-                    }
-                }
-            }
+            screenNameLogicForFloatingButton(className: className)
+            screenNameLogicForPIPView(className: className)
             
             showPopup(className: className)
         }
     }
+    private func screenNameLogicForFloatingButton(className:String)
+    {
+        for floatBtn in self.arrFloatingButton {
+            floatBtn.hideFloatingButton(ishidden: true)
+            if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                if  !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                    floatBtn.hideFloatingButton(ishidden: false)
+                    callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
+                }
+            } else if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
+                if (floatBtn.floatInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
+                    floatBtn.hideFloatingButton(ishidden: false)
+                    callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED",event_name: "ENTRY_POINT_LOAD")
+                }
+            } else if (floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                if !(floatBtn.floatInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                    floatBtn.hideFloatingButton(ishidden: false)
+                    callEventPublishNudge(data: floatBtn.floatInfo!, className: className, actionType: "LOADED", event_name: "ENTRY_POINT_LOAD")
+                }
+            }
+        }
+    }
+    
+    private func screenNameLogicForPIPView(className:String)
+    {
+        var isHidden = true;
+        for pipView in self.arrPIPViews {
+           // pipView.hidePIPView(ishidden: true)
+            if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                if  !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                    isHidden = false;
+                    pipView.hidePiPButton(ishidden: isHidden)
+                  
+                }
+            } else if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
+                if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
+                    isHidden = false;
+                    pipView.hidePiPButton(ishidden: isHidden)
+                }
+            } else if (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
+                if !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+                    isHidden = false;
+                    pipView.hidePiPButton(ishidden: isHidden)
+                }
+            }
+        }
+        if isHidden {
+            self.hidePiPViews()
+        }else{
+            if  arrPIPViews.count > 0 && arrPIPViews[0].pipMediaPlayer.isHidden == false && arrPIPViews[0].pipMediaPlayer.superview != nil {
+                arrPIPViews[0].pipMediaPlayer.resume()
+            }
+        }
+    }
+    
+    
     public func sendEntryPointsIdLists()
     {
         let user_id = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
@@ -1944,6 +2086,25 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(0), execute: {
                 CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
             })
+            
+        }
+    }
+    
+    internal func addPIPViews()
+    {
+        let pipViews = popupDict.filter
+        {
+            $0.type == "PIP"
+        }
+        if pipViews.count != 0
+        {
+            for pip in pipViews {
+                let pip = CustomerGlu.entryPointdata.filter {
+                    $0._id == pip._id
+                }
+                
+                    self.addPIPViewToUI(pipInfo: pip[0])
+            }
             
         }
     }
@@ -2159,6 +2320,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         topController.present(customerWebViewVC, animated: true) {
             CustomerGlu.getInstance.hideFloatingButtons()
+            self.hidePiPViews()
         }
     }
     
@@ -2382,6 +2544,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: clientTestingVC)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
+            self.hidePiPViews()
             topController.present(navController, animated: true, completion: nil)
         }
     }

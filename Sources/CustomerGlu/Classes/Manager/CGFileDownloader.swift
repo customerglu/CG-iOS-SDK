@@ -59,11 +59,13 @@ class CGFileDownloader {
         
         if FileManager().fileExists(atPath: destinationUrl.path)
         {
-            CustomerGlu.getInstance.printlog(cglog: String("File already exists [\(destinationUrl.path)]"), isException: false, methodName: "loadFileAsync", posttoserver: false)
-            completion(destinationUrl.path, nil)
+                do{
+                    try FileManager().removeItem(atPath: destinationUrl.path)
+                }catch{
+                    
+                }
         }
-        else
-        {
+        
             let session = URLSession(configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: nil)
             var request = URLRequest(url: url)
             request.httpMethod = "GET"
@@ -101,6 +103,6 @@ class CGFileDownloader {
                 }
             })
             task.resume()
-        }
+        
     }
 }
