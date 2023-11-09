@@ -223,14 +223,20 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     func showPlayerCTA() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: {
             self.showPiPCTAs()
+            CGPIPHelper.shared.setDailyRefresh()
         })
     }
     
     public func hidePiPButton(ishidden: Bool) {
         window.pipMoviePlayer?.isHidden = ishidden
         self.pipMediaPlayer.isHidden = ishidden
+        window.isHidden = ishidden
         window.isUserInteractionEnabled = !ishidden
-        self.pipMediaPlayer.pause()
+        if ishidden {
+            self.pipMediaPlayer.pause()
+        }else{
+            self.pipMediaPlayer.resume()
+        }
         self.pipMediaPlayer.isUserInteractionEnabled = !ishidden
     }
     
