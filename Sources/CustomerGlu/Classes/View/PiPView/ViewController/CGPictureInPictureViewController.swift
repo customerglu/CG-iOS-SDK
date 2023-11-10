@@ -7,10 +7,12 @@
 
 import Foundation
 import UIKit
+import AVFoundation
 
 class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener {
    
     let pipInfo: CGData
+    let startTime: CMTime?
     private(set) var pipMediaPlayer: CGVideoPlayer
     private var window = PiPWindow()
     
@@ -43,8 +45,9 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     
     
     // Initialising PIP implementation
-    init(btnInfo: CGData) {
+    init(btnInfo: CGData, startTime: CMTime? = nil) {
         pipInfo = btnInfo
+        self.startTime = startTime
         pipMediaPlayer = CGVideoPlayer()
         super.init(nibName: nil, bundle: nil)
         
@@ -61,7 +64,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
             if let pipIsMute = self.pipInfo.mobile.conditions.pip?.muteOnDefaultPIP, pipIsMute {
                 pipMediaPlayer.mute()
             }
-            pipMediaPlayer.play(with: CustomerGlu.getInstance.getPiPLocalPath())
+            pipMediaPlayer.play(with: CustomerGlu.getInstance.getPiPLocalPath(), startTime: self.startTime)
             if pipMediaPlayer.isPlayerPaused(){
                 pipMediaPlayer.resume()
             }
@@ -194,10 +197,16 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     }
     
     func launchPiPExpandedView(){
+        let pipInfo = self.pipInfo
+        
+        pipMediaPlayer.player?.pause()
+        let currentTime = pipMediaPlayer.player?.currentTime()
+        
         dismissPiPButton(is_remove: true)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
             let clientTestingVC = StoryboardType.main.instantiate(vcType: CGPiPExpandedViewController.self)
-            clientTestingVC.pipInfo = self.pipInfo
+            clientTestingVC.pipInfo = pipInfo
+            clientTestingVC.startTime = currentTime
             guard let topController = UIViewController.topViewController() else {
                 return
             }
@@ -251,9 +260,16 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     
     @objc func draggedView(_ sender: UIPanGestureRecognizer) {
         
+
+        
         if let pipMediSuperView  = pipMediaPlayer.superview {
             let point: CGPoint = sender.location(in: pipMediSuperView)
             let boundsRect = CGRect(x: pipMediSuperView.bounds.origin.x - 50 , y: pipMediSuperView.bounds.origin.y - 50, width: pipMediSuperView.frame.width , height: pipMediSuperView.frame.height)
+
+            // Convert to parent's coordinate system
+    //       let rect = pipMediaPlayer.convert(self.pipMediaPlayer.bounds, to: self.view)
+//            CGRectContainsRect(boundsRect, rect)
+
             if boundsRect.contains(point) {
                 pipMediaPlayer.center = point
             }

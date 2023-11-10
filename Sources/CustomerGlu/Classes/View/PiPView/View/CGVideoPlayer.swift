@@ -80,11 +80,14 @@ public class CGVideoPlayer: UIView {
     
     /// Updates the current player item to reflect new media asset
     /// - Parameter asset: asset to update/play
-    private func updatePlayerItem(with asset: AVAsset) {
+    private func updatePlayerItem(with asset: AVAsset, startTime: CMTime?) {
         playerItem = AVPlayerItem(asset: asset)
         playerItem?.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.status), options: [.old, .new], context: &playerItemContext)
         DispatchQueue.main.async { [weak self] in
             self?.player = AVPlayer(playerItem: self?.playerItem!)
+            if let startTime = startTime {
+                self?.player?.seek(to: startTime, toleranceBefore: .zero, toleranceAfter: .zero)
+            }
         }
     }
     
@@ -149,6 +152,7 @@ public class CGVideoPlayer: UIView {
     ///   - behaviour: Media behaviour that controlls the plyaback on load.
     public func play(
         with url: URL,
+        startTime: CMTime? = nil,
         behaviour: CGMediaPlayingBehaviour = .autoPlayOnLoad,
         screenTimeBehaviour: CGMediaPlayerScreenTimeBehaviour = .preventFromIdle
     ) {
@@ -156,7 +160,7 @@ public class CGVideoPlayer: UIView {
         self.mediaPlayingBehaviour = behaviour
         self.screenTimeBehaviour = screenTimeBehaviour
         loadAsset(with: url) { [weak self] (asset: AVAsset) in
-            self?.updatePlayerItem(with: asset)
+            self?.updatePlayerItem(with: asset, startTime: startTime)
         }
     }
     
@@ -166,6 +170,7 @@ public class CGVideoPlayer: UIView {
     ///   - behaviour: Media behaviour that controlls the plyaback on load.
     public func play(
         with filePath: String,
+        startTime: CMTime? = nil,
         behaviour: CGMediaPlayingBehaviour = .autoPlayOnLoad,
         screenTimeBehaviour: CGMediaPlayerScreenTimeBehaviour = .preventFromIdle
     ) {
@@ -174,7 +179,7 @@ public class CGVideoPlayer: UIView {
         self.screenTimeBehaviour = screenTimeBehaviour
         let url = URL(fileURLWithPath: filePath)
         loadAsset(with: url) { [weak self] (asset: AVAsset) in
-            self?.updatePlayerItem(with: asset)
+            self?.updatePlayerItem(with: asset, startTime: startTime)
         }
         self.isPaused = false
     }
@@ -186,6 +191,7 @@ public class CGVideoPlayer: UIView {
     public func play(
         bundleResource resource: String,
         withExtension extension: String?,
+        startTime: CMTime? = nil,
         bundle: Bundle = .main,
         behaviour: CGMediaPlayingBehaviour = .autoPlayOnLoad,
         screenTimeBehaviour: CGMediaPlayerScreenTimeBehaviour = .preventFromIdle
@@ -198,7 +204,7 @@ public class CGVideoPlayer: UIView {
         self.mediaPlayingBehaviour = behaviour
         self.screenTimeBehaviour = screenTimeBehaviour
         loadAsset(with: url) { [weak self] (asset: AVAsset) in
-            self?.updatePlayerItem(with: asset)
+            self?.updatePlayerItem(with: asset, startTime: startTime)
         }
         self.isPaused = false
     }

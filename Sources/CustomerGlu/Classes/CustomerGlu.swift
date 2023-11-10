@@ -3,6 +3,7 @@ import SwiftUI
 import UIKit
 import Lottie
 import WebKit
+import AVFoundation
 
 let gcmMessageIDKey = "gcm.message_id"
 
@@ -1807,8 +1808,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    internal func displayPiPFromCollapseCTA(with pipInfo: CGData){
-        let controller = CGPictureInPictureViewController(btnInfo: pipInfo)
+    internal func displayPiPFromCollapseCTA(with pipInfo: CGData, startTime: CMTime?){
+        let controller = CGPictureInPictureViewController(btnInfo: pipInfo, startTime: startTime)
         controller.hidePiPButton(ishidden: false)
         self.arrPIPViews.append(controller)
     }
