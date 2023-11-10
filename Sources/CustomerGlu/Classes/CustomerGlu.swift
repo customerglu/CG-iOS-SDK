@@ -48,7 +48,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     var spinner = SpinnerView()
     var progressView = LottieAnimationView()
     var arrFloatingButton = [FloatingButtonController]()
-    var arrPIPViews = [CGPictureInPictureViewController]()
+    var activePIPView: CGPictureInPictureViewController?
     
     // Singleton Instance
     @objc public static var getInstance = CustomerGlu()
@@ -119,6 +119,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
     private var pipVideoLocalPath: String = ""
+    private var isShowingExpandedPiP: Bool = false
     
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     
@@ -534,7 +535,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         topController.present(customerWebViewVC, animated: true, completion: {
             self.hideFloatingButtons()
-            self.hidePiPViews()
+            self.hidePiPView()
         })
     }
     
@@ -1614,7 +1615,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: loadAllCampign)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
-            self.hidePiPViews()
+            self.hidePiPView()
             topController.present(navController, animated: true, completion: nil)
         }
     }
@@ -1682,7 +1683,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
             self.hideFloatingButtons()
-            self.hidePiPViews()
+            self.hidePiPView()
             topController.present(customerWebViewVC, animated: false, completion: nil)
         }
     }
@@ -1704,7 +1705,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: loadAllCampign)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
-            self.hidePiPViews()
+            self.hidePiPView()
             topController.present(navController, animated: true, completion: nil)
         }
     }
@@ -1725,7 +1726,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: loadAllCampign)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
-            self.hidePiPViews()
+            self.hidePiPView()
             topController.present(navController, animated: true, completion: nil)
         }
     }
@@ -1799,26 +1800,39 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     private func addPIPViewToUI(pipInfo: CGData)
     {
-        DispatchQueue.main.async {
-            if self.arrPIPViews.count == 0, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
-                if let videoURL = pipInfo.mobile.content[0].url,CGPIPHelper.shared.allowdVideoRefreshed() {
-                    self.downloadPiPVideo(videoURL: videoURL, pipInfo: pipInfo)
-                }
+        if activePIPView == nil, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
+            if let videoURL = pipInfo.mobile.content[0].url,CGPIPHelper.shared.allowdVideoRefreshed() {
+                self.downloadPiPVideo(videoURL: videoURL, pipInfo: pipInfo)
             }
         }
     }
     
-    internal func displayPiPFromCollapseCTA(with pipInfo: CGData, startTime: CMTime?){
+    internal func displayPiPFromCollapseCTA(with pipInfo: CGData, startTime: CMTime?) {
+        isShowingExpandedPiP = false
+        
         let controller = CGPictureInPictureViewController(btnInfo: pipInfo, startTime: startTime)
         controller.hidePiPButton(ishidden: false)
-        self.arrPIPViews.append(controller)
+        activePIPView = controller
+    }
+    
+    internal func showExpandedPiP(pipInfo: CGData, currentTime: CMTime?) {
+        guard !isShowingExpandedPiP else { return }
+        
+        let clientTestingVC = StoryboardType.main.instantiate(vcType: CGPiPExpandedViewController.self)
+        clientTestingVC.pipInfo = pipInfo
+        clientTestingVC.startTime = currentTime
+        guard let topController = UIViewController.topViewController() else {
+            return
+        }
+        clientTestingVC.modalPresentationStyle = .fullScreen
+        topController.present(clientTestingVC, animated: true, completion: nil)
+        
+        isShowingExpandedPiP = true
     }
     
     
-    internal func hidePiPViews(){
-        for pipView in self.arrPIPViews {
-            pipView.hidePiPButton(ishidden: true)
-        }
+    internal func hidePiPView() {
+        activePIPView?.hidePiPButton(ishidden: true)
     }
     
     @objc public func addDelayForPIP(delay:Int){
@@ -1828,11 +1842,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CustomerGlu.horizontalPadding = horizontal
         CustomerGlu.verticalPadding = vertical
     }
-    internal func dismissPiPViews(is_remove: Bool){
-        for pipView in self.arrPIPViews {
-            pipView.dismissPiPButton(is_remove: is_remove)
-        }
-    }    
+    internal func dismissPiPView() {
+        activePIPView?.dismissPiPButton()
+        activePIPView = nil
+    }
     
     internal func hideFloatingButtons() {
         for floatBtn in self.arrFloatingButton {
@@ -1935,7 +1948,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                         self?.updatePiPLocalPath(path: path ?? "")
                         
                         if CGPIPHelper.shared.checkShowOnDailyRefresh() {
-                            self?.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+                            self?.activePIPView = CGPictureInPictureViewController(btnInfo: pipInfo)
                             
                             CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
                         }
@@ -1999,7 +2012,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func screenNameLogicForPIPView(className:String)
     {
         var isHidden = true;
-        for pipView in self.arrPIPViews {
+        if let pipView = self.activePIPView {
            // pipView.hidePIPView(ishidden: true)
             if pipView.pipInfo.mobile.container.ios.allowedActitivityList.count > 0 && pipView.pipInfo.mobile.container.ios.disallowedActitivityList.count > 0 {
                 if  !(pipView.pipInfo.mobile.container.ios.disallowedActitivityList.contains(className)) {
@@ -2020,11 +2033,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
         }
         if isHidden {
-            self.hidePiPViews()
-        }else{
-            if  arrPIPViews.count > 0 && arrPIPViews[0].pipMediaPlayer.isHidden == false && arrPIPViews[0].pipMediaPlayer.superview != nil {
-                arrPIPViews[0].pipMediaPlayer.resume()
-            }
+            self.hidePiPView()
+        } else if let pipView = self.activePIPView,
+               pipView.pipMediaPlayer.isHidden == false,
+               pipView.pipMediaPlayer.superview != nil  {
+            pipView.pipMediaPlayer.resume()
         }
     }
     
@@ -2090,7 +2103,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     $0._id == pip._id
                 }
                 
+                DispatchQueue.main.async {
                     self.addPIPViewToUI(pipInfo: pip[0])
+                }
             }
             
         }
@@ -2307,7 +2322,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         topController.present(customerWebViewVC, animated: true) {
             CustomerGlu.getInstance.hideFloatingButtons()
-            self.hidePiPViews()
+            self.hidePiPView()
         }
     }
     
@@ -2531,7 +2546,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             let navController = UINavigationController(rootViewController: clientTestingVC)
             navController.modalPresentationStyle = .overCurrentContext
             self.hideFloatingButtons()
-            self.hidePiPViews()
+            self.hidePiPView()
             topController.present(navController, animated: true, completion: nil)
         }
     }
