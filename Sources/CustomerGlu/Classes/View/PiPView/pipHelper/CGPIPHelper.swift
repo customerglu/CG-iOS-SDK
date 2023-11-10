@@ -13,7 +13,7 @@ class CGPIPHelper : NSObject {
     
     
     func  checkShowOnDailyRefresh() -> Bool
-    {
+    {        
         if isDismmissed
         {
             return false;

@@ -113,10 +113,10 @@ class CGPiPExpandedViewController : UIViewController {
      }
     
     @objc func didTapOnExpand(_ buttton: UIButton){
-        dismiss(animated: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: { [self] in
-            CustomerGlu.getInstance.displayPiPFromCollapseCTA(with: pipInfo!)
-        })
+        let pipInfo = pipInfo!
+        dismiss(animated: true) {
+            CustomerGlu.getInstance.displayPiPFromCollapseCTA(with: pipInfo)
+        }
      }
     
     @objc func didTapOnClose(_ buttton: UIButton){

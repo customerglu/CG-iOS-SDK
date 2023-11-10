@@ -1799,32 +1799,18 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func addPIPViewToUI(pipInfo: CGData)
     {
         DispatchQueue.main.async {
-    
-           
             if self.arrPIPViews.count == 0, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
                 if let videoURL = pipInfo.mobile.content[0].url,CGPIPHelper.shared.allowdVideoRefreshed() {
                     self.downloadPiPVideo(videoURL: videoURL, pipInfo: pipInfo)
                 }
-                
-//                self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
-
-//                if CGPIPHelper.shared.checkShowOnDailyRefresh(){
-//                    self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
-
-                    var delay = CustomerGlu.delayForPIP/1000
-                    DispatchQueue.main.asyncAfter(deadline: .now() + CGFloat(delay)) {
-                        self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
-                    }
-//                }
             }
         }
     }
     
     internal func displayPiPFromCollapseCTA(with pipInfo: CGData){
-        var delay = CustomerGlu.delayForPIP/1000
-        DispatchQueue.main.asyncAfter(deadline: .now() + CGFloat(delay)){
-            self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
-        }
+        let controller = CGPictureInPictureViewController(btnInfo: pipInfo)
+        controller.hidePiPButton(ishidden: false)
+        self.arrPIPViews.append(controller)
     }
     
     
