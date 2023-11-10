@@ -53,6 +53,15 @@ public class CGVideoPlayer: UIView {
     private let assetValueKey = "playable"
     
     
+    init() {
+        super.init(frame: .zero)
+        setupAppStateObservers()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     /// Load asset for given url
     /// - Parameters:
     ///   - url: URL to load asset from
@@ -143,6 +152,21 @@ public class CGVideoPlayer: UIView {
             UIApplication.shared.isIdleTimerDisabled = false
         case .preventFromIdle:
             UIApplication.shared.isIdleTimerDisabled = true
+        }
+    }
+    
+    private func setupAppStateObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(appMovedToBackground), name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+    
+    @objc private func appMovedToBackground() {
+        player?.pause()
+    }
+    
+    @objc private func appMovedToForeground() {
+        if !isPaused {
+            player?.play()
         }
     }
     
