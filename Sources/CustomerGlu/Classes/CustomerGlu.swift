@@ -1108,7 +1108,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                 
                                 // FLOATING Buttons
                                 let floatingButtons = CustomerGlu.entryPointdata.filter {
-                                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP"
+                                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" || $0.mobile.container.type == "PIP"
                                 }
                                 
                                 self.entryPointInfoAddDelete(entryPoint: floatingButtons)
@@ -1216,7 +1216,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
                 if popupData.count > 0 {
                     DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(0), execute: {
-                        CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
                         CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
                     })
                 }
@@ -1804,20 +1803,19 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
            
             if self.arrPIPViews.count == 0, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
                 if let videoURL = pipInfo.mobile.content[0].url,CGPIPHelper.shared.allowdVideoRefreshed() {
-                    self.downloadPiPVideo(videoURL: videoURL)
-                    return
+                    self.downloadPiPVideo(videoURL: videoURL, pipInfo: pipInfo)
                 }
                 
-                
-                if CGPIPHelper.shared.checkShowOnDailyRefresh(){
+//                self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+
+//                if CGPIPHelper.shared.checkShowOnDailyRefresh(){
+//                    self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+
                     var delay = CustomerGlu.delayForPIP/1000
                     DispatchQueue.main.asyncAfter(deadline: .now() + CGFloat(delay)) {
                         self.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
-
                     }
-                }
-                
-               
+//                }
             }
         }
     }
@@ -1847,12 +1845,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         for pipView in self.arrPIPViews {
             pipView.dismissPiPButton(is_remove: is_remove)
         }
-    }
-    
-    internal func showPiPViews() {
-        CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
-    }
-    
+    }    
     
     internal func hideFloatingButtons() {
         for floatBtn in self.arrFloatingButton {
@@ -1945,14 +1938,21 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             PiP DownloadManager
      
      */
-    func downloadPiPVideo(videoURL: String){
+    func downloadPiPVideo(videoURL: String, pipInfo: CGData){
         if videoURL.count > 0 && URL(string: videoURL) != nil {
             CustomerGlu.PiPVideoURL = videoURL
             let url = URL(string: videoURL)
-            CGFileDownloader.loadFileAsync(url: url!) { [self] (path, error) in
-                if (error == nil){
-                    updatePiPLocalPath(path: path ?? "")
-                    addPIPViews()
+            CGFileDownloader.loadFileAsync(url: url!) { [weak self] (path, error) in
+                DispatchQueue.main.async { [weak self] in
+                    if (error == nil){
+                        self?.updatePiPLocalPath(path: path ?? "")
+                        
+                        if CGPIPHelper.shared.checkShowOnDailyRefresh() {
+                            self?.arrPIPViews.append(CGPictureInPictureViewController(btnInfo: pipInfo))
+                            
+                            CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
+                        }
+                    }
                 }
             }
         }
@@ -2014,19 +2014,19 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         var isHidden = true;
         for pipView in self.arrPIPViews {
            // pipView.hidePIPView(ishidden: true)
-            if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 && (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                if  !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+            if pipView.pipInfo.mobile.container.ios.allowedActitivityList.count > 0 && pipView.pipInfo.mobile.container.ios.disallowedActitivityList.count > 0 {
+                if  !(pipView.pipInfo.mobile.container.ios.disallowedActitivityList.contains(className)) {
                     isHidden = false;
                     pipView.hidePiPButton(ishidden: isHidden)
                   
                 }
-            } else if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.count)! > 0 {
-                if (pipView.pipInfo?.mobile.container.ios.allowedActitivityList.contains(className))! {
+            } else if (pipView.pipInfo.mobile.container.ios.allowedActitivityList.count) > 0 {
+                if (pipView.pipInfo.mobile.container.ios.allowedActitivityList.contains(className)) {
                     isHidden = false;
                     pipView.hidePiPButton(ishidden: isHidden)
                 }
-            } else if (pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.count)! > 0 {
-                if !(pipView.pipInfo?.mobile.container.ios.disallowedActitivityList.contains(className))! {
+            } else if (pipView.pipInfo.mobile.container.ios.disallowedActitivityList.count) > 0 {
+                if !(pipView.pipInfo.mobile.container.ios.disallowedActitivityList.contains(className)) {
                     isHidden = false;
                     pipView.hidePiPButton(ishidden: isHidden)
                 }
