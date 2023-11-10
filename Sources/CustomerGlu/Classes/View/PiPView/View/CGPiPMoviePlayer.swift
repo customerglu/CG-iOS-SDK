@@ -118,15 +118,6 @@ class CGPiPMoviePlayer : UIView {
             muteCTA = UIImageView(frame: CGRect(x: 0, y: 0, width: ctaDimensions, height: ctaDimensions))
             muteCTA?.image = UIImage(named: "ic_mute.png")
             self.addSubview(muteCTA!)
-            
-            
-//            if let muteLeadingConstraint = muteCTA?.rightAnchor.constraint(equalTo: self.leadingAnchor, constant: 16.0){
-//                muteCTA?.addConstraint(muteLeadingConstraint)
-//            }
-//
-//            if let muteBottomConstraint = muteCTA?.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: 16.0){
-//                muteCTA?.addConstraint(muteBottomConstraint)
-//            }
         
             let muteTap = UITapGestureRecognizer(target: self, action: #selector(self.muteTapped(_:)))
             muteCTA?.addGestureRecognizer(muteTap)

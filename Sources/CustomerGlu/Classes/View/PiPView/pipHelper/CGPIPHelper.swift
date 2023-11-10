@@ -13,7 +13,7 @@ class CGPIPHelper : NSObject {
     
     
     func  checkShowOnDailyRefresh() -> Bool
-    {
+    {        
         if isDismmissed
         {
             return false;
@@ -25,14 +25,11 @@ class CGPIPHelper : NSObject {
         // User launches the pip First Time
         if pipSavedDate == nil, ((pipSavedDate?.isEmpty) != nil)
         {
-                UserDefaults.standard.set(currentDate, forKey: CGConstants.CG_PIP_DATE)
                 return true;
         }
         else{
             if !currentDate.elementsEqual(pipSavedDate ?? "")
             {
-                //save as Date
-                UserDefaults.standard.set(currentDate, forKey: CGConstants.CG_PIP_DATE)
                 return true
             }
             
@@ -41,6 +38,13 @@ class CGPIPHelper : NSObject {
         
         return false;
     }
+    
+    
+    func setDailyRefresh(){
+        let currentDate = Date.getCurrentDate()
+        UserDefaults.standard.set(currentDate, forKey: CGConstants.CG_PIP_DATE)
+    }
+    
     
     func allowdVideoRefreshed() -> Bool {
         var pipvVidSavedDate =   UserDefaults.standard.string(forKey: CGConstants.CG_PIP_VID_SYNC_DATA)

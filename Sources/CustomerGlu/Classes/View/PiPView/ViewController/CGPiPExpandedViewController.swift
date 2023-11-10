@@ -7,10 +7,12 @@
 
 import Foundation
 import UIKit
+import AVFoundation
 
 class CGPiPExpandedViewController : UIViewController {
    
     var pipInfo: CGData?
+    var startTime: CMTime?
   
     @IBOutlet weak var expandedViewCTA: UIButton!
     @IBOutlet weak var playerContainer: UIView!
@@ -100,7 +102,7 @@ class CGPiPExpandedViewController : UIViewController {
         movieView?.setVideoShouldLoop(with: false)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1 , execute: {
-            self.movieView?.play(with: CustomerGlu.getInstance.getPiPLocalPath())
+            self.movieView?.play(with: CustomerGlu.getInstance.getPiPLocalPath(), startTime: self.startTime)
         })
     }
     
@@ -113,10 +115,12 @@ class CGPiPExpandedViewController : UIViewController {
      }
     
     @objc func didTapOnExpand(_ buttton: UIButton){
-        dismiss(animated: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: { [self] in
-            CustomerGlu.getInstance.displayPiPFromCollapseCTA(with: pipInfo!)
-        })
+        let pipInfo = pipInfo!
+        movieView?.player?.pause()
+        let currentTime = movieView?.player?.currentTime()
+        dismiss(animated: true) {
+            CustomerGlu.getInstance.displayPiPFromCollapseCTA(with: pipInfo, startTime: currentTime)
+        }
      }
     
     @objc func didTapOnClose(_ buttton: UIButton){
