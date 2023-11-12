@@ -57,13 +57,14 @@ extension UIViewController {
                     return topController
                 }
             }else{
-                while let pVC = presentedVC.presentedViewController {
+                while let pVC = presentedVC.presentedViewController, !pVC.isKind(of: CGPictureInPictureViewController.self) {
                     presentedVC = pVC
                 }
                 return presentedVC
             }
         }
-        return UIViewController()
+        
+        return nil
     }
 }
 

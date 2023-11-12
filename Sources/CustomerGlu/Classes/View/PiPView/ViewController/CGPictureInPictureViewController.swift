@@ -193,7 +193,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
      }
     
     @objc func didTapOnClose(){
-        self.dismissPiPButton(is_remove: true)
+        self.dismissPiPButton()
     }
     
     func launchPiPExpandedView(){
@@ -202,29 +202,20 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         pipMediaPlayer.player?.pause()
         let currentTime = pipMediaPlayer.player?.currentTime()
         
-        dismissPiPButton(is_remove: true)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-            let clientTestingVC = StoryboardType.main.instantiate(vcType: CGPiPExpandedViewController.self)
-            clientTestingVC.pipInfo = pipInfo
-            clientTestingVC.startTime = currentTime
-            guard let topController = UIViewController.topViewController() else {
-                return
-            }
-            clientTestingVC.modalPresentationStyle = .fullScreen
-            topController.present(clientTestingVC, animated: true, completion: nil)
+        dismissPiPButton()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
+            CustomerGlu.getInstance.showExpandedPiP(pipInfo: pipInfo, currentTime: currentTime)
         })
-    
     }
     
     
-    public func dismissPiPButton(is_remove: Bool){
-        if CustomerGlu.getInstance.arrPIPViews.contains(self) {
-            if let index = CustomerGlu.getInstance.arrPIPViews.firstIndex(where: {$0 === self}) {
-                CustomerGlu.getInstance.arrPIPViews.remove(at: index)
-                pipMediaPlayer.pause()
-                self.pipMediaPlayer.unRegisterLooper()
-                self.window.dismiss()
-            }
+    public func dismissPiPButton() {
+        if CustomerGlu.getInstance.activePIPView != nil {
+            pipMediaPlayer.pause()
+            self.pipMediaPlayer.unRegisterLooper()
+            self.window.dismiss()
+            CustomerGlu.getInstance.activePIPView = nil
         }
     }
 
@@ -242,21 +233,13 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         window.isUserInteractionEnabled = !ishidden
         if ishidden {
             self.pipMediaPlayer.pause()
+            self.pipMediaPlayer.removeAppStateObservers()
         }else{
             self.pipMediaPlayer.resume()
+            self.pipMediaPlayer.addAppStateObservers()
         }
         self.pipMediaPlayer.isUserInteractionEnabled = !ishidden
     }
-    
-    public func showPiPView(){
-        window.pipMoviePlayer?.isHidden = false
-        self.pipMediaPlayer.isHidden = false
-        window.isUserInteractionEnabled = true
-        self.pipMediaPlayer.pause()
-        self.pipMediaPlayer.isUserInteractionEnabled = true
-    }
-    
-    
     
     @objc func draggedView(_ sender: UIPanGestureRecognizer) {
         
