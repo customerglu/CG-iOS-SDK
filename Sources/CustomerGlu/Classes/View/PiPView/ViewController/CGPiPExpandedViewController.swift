@@ -56,6 +56,7 @@ class CGPiPExpandedViewController : UIViewController {
     
     func setupVideoPlayer(){
         movieView = CGVideoPlayer()
+        movieView?.addAppStateObservers()
         self.view.addSubview(movieView!)
         
         movieView?.translatesAutoresizingMaskIntoConstraints = false
@@ -169,7 +170,6 @@ class CGPiPExpandedViewController : UIViewController {
                 nudgeConfiguration.isHyperLink = true
                 
                 closePiPExpandedView()
-                dismiss(animated: true)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                     CustomerGlu.getInstance.openURLWithNudgeConfig(url: actionData.url, nudgeConfiguration: nudgeConfiguration)
                 })
@@ -191,7 +191,6 @@ class CGPiPExpandedViewController : UIViewController {
                     nudgeConfiguration.absoluteHeight = pipInfo?.mobile.content[0].absoluteHeight ?? 0.0
                     
                     closePiPExpandedView()
-                    self.dismiss(animated: true)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                         CustomerGlu.getInstance.openCampaignById(campaign_id: campaignId, nudgeConfiguration: nudgeConfiguration)
                     })
@@ -201,7 +200,6 @@ class CGPiPExpandedViewController : UIViewController {
                 } else {
                     //Incase Campaign Id is nil / unavailable
                     closePiPExpandedView()
-                    dismiss(animated: true)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                         CustomerGlu.getInstance.openWallet()
                     })
@@ -217,7 +215,7 @@ class CGPiPExpandedViewController : UIViewController {
             nudgeConfiguration.absoluteHeight = pipInfo?.mobile.content[0].absoluteHeight ?? 0.0
             
             closePiPExpandedView()
-            dismiss(animated: true)
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                 CustomerGlu.getInstance.openCampaignById(campaign_id: (self.pipInfo?.mobile.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
             })
@@ -231,6 +229,8 @@ class CGPiPExpandedViewController : UIViewController {
         if let movieView = self.movieView, !movieView.isPlayerPaused() {
             movieView.pause()
         }
+        
+        dismiss(animated: true)
     }
     
 }

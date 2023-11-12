@@ -55,7 +55,6 @@ public class CGVideoPlayer: UIView {
     
     init() {
         super.init(frame: .zero)
-        setupAppStateObservers()
     }
     
     required init?(coder: NSCoder) {
@@ -155,9 +154,15 @@ public class CGVideoPlayer: UIView {
         }
     }
     
-    private func setupAppStateObservers() {
+    
+    public func addAppStateObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(appMovedToBackground), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+    
+    public func removeAppStateObservers() {
+        NotificationCenter.default.removeObserver(self, name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
     @objc private func appMovedToBackground() {
