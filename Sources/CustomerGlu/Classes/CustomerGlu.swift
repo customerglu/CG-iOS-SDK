@@ -2326,6 +2326,28 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    internal func postAnalyticsEventForPIP(event_name:String, entry_point_id:String, entry_point_name:String,content_campaign_id:String = "",entry_point_is_expanded:String)
+         {
+             var eventInfo = [String: Any]()
+            eventInfo[APIParameterKey.event_name] = event_name
+             var entry_point_data = [String: Any]()
+    
+             entry_point_data[APIParameterKey.entry_point_id] = entry_point_id
+             entry_point_data[APIParameterKey.entry_point_name] = entry_point_name
+             entry_point_data[APIParameterKey.entry_point_is_expanded] = entry_point_is_expanded
+             entry_point_data[APIParameterKey.entry_point_location] = CustomerGlu.getInstance.activescreenname
+             entry_point_data[APIParameterKey.entry_point_container] = "PIP"
+             eventInfo[APIParameterKey.entry_point_data] = entry_point_data
+    
+             ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: content_campaign_id) { success, _ in
+                 if success {
+                     CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "postAnalyticsEventForEntryPoints", posttoserver: false)
+                 } else {
+                     CustomerGlu.getInstance.printlog(cglog: "Fail to call sendAnalyticsEvent ", isException: false, methodName: "postAnalyticsEventForBanner", posttoserver: true)
+                 }
+             }
+         }
+    
     internal func postAnalyticsEventForEntryPoints(event_name:String, entry_point_id:String, entry_point_name:String, entry_point_container:String, content_campaign_id:String = "", action_type: String = "OPEN", open_container:String, action_c_campaign_id:String) {
         if (false == CustomerGlu.analyticsEvent) {
             return

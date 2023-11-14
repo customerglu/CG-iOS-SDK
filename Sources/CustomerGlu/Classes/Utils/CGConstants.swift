@@ -49,6 +49,10 @@ struct CGConstants {
     static let MQTT_CLIENT_TESTING = "OPEN_CLIENT_TESTING_PAGE"
     static let CG_SAFE_AREA_DEFAULT = -1
     
+    static let ENTRY_POINT_DISMISS = "ENTRY_POINT_DISMISS"
+    static let ENTRY_POINT_CLICK = "ENTRY_POINT_CLICK"
+    static let ENTRY_POINT_LOAD = "ENTRY_POINT_LOAD"
+    static let PIP_ENTRY_POINT_CTA_CLICK = "PIP_ENTRY_POINT_CTA_CLICK"
     static let MQTT_Enabled_Components_State_Sync = "STATE_SYNC"
     static let MQTT_Enabled_Components_Nudges = "NUDGES"
     static let MQTT_Enabled_Components_EntryPoints = "ENTRYPOINTS"
@@ -212,6 +216,7 @@ struct APIParameterKey {
     static let entry_point_content = "entry_point_content"
     static let static_url = "static_url"
     static let entry_point_action = "entry_point_action"
+    static let entry_point_is_expanded = "entry_point_is_expanded"
     static let action_type = "action_type"
     static let open_container = "open_container"
     static let open_content = "open_content"
