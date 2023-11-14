@@ -49,7 +49,7 @@ class CGPiPExpandedViewController : UIViewController {
         screenWidth = screenRect.width
         screenHeight = screenRect.height
         setupVideoPlayer()
-       
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_LOAD, entry_point_id: pipInfo?.mobile._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
     }
     
     
@@ -125,6 +125,7 @@ class CGPiPExpandedViewController : UIViewController {
      }
     
     @objc func didTapOnClose(_ buttton: UIButton){
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_DISMISS, entry_point_id: pipInfo?.mobile._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
         dismiss(animated: true)
      }
     
@@ -133,7 +134,9 @@ class CGPiPExpandedViewController : UIViewController {
     
 
     @IBAction func onPiPCTAClicked(_ sender: Any) {
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_CTA_CLICK, entry_point_id: pipInfo?.mobile._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
         if let actionData = pipInfo?.mobile.content[0].action, let type = actionData.type {
+            
             if type == WebViewsKey.open_deeplink {
                 
                

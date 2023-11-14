@@ -270,7 +270,7 @@ public class CGVideoPlayer: UIView {
     
     
     public func resume() {
-        if let player = self.player {
+        if let player = self.player, self.isFocused{
             self.isPaused = false
             player.rate = 1.1
         }
