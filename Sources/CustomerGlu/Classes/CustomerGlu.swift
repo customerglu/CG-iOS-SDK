@@ -2338,8 +2338,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
              entry_point_data[APIParameterKey.entry_point_location] = CustomerGlu.getInstance.activescreenname
              entry_point_data[APIParameterKey.entry_point_container] = "PIP"
              eventInfo[APIParameterKey.entry_point_data] = entry_point_data
-    
-             ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: content_campaign_id) { success, _ in
+             
+             ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: content_campaign_id, broadcastEventData: true) { success, _ in
                  if success {
                      CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "postAnalyticsEventForEntryPoints", posttoserver: false)
                  } else {
@@ -2415,7 +2415,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
             eventInfo[APIParameterKey.entry_point_data] = entry_point_data
-            ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: content_campaign_id) { success, _ in
+            ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: content_campaign_id, broadcastEventData: false) { success, _ in
                 if success {
                     CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "postAnalyticsEventForEntryPoints", posttoserver: false)
                 } else {
@@ -2465,7 +2465,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         nudge[APIParameterKey.type] = type
         eventInfo[APIParameterKey.nudge] = nudge
         
-        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: campaign_id) { success, _ in
+        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: campaign_id, broadcastEventData: false) { success, _ in
             if success {
                 CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "postAnalyticsEventForNotification", posttoserver: false)
             } else {

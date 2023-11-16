@@ -303,6 +303,7 @@
                     </view>
                     <connections>
                         <outlet property="expandedViewCTA" destination="7Sy-G5-Sc7" id="5vQ-lj-HQl"/>
+                        <outlet property="pipRedirectCTA" destination="7Sy-G5-Sc7" id="q6t-Cc-vlE"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zlX-zT-CWg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
