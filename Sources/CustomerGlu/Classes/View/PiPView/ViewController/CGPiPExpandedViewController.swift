@@ -13,7 +13,7 @@ class CGPiPExpandedViewController : UIViewController {
    
     var pipInfo: CGData?
     var startTime: CMTime?
-  
+    @IBOutlet weak var pipRedirectCTA: UIButton!
     @IBOutlet weak var expandedViewCTA: UIButton!
     @IBOutlet weak var playerContainer: UIView!
     var movieView: CGVideoPlayer?
@@ -64,6 +64,17 @@ class CGPiPExpandedViewController : UIViewController {
         expandButton.translatesAutoresizingMaskIntoConstraints = false
         closeButton.translatesAutoresizingMaskIntoConstraints  = false
         
+        if let pipInfo = pipInfo, let cgButton = pipInfo.mobile.content[0].action.button{
+            if let ctaText = cgButton.buttonText{
+                pipRedirectCTA.setTitle(ctaText, for: .normal)
+            }
+            if let textColor = cgButton.buttonTextColor{
+                pipRedirectCTA.setTitleColor(UIColor(hex: textColor), for: .normal)
+            }
+            if let buttonColor = cgButton.buttonColor{
+                pipRedirectCTA.backgroundColor = UIColor(hex: buttonColor)
+            }
+        }
         
         movieView?.addSubview(muteButton)
         movieView?.addSubview(expandButton)
@@ -74,7 +85,6 @@ class CGPiPExpandedViewController : UIViewController {
         
         let margins = view.layoutMarginsGuide
        
-        
         NSLayoutConstraint.activate( [
             movieView!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             movieView!.trailingAnchor.constraint(equalTo: view.trailingAnchor),

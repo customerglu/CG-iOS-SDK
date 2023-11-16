@@ -774,7 +774,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         webview_content[APIParameterKey.relative_height] = relative_height
         eventInfo[APIParameterKey.webview_content] = webview_content
         
-        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: campaign_id) { success, _ in
+        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: campaign_id, broadcastEventData: false) { success, _ in
             if success {
                 CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "WebView-postAnalyticsEventForWebView", posttoserver: false)
             } else {

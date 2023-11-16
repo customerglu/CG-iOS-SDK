@@ -192,7 +192,7 @@ struct APIParameterKey {
     static let appSessionId = "appSessionId"
     static let userAgent = "userAgent"
     static let eventName = "eventName"
-    static let cgsdkversionvalue = "2.4.8"
+    static let cgsdkversionvalue = "2.4.9"
     static let analytics_version_value = "4.0.0"
     static let analytics_version = "analytics_version"
     static let dismiss_trigger = "dismiss_trigger"

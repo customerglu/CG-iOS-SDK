@@ -273,7 +273,7 @@ class ApplicationManager {
         return false
     }
     
-    public static func sendAnalyticsEvent(eventNudge: [String: Any], campaignId: String, completion: @escaping (Bool, CGAddCartModel?) -> Void) {
+    public static func sendAnalyticsEvent(eventNudge: [String: Any], campaignId: String, broadcastEventData: Bool ,completion: @escaping (Bool, CGAddCartModel?) -> Void) {
         if CustomerGlu.sdk_disable! == true {
             return
         }
@@ -293,6 +293,11 @@ class ApplicationManager {
         platform_details[APIParameterKey.sdk_version] = CustomerGlu.sdk_version
         eventInfo[APIParameterKey.platform_details] = platform_details
         eventInfo[APIParameterKey.campaign_id] = campaignId
+        
+        if broadcastEventData {
+            NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_ANALYTICS_EVENT").rawValue), object: nil, userInfo: eventInfo)
+        }
+        
         
         APIManager.sendAnalyticsEvent(queryParameters: eventInfo as NSDictionary) { result in
             switch result {
