@@ -66,7 +66,7 @@ class CGPiPExpandedViewController : UIViewController {
         
         if let pipInfo = pipInfo, let cgButton = pipInfo.mobile.content[0].action.button{
             if let ctaText = cgButton.buttonText{
-                pipRedirectCTA.setTitle(cgButton.buttonText, for: .normal)
+                pipRedirectCTA.setTitle(ctaText, for: .normal)
             }
             if let textColor = cgButton.buttonTextColor{
                 pipRedirectCTA.setTitleColor(UIColor(hex: textColor), for: .normal)
