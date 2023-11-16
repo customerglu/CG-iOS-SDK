@@ -65,11 +65,12 @@ class CGPiPExpandedViewController : UIViewController {
         closeButton.translatesAutoresizingMaskIntoConstraints  = false
         
         if let pipInfo = pipInfo, let cgButton = pipInfo.mobile.content[0].action.button{
-            pipRedirectCTA.setTitle(cgButton.buttonText, for: .normal)
+            if let ctaText = cgButton.buttonText{
+                pipRedirectCTA.setTitle(cgButton.buttonText, for: .normal)
+            }
             if let textColor = cgButton.buttonTextColor{
                 pipRedirectCTA.setTitleColor(UIColor(hex: textColor), for: .normal)
             }
-            
             if let buttonColor = cgButton.buttonColor{
                 pipRedirectCTA.backgroundColor = UIColor(hex: buttonColor)
             }
