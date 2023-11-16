@@ -15,7 +15,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     let startTime: CMTime?
     private(set) var pipMediaPlayer: CGVideoPlayer
     private var window = PiPWindow()
-    var viewLoadedEventPushed = false
+   
     
     // CTA Buttons
     lazy var closeButton: UIButton = {
@@ -226,11 +226,9 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     func showPlayerCTA() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: {
             self.showPiPCTAs()
-            if let mobile =  self.pipInfo.mobile, let condition = mobile.conditions, let showCount = condition.showCount, let dailyRefresh = showCount.dailyRefresh, dailyRefresh{
-                CGPIPHelper.shared.setDailyRefresh()
-            }
-            if !(self.viewLoadedEventPushed) {
-                self.viewLoadedEventPushed = true
+            CGPIPHelper.shared.setDailyRefresh()
+            if (!CustomerGlu.getInstance.isPiPViewLoadedEventPushed) {
+                CustomerGlu.getInstance.isPiPViewLoadedEventPushed = true
                 CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_LOAD, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
             }
         })

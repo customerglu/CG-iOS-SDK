@@ -120,6 +120,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private var loadCampaignResponse: CGCampaignsModel?
     private var pipVideoLocalPath: String = ""
     private var isShowingExpandedPiP: Bool = false
+    internal  var isPiPViewLoadedEventPushed = false
     
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     
