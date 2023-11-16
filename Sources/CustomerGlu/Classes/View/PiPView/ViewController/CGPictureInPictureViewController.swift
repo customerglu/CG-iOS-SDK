@@ -15,6 +15,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     let startTime: CMTime?
     private(set) var pipMediaPlayer: CGVideoPlayer
     private var window = PiPWindow()
+    var viewLoadedEventPushed = false
     
     // CTA Buttons
     lazy var closeButton: UIButton = {
@@ -193,7 +194,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
      }
     
     @objc func didTapOnClose(){
-        self.dismissPiPButton()
+        self.dismissPiPButton(shouldCallEvent: true)
     }
     
     func launchPiPExpandedView(){
@@ -210,21 +211,28 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     }
     
     
-    public func dismissPiPButton() {
+    public func dismissPiPButton(shouldCallEvent: Bool = false) {
         if CustomerGlu.getInstance.activePIPView != nil {
             pipMediaPlayer.pause()
             self.pipMediaPlayer.unRegisterLooper()
             self.window.dismiss()
             CustomerGlu.getInstance.activePIPView = nil
-            CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_DISMISS, entry_point_id: pipInfo.mobile._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+            if shouldCallEvent {
+                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_DISMISS, entry_point_id: pipInfo.mobile._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+            }
         }
     }
 
     func showPlayerCTA() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: {
             self.showPiPCTAs()
-            CGPIPHelper.shared.setDailyRefresh()
-            CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_LOAD, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+            if let mobile =  self.pipInfo.mobile, let condition = mobile.conditions, let showCount = condition.showCount, let dailyRefresh = showCount.dailyRefresh, dailyRefresh{
+                CGPIPHelper.shared.setDailyRefresh()
+            }
+            if !(self.viewLoadedEventPushed) {
+                self.viewLoadedEventPushed = true
+                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_LOAD, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+            }
         })
     }
     

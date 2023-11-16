@@ -20,6 +20,7 @@ class CGPiPExpandedViewController : UIViewController {
     
     var screenHeight: CGFloat?
     var screenWidth: CGFloat?
+   
     
     lazy var closeButton: UIButton = {
         let button = UIButton(frame: .zero)
@@ -50,6 +51,7 @@ class CGPiPExpandedViewController : UIViewController {
         screenHeight = screenRect.height
         setupVideoPlayer()
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_LOAD, entry_point_id: pipInfo?.mobile._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
+        
     }
     
     
