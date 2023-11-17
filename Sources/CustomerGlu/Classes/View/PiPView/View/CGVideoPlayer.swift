@@ -258,6 +258,13 @@ public class CGVideoPlayer: UIView {
                     player.play()
                 }
                 isPlayerMuted() ? self.mute() : self.unmute()
+            }else {
+                guard let firstVideoTrack = player?.currentItem?.asset.tracks(withMediaType: .video).first else {
+                  return
+                }
+                    
+                let duration = firstVideoTrack.timeRange.duration
+                player?.seek(to: duration, toleranceBefore: .zero, toleranceAfter: .zero)
             }
         }
     }
