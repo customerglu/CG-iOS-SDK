@@ -1325,9 +1325,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     
-    @objc public func isCampaignValid(campaignId: String, dataType: CAMPAIGNDATA, completion: (Bool) -> ()){
-        let isValid = OtherUtils.shared.campaignValidationHelper(campaignId: campaignId, dataFlag: dataType)
-        completion(isValid)
+    @objc public func isCampaignValid(campaignId: String, dataType: CAMPAIGNDATA, completion: @escaping ((Bool) -> ())){
+        OtherUtils.shared.campaignValidationHelper(campaignId: campaignId, dataFlag: dataType, innerCompletion: { success in
+            completion(success)
+        })
+       
     }
     
     @objc public func openWalletWithURL(nudgeConfiguration: CGNudgeConfiguration) {
