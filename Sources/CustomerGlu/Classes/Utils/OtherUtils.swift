@@ -82,4 +82,32 @@ class OtherUtils {
         
         return false
     }
+    
+    func campaignValidationHelper(campaignId: String, dataFlag: CAMPAIGNDATA) -> Bool{
+        var campaignIsValid = false
+        if dataFlag == CAMPAIGNDATA.CACHE {
+            campaignIsValid = campaignValidateLogic(campaignId: campaignId)
+        }else{
+            ApplicationManager.openWalletApi{ success, response in
+                if success{
+                    if let campaignModel = response{
+                        CustomerGlu.campaignsAvailable = campaignModel
+                        campaignIsValid = self.campaignValidateLogic(campaignId: campaignId)
+                    }
+                }
+            }
+        }
+        return campaignIsValid
+    }
+    
+    func campaignValidateLogic(campaignId: String) -> Bool{
+        var isCampaignValid: Bool = false
+        if let campaignObject = CustomerGlu.campaignsAvailable, let runningCampaigns = campaignObject.campaigns, !runningCampaigns.isEmpty{
+           let campaignFiltered = runningCampaigns.first{ $0.campaignId == campaignId }
+            if let campaign = campaignFiltered, campaign.banner?.userCampaignStatus != "completed" {
+                isCampaignValid = true
+            }
+        }
+        return isCampaignValid
+    }
 }
