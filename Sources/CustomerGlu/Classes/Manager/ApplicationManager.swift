@@ -39,6 +39,7 @@ class ApplicationManager {
                 // Save this - To open / not open wallet incase of failure / invalid campaignId in loadCampaignById
                 CustomerGlu.getInstance.setCampaignsModel(response)
                 CustomerGlu.allCampaignsIds = response.campaigns?.compactMap { $0.campaignId } ?? []
+                CustomerGlu.campaignsAvailable = response
                 let responseCampaignIds = response.campaigns?.compactMap { $0.campaignId }.joined(separator: ", ")
                 if let allCampaignAsString = responseCampaignIds {
                     ApplicationManager.encryptUserDefaultKey(str: allCampaignAsString, userdefaultKey: CGConstants.allCampaignsIdsAsString)

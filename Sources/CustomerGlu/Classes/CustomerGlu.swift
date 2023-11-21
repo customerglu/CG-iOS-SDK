@@ -23,6 +23,12 @@ public enum CGSTATE:Int {
              EXCEPTION
 }
 
+@objc(CAMPAIGNDATA)
+public enum CAMPAIGNDATA: Int{
+    case API,
+    CACHE
+}
+
 struct PopUpModel: Codable {
     public var _id: String?
     public var showcount: CGShowCount?
@@ -41,7 +47,6 @@ public enum CGDeeplinkURLType: Int {
 }
 
 @objc(CustomerGlu)
-
 public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     // MARK: - Global Variable
@@ -86,6 +91,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     @objc public static var darkBackground = UIColor.black
     @objc public static var sdk_version = APIParameterKey.cgsdkversionvalue
     public static var allCampaignsIds: [String] = []
+    public static var campaignsAvailable: CGCampaignsModel?
     internal var activescreenname = ""
     public static var bannersHeight: [String: Any]? = nil
     public static var embedsHeight: [String: Any]? = nil
@@ -962,6 +968,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     
                     ApplicationManager.openWalletApi { success, response in
                         if success {
+                            CustomerGlu.campaignsAvailable = response
                             if CustomerGlu.isEntryPointEnabled {
                                 CustomerGlu.bannersHeight = nil
                                 CustomerGlu.embedsHeight = nil
@@ -1315,6 +1322,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             guard let data = data, let jsonString2 = String(data: data, encoding: .utf8) else { return }
             encryptUserDefaultKey(str: jsonString2, userdefaultKey: CGConstants.CustomerGluPopupDict)
         }
+    }
+    
+    
+    @objc public func isCampaignValid(campaignId: String, dataType: CAMPAIGNDATA, completion: (Bool) -> ()){
+        let isValid = OtherUtils.shared.campaignValidationHelper(campaignId: campaignId, dataFlag: dataType)
+        completion(isValid)
     }
     
     @objc public func openWalletWithURL(nudgeConfiguration: CGNudgeConfiguration) {
@@ -2609,6 +2622,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     func doLoadCampaignAndEntryPointCall() {
         ApplicationManager.openWalletApi { success, response in
             if success {
+                CustomerGlu.campaignsAvailable = response
                 self.getEntryPointData()
             }
         }
@@ -2664,9 +2678,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    @objc public func isCampaignValid(campaignId: String) -> Bool {
-        return CustomerGlu.allCampaignsIds.contains(campaignId)
-    }
 }
 
 // MARK: - CGCustomAlertDelegate
@@ -2707,6 +2718,7 @@ extension CustomerGlu: CGMqttClientDelegate {
                 // loadCampaign & Entrypoints API or user re-register
                 ApplicationManager.openWalletApi { success, response in
                     if success {
+                        CustomerGlu.campaignsAvailable = response
                         self.getEntryPointData()
                     }
                 }
