@@ -23,6 +23,14 @@ public enum CGSTATE:Int {
              EXCEPTION
 }
 
+@objc(CAMPAIGN_STATE)
+public enum CAMPAIGN_STATE: Int {
+  case IN_PROGRESS,
+       PRISTINE,
+       COMPLETED,
+       NOT_ELIGIBLE
+}
+
 @objc(CAMPAIGNDATA)
 public enum CAMPAIGNDATA: Int{
     case API,
@@ -1330,6 +1338,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             completion(success)
         })
        
+    }
+    
+    @objc public func getCampaignStatus(campaignId: String, dataType: CAMPAIGNDATA, completion: @escaping ((CAMPAIGN_STATE) -> ())){
+        OtherUtils.shared.getCampaignStatusHelper(campaignId: campaignId, dataFlag: dataType, innerCompletion: { campaignStatus in
+            completion(campaignStatus)
+        })
     }
     
     @objc public func openWalletWithURL(nudgeConfiguration: CGNudgeConfiguration) {

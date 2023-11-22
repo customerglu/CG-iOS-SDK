@@ -112,4 +112,54 @@ class OtherUtils {
         }
         return isCampaignValid
     }
+    
+    
+    
+    func getCampaignStatusHelper(campaignId: String, dataFlag: CAMPAIGNDATA, innerCompletion: @escaping ((CAMPAIGN_STATE) -> ())){
+        var campaignState = CAMPAIGN_STATE.NOT_ELIGIBLE
+        if dataFlag == CAMPAIGNDATA.CACHE {
+            campaignState = campaignFilterStatus(campaignId: campaignId)
+            innerCompletion(campaignState)
+        } else {
+            ApplicationManager.openWalletApi { success, response in
+                if success{
+                    if let campaignModel = response{
+                        CustomerGlu.campaignsAvailable = campaignModel
+                        campaignState = self.campaignFilterStatus(campaignId: campaignId)
+                        innerCompletion(campaignState)
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    func campaignFilterStatus(campaignId: String) -> CAMPAIGN_STATE{
+        var campaignState: CAMPAIGN_STATE = CAMPAIGN_STATE.NOT_ELIGIBLE
+        if let campaignObject = CustomerGlu.campaignsAvailable, let runningCampaigns = campaignObject.campaigns, !runningCampaigns.isEmpty{
+           let campaignFiltered = runningCampaigns.first{ $0.campaignId == campaignId }
+            if let campaign = campaignFiltered {
+                switch(campaign.banner?.userCampaignStatus){
+                case "completed":
+                    campaignState = CAMPAIGN_STATE.COMPLETED
+                    break;
+                    
+                case "in-progress":
+                    campaignState = CAMPAIGN_STATE.IN_PROGRESS
+                    break;
+                    
+                case "pristine":
+                    campaignState = CAMPAIGN_STATE.PRISTINE
+                    break;
+                    
+                default:
+                    campaignState = CAMPAIGN_STATE.NOT_ELIGIBLE
+                    break;
+                }
+            }
+        }
+        return campaignState
+    }
+    
+    
 }
