@@ -85,6 +85,15 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         let heightPer = 1.78 * screenWidth
         
         
+        if let horizontalPadding = Int(pipInfo.mobile.container.horizontal_padding ?? "0"), horizontalPadding > 0{
+            CustomerGlu.horizontalPadding = horizontalPadding
+        }
+        
+        if let verticalPadding = Int(pipInfo.mobile.container.vertical_padding ?? "0"), verticalPadding > 0 {
+            CustomerGlu.verticalPadding = verticalPadding
+        }
+        
+        
         let bottomSpace = CustomerGlu.verticalPadding
         let sideSpace = Int(CustomerGlu.horizontalPadding)
         let topSpace = Int(CustomerGlu.verticalPadding)
@@ -106,14 +115,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         } else {
             pipMediaPlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + CGFloat(bottomSpace))), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         }
-        
-        if let horizontalPadding = Int(pipInfo.mobile.container.horizontal_padding ?? "0"), horizontalPadding > 0{
-            CustomerGlu.horizontalPadding = horizontalPadding
-        }
-        
-        if let verticalPadding = Int(pipInfo.mobile.container.vertical_padding ?? "0"), verticalPadding > 0 {
-            CustomerGlu.verticalPadding = verticalPadding
-        }
+    
                 
         pipMediaPlayer.layer.cornerRadius = 16.0
         pipMediaPlayer.clipsToBounds = true
