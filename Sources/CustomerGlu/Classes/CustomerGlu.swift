@@ -1977,11 +1977,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     if (error == nil){
                         self?.updatePiPLocalPath(path: path ?? "")
                         
-                        if CGPIPHelper.shared.checkShowOnDailyRefresh() {
-                            self?.activePIPView = CGPictureInPictureViewController(btnInfo: pipInfo)
-                            
-                            CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
+                        if pipInfo.mobile.conditions.showCount.dailyRefresh, !CGPIPHelper.shared.checkShowOnDailyRefresh(){
+                          return
                         }
+                        
+                        self?.activePIPView = CGPictureInPictureViewController(btnInfo: pipInfo)
+                        CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
+                        
                     }
                 }
             }
