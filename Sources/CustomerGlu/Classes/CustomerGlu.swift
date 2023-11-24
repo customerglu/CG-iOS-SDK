@@ -1831,7 +1831,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func addPIPViewToUI(pipInfo: CGData)
     {
         if activePIPView == nil, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
-            if let videoURL = pipInfo.mobile.content[0].url,CGPIPHelper.shared.allowdVideoRefreshed() {
+            if let videoURL = pipInfo.mobile.content[0].url {
                 self.downloadPiPVideo(videoURL: videoURL, pipInfo: pipInfo)
             }
         }
