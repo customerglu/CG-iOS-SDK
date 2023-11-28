@@ -64,6 +64,10 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: { [self] in
             if let pipIsMute = self.pipInfo.mobile.conditions.pip?.muteOnDefaultPIP, pipIsMute {
                 pipMediaPlayer.mute()
+                muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
+            }else {
+                muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
+                pipMediaPlayer.unmute()
             }
             pipMediaPlayer.play(with: CustomerGlu.getInstance.getPiPLocalPath(), startTime: self.startTime)
             if pipMediaPlayer.isPlayerPaused(){
