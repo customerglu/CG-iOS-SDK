@@ -169,10 +169,11 @@ class CGPiPExpandedViewController : UIViewController {
                 var postdata: [String:Any] = ["eventName":WebViewsKey.open_deeplink,
                                               "data": ["deepLink": actionData.url]]
             
-                NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_DEEPLINK_EVENT").rawValue), object: nil, userInfo: postdata)
-                closePiPExpandedView()
-                dismiss(animated: true)
                 
+                closePiPExpandedView()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
+                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_DEEPLINK_EVENT").rawValue), object: nil, userInfo: postdata)
+                })
             } else if type == WebViewsKey.open_weblink {
                 
                 // Hyperlink logic
