@@ -246,7 +246,7 @@ class CGPiPExpandedViewController : UIViewController {
             movieView.pause()
         }
         
-        CustomerGlu.getInstance.activePIPView = nil
+//        CustomerGlu.getInstance.activePIPView = nil
         
         dismiss(animated: true)
     }
