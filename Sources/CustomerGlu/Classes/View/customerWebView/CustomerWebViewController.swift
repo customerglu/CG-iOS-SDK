@@ -431,17 +431,17 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                         } else {
                             UIApplication.shared.openURL(url)
                         }
+                    }
+                    
+                    if self.auto_close_webview == true {
+                        diagnosticsEventData["notificationHandler"] = notificationHandler
+                        diagnosticsEventData["iscampignId"] = iscampignId
                         
-                        if self.auto_close_webview == true {
-                            diagnosticsEventData["notificationHandler"] = notificationHandler
-                            diagnosticsEventData["iscampignId"] = iscampignId
-                            
-                            // Posted a notification in viewDidDisappear method
-                            if notificationHandler || iscampignId {
-                                self.closePage(animated: true,dismissaction: CGDismissAction.CTA_REDIRECT)
-                            } else {
-                                self.navigationController?.popViewController(animated: true)
-                            }
+                        // Posted a notification in viewDidDisappear method
+                        if notificationHandler || iscampignId {
+                            self.closePage(animated: true,dismissaction: CGDismissAction.CTA_REDIRECT)
+                        } else {
+                            self.navigationController?.popViewController(animated: true)
                         }
                     }
                     
