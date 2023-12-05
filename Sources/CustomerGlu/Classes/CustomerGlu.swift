@@ -1831,7 +1831,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func addPIPViewToUI(pipInfo: CGData)
     {
         if activePIPView == nil, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
-            if let videoURL = pipInfo.mobile.content[0].url,CGPIPHelper.shared.allowdVideoRefreshed() {
+            if let videoURL = pipInfo.mobile.content[0].url {
                 self.downloadPiPVideo(videoURL: videoURL, pipInfo: pipInfo)
             }
         }
@@ -1977,11 +1977,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     if (error == nil){
                         self?.updatePiPLocalPath(path: path ?? "")
                         
-                        if CGPIPHelper.shared.checkShowOnDailyRefresh() {
-                            self?.activePIPView = CGPictureInPictureViewController(btnInfo: pipInfo)
-                            
-                            CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
+                        if pipInfo.mobile.conditions.showCount.dailyRefresh, !CGPIPHelper.shared.checkShowOnDailyRefresh(){
+                          return
                         }
+                        
+                        self?.activePIPView = CGPictureInPictureViewController(btnInfo: pipInfo)
+                        CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
+                        
                     }
                 }
             }

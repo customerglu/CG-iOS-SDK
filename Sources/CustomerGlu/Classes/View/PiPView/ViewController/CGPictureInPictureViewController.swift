@@ -64,6 +64,10 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: { [self] in
             if let pipIsMute = self.pipInfo.mobile.conditions.pip?.muteOnDefaultPIP, pipIsMute {
                 pipMediaPlayer.mute()
+                muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
+            }else {
+                muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
+                pipMediaPlayer.unmute()
             }
             pipMediaPlayer.play(with: CustomerGlu.getInstance.getPiPLocalPath(), startTime: self.startTime)
             if pipMediaPlayer.isPlayerPaused(){
@@ -83,6 +87,15 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         screenWidth = screenWidth * 0.35
         let widthPer  = screenWidth
         let heightPer = 1.78 * screenWidth
+        
+        
+        if let horizontalPadding = Int(pipInfo.mobile.container.horizontal_padding ?? "0"), horizontalPadding > 0{
+            CustomerGlu.horizontalPadding = horizontalPadding
+        }
+        
+        if let verticalPadding = Int(pipInfo.mobile.container.vertical_padding ?? "0"), verticalPadding > 0 {
+            CustomerGlu.verticalPadding = verticalPadding
+        }
         
         
         let bottomSpace = CustomerGlu.verticalPadding
@@ -106,6 +119,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         } else {
             pipMediaPlayer.frame = CGRect(x: sideSpace, y: Int(screenHeight - (CGFloat(pipMoviePlayerHeight) + CGFloat(bottomSpace))), width: pipMoviePlayerWidth, height: pipMoviePlayerHeight)
         }
+    
                 
         pipMediaPlayer.layer.cornerRadius = 16.0
         pipMediaPlayer.clipsToBounds = true
