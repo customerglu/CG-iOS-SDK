@@ -154,15 +154,11 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     
     
     public func setupPiPCTAs(){
+        hidePiPCTAs()
         muteButton.frame = CGRect(x: pipMediaPlayer.frame.width - (22 + 8) ,y:pipMediaPlayer.frame.size.height - (22 + 8) ,width:22,height:22)
         closeButton.frame = CGRect(x: 8 ,y:8,width:22,height:22)
         expandButton.frame = CGRect(x: pipMediaPlayer.frame.width - (22 + 8 ) ,y:8,width:22,height:22)
-        
-        
-        self.muteButton.isHidden = true
-        self.expandButton.isHidden = true
-        self.closeButton.isHidden = true
-        
+      
         pipMediaPlayer.addSubview(muteButton)
         pipMediaPlayer.addSubview(expandButton)
         pipMediaPlayer.addSubview(closeButton)
@@ -175,7 +171,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         expandButton.addGestureRecognizer(expandTapped)
         closeButton.addGestureRecognizer(closeTapped)
     
-        hidePiPCTAs()
+       
     }
     
     @objc func didTapOnMediaPlayer(){
@@ -238,7 +234,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     }
 
     func showPlayerCTA() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9, execute: {
             self.showPiPCTAs()
             CGPIPHelper.shared.setDailyRefresh()
             if (!CustomerGlu.getInstance.isPiPViewLoadedEventPushed) {
