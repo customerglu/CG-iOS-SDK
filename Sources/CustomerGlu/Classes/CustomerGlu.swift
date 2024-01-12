@@ -2066,11 +2066,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         if isHidden {
             self.hidePiPView()
-        } else if let pipView = self.activePIPView,
-               pipView.pipMediaPlayer.isHidden == false,
-               pipView.pipMediaPlayer.superview != nil  {
-            pipView.pipMediaPlayer.resume()
         }
+//        else if let pipView = self.activePIPView,
+//               pipView.pipMediaPlayer.isHidden == false,
+//               pipView.pipMediaPlayer.superview != nil  {
+//            pipView.pipMediaPlayer.resume()
+//        }
     }
     
     
