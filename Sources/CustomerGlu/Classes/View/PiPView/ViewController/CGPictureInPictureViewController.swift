@@ -253,6 +253,8 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
             self.pipMediaPlayer.pause()
             self.pipMediaPlayer.removeAppStateObservers()
         }else{
+//            var path = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
+//            self.pipMediaPlayer.play(with: path)
             self.pipMediaPlayer.resume()
             self.pipMediaPlayer.addAppStateObservers()
         }

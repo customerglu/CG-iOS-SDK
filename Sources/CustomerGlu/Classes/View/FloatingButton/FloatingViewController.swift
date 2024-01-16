@@ -6,7 +6,8 @@ class FloatingButtonController: UIViewController {
     private(set) var dismisview: UIView!
     private(set) var dismisimageview: UIImageView!
     var floatInfo: CGData?
-    
+    let throttleInterval: TimeInterval = 2.0
+        var lastTapTime: TimeInterval = 0.0
     required init?(coder aDecoder: NSCoder) {
         fatalError()
     }
@@ -39,8 +40,8 @@ class FloatingButtonController: UIViewController {
         let finalHeight = (screenHeight * heightPer)/100
         let finalWidth = (screenWidth * widthPer)/100
         
-        let bottomSpace = (screenHeight * 5)/100
-        let sideSpace = (screenWidth * 5)/100
+        let bottomSpace = CustomerGlu.floatingVerticalPadding
+        let sideSpace = CustomerGlu.floatingHorizontalPadding
         let topSpace = (screenHeight * 5)/100
         let midX = Int(UIScreen.main.bounds.midX)
         let midY = Int(UIScreen.main.bounds.midY)
@@ -182,76 +183,92 @@ class FloatingButtonController: UIViewController {
     
     // Handle the Callback / Hyperlink logic - consume data from floatInfo.mo
     @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
-        if let actionData = floatInfo?.mobile.content[0].action, let type = actionData.type {
-            if type == WebViewsKey.open_deeplink {
-                
-                //Incase of Handled by CG is true
-                if actionData.isHandledBySDK == true {
-                    guard let url = URL(string: "http://assets.customerglu.com/deeplink-redirect/?redirect=\(actionData.url)" as! String) else { return }
-                    
-                    if #available(iOS 10.0, *) {
-                        UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                    } else {
-                        UIApplication.shared.openURL(url)
-                    }
-                }
-                
-                // Converted data for NSNotification.
-                var data: [String: Any]
-                var postdata: [String:Any] = ["eventName":WebViewsKey.open_deeplink,
-                                              "data": ["deepLink": actionData.url]]
-            
-                NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_DEEPLINK_EVENT").rawValue), object: nil, userInfo: postdata)
-                
-            } else if type == WebViewsKey.open_weblink {
-                
-                // Hyperlink logic
-                let nudgeConfiguration = CGNudgeConfiguration()
-                nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
-                nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
-                nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
-                nudgeConfiguration.relativeHeight = floatInfo?.mobile.content[0].relativeHeight ?? 0.0
-                nudgeConfiguration.absoluteHeight = floatInfo?.mobile.content[0].absoluteHeight ?? 0.0
-                nudgeConfiguration.isHyperLink = true
-                
-                CustomerGlu.getInstance.openURLWithNudgeConfig(url: actionData.url, nudgeConfiguration: nudgeConfiguration)
-            } else {
-                //Incase of failure / API contract breach
-                // Check to open wallet or not in fallback case
-                let campaignId = floatInfo?.mobile.content[0].campaignId
-                guard CustomerGlu.getInstance.checkToOpenWalletOrNot(withCampaignID: campaignId ?? "") else {
-                    return
-                }
-
-                // Opening Campaign using CampaignId from payload
-                if let campaignId = campaignId {
-                    let nudgeConfiguration = CGNudgeConfiguration()
-                    nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
-                    nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
-                    nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
-                    nudgeConfiguration.relativeHeight = floatInfo?.mobile.content[0].relativeHeight ?? 0.0
-                    nudgeConfiguration.absoluteHeight = floatInfo?.mobile.content[0].absoluteHeight ?? 0.0
-                    
-                    CustomerGlu.getInstance.openCampaignById(campaign_id: campaignId, nudgeConfiguration: nudgeConfiguration)
-                } else {
-                    //Incase Campaign Id is nil / unavailable
-                    CustomerGlu.getInstance.openWallet()
-                }
-            }
-        } else {
-            
-            let nudgeConfiguration = CGNudgeConfiguration()
-            nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
-            nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
-            nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
-            nudgeConfiguration.relativeHeight = floatInfo?.mobile.content[0].relativeHeight ?? 0.0
-            nudgeConfiguration.absoluteHeight = floatInfo?.mobile.content[0].absoluteHeight ?? 0.0
-            
-            CustomerGlu.getInstance.openCampaignById(campaign_id: (floatInfo?.mobile.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
-        }
+        let currentTime = Date().timeIntervalSince1970
+             
+             // Check if the time elapsed since the last tap is greater than the throttle interval
+             if currentTime - lastTapTime >= throttleInterval {
+                 // Perform the button action only if throttling interval has passed
+                 lastTapTime = currentTime
+                 performButtonAction()
+                 
+                 // Update the last tap time
+               
+             }
         
-        CustomerGlu.getInstance.callEventPublishNudge(data: floatInfo!, className: CustomerGlu.getInstance.activescreenname, actionType: "OPEN",event_name: "ENTRY_POINT_CLICK")
+        
     }
+    
+  @objc func performButtonAction() {
+      if let actionData = floatInfo?.mobile.content[0].action, let type = actionData.type {
+          if type == WebViewsKey.open_deeplink {
+              
+              //Incase of Handled by CG is true
+              if actionData.isHandledBySDK == true {
+                  guard let url = URL(string: "http://assets.customerglu.com/deeplink-redirect/?redirect=\(actionData.url)" as! String) else { return }
+                  
+                  if #available(iOS 10.0, *) {
+                      UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                  } else {
+                      UIApplication.shared.openURL(url)
+                  }
+              }
+              
+              // Converted data for NSNotification.
+              var data: [String: Any]
+              var postdata: [String:Any] = ["eventName":WebViewsKey.open_deeplink,
+                                            "data": ["deepLink": actionData.url]]
+          
+              NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_DEEPLINK_EVENT").rawValue), object: nil, userInfo: postdata)
+              
+          } else if type == WebViewsKey.open_weblink {
+              
+              // Hyperlink logic
+              let nudgeConfiguration = CGNudgeConfiguration()
+              nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
+              nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
+              nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+              nudgeConfiguration.relativeHeight = floatInfo?.mobile.content[0].relativeHeight ?? 0.0
+              nudgeConfiguration.absoluteHeight = floatInfo?.mobile.content[0].absoluteHeight ?? 0.0
+              nudgeConfiguration.isHyperLink = true
+              
+              CustomerGlu.getInstance.openURLWithNudgeConfig(url: actionData.url, nudgeConfiguration: nudgeConfiguration)
+          } else {
+              //Incase of failure / API contract breach
+              // Check to open wallet or not in fallback case
+              let campaignId = floatInfo?.mobile.content[0].campaignId
+              guard CustomerGlu.getInstance.checkToOpenWalletOrNot(withCampaignID: campaignId ?? "") else {
+                  return
+              }
+
+              // Opening Campaign using CampaignId from payload
+              if let campaignId = campaignId {
+                  let nudgeConfiguration = CGNudgeConfiguration()
+                  nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
+                  nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
+                  nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                  nudgeConfiguration.relativeHeight = floatInfo?.mobile.content[0].relativeHeight ?? 0.0
+                  nudgeConfiguration.absoluteHeight = floatInfo?.mobile.content[0].absoluteHeight ?? 0.0
+                  
+                  CustomerGlu.getInstance.openCampaignById(campaign_id: campaignId, nudgeConfiguration: nudgeConfiguration)
+              } else {
+                  //Incase Campaign Id is nil / unavailable
+                  CustomerGlu.getInstance.openWallet()
+              }
+          }
+      } else {
+          
+          let nudgeConfiguration = CGNudgeConfiguration()
+          nudgeConfiguration.layout = floatInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
+          nudgeConfiguration.opacity = floatInfo?.mobile.conditions.backgroundOpacity ?? 0.5
+          nudgeConfiguration.closeOnDeepLink = floatInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+          nudgeConfiguration.relativeHeight = floatInfo?.mobile.content[0].relativeHeight ?? 0.0
+          nudgeConfiguration.absoluteHeight = floatInfo?.mobile.content[0].absoluteHeight ?? 0.0
+          
+          CustomerGlu.getInstance.openCampaignById(campaign_id: (floatInfo?.mobile.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
+      }
+      
+      CustomerGlu.getInstance.callEventPublishNudge(data: floatInfo!, className: CustomerGlu.getInstance.activescreenname, actionType: "OPEN",event_name: "ENTRY_POINT_CLICK")
+       }
     
     @objc func keyboardDidShow(note: NSNotification) {
         window.windowLevel = UIWindow.Level(rawValue: 0)
