@@ -22,7 +22,8 @@ public class BannerView: UIView, UIScrollViewDelegate {
     var imgScrollView: UIScrollView!
     var pageControl: UIPageControl!
     private var progressView = LottieAnimationView()
-    
+    let throttleInterval: TimeInterval = 2.0
+    var lastTapTime: TimeInterval = 0.0
     @IBInspectable var bannerId: String? {
         didSet {
             backgroundColor = UIColor.clear
@@ -294,7 +295,21 @@ public class BannerView: UIView, UIScrollViewDelegate {
     }
     
     @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
-        
+        let currentTime = Date().timeIntervalSince1970
+             
+             // Check if the time elapsed since the last tap is greater than the throttle interval
+             if currentTime - lastTapTime >= throttleInterval {
+                 // Perform the button action only if throttling interval has passed
+                 lastTapTime = currentTime
+                 performButtonAction(sender)
+                 
+                 // Update the last tap time
+               
+             }
+      
+    }
+    
+    @objc func performButtonAction(_ sender: UITapGestureRecognizer? = nil) {
         let dict = arrContent[sender?.view?.tag ?? 0]
         if dict.campaignId != nil {
             if let actionData = dict.action, let type = actionData.type {
@@ -371,7 +386,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 CustomerGlu.getInstance.postAnalyticsEventForEntryPoints(event_name: "ENTRY_POINT_CLICK", entry_point_id: dict._id, entry_point_name: name, entry_point_container: bannerViews[0].mobile.container.type, content_campaign_id: dict.url, open_container:dict.openLayout, action_c_campaign_id: dict.campaignId)
             }
         }
-    }
+      }
     
     private func callLoadBannerAnalytics(){
         

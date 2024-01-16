@@ -128,8 +128,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private static var isAnonymousFlowAllowed: Bool = false
     public static var oldCampaignIds = ""
     public static var delayForPIP = 0
+    public static var floatingVerticalPadding = 50
     public static var verticalPadding = 0
     public static var horizontalPadding = 0
+    public static var floatingHorizontalPadding = 10
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
     private var pipVideoLocalPath: String = ""
@@ -1872,6 +1874,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CustomerGlu.horizontalPadding = horizontal
         CustomerGlu.verticalPadding = vertical
     }
+    @objc public func addMarginForFloatingButton(horizontal:Int,vertical:Int){
+        CustomerGlu.floatingHorizontalPadding = horizontal
+        CustomerGlu.floatingVerticalPadding = vertical
+    }
+    
+    
     internal func dismissPiPView() {
         activePIPView?.dismissPiPButton()
         activePIPView = nil
@@ -2044,8 +2052,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func screenNameLogicForPIPView(className:String)
     {
         var isHidden = true;
+        var isActive  = false
         if let pipView = self.activePIPView {
            // pipView.hidePIPView(ishidden: true)
+            isActive = true
             if pipView.pipInfo.mobile.container.ios.allowedActitivityList.count > 0 && pipView.pipInfo.mobile.container.ios.disallowedActitivityList.count > 0 {
                 if  !(pipView.pipInfo.mobile.container.ios.disallowedActitivityList.contains(className)) {
                     isHidden = false;
@@ -2066,11 +2076,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         if isHidden {
             self.hidePiPView()
-        } else if let pipView = self.activePIPView,
-               pipView.pipMediaPlayer.isHidden == false,
-               pipView.pipMediaPlayer.superview != nil  {
-            pipView.pipMediaPlayer.resume()
+
         }
+
     }
     
     

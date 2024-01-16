@@ -29,13 +29,13 @@ public class CGEventsDiagnosticsHelper {
         }
         
         if let sdkIsDisabled = CustomerGlu.sdk_disable, !sdkIsDisabled {
-            ApplicationManager.sendEventsDiagnostics(eventLogType: eventType, eventName: eventName, eventMeta: eventMeta, completion: { [self] success, diagnosticsEventResponse in
-                if success {
-                    print(eventName+" SuccessFully sent")
-                }else {
-                    print(eventName+" Failure in sending")
-                }
-            })
+//            ApplicationManager.sendEventsDiagnostics(eventLogType: eventType, eventName: eventName, eventMeta: eventMeta, completion: { [self] success, diagnosticsEventResponse in
+//                if success {
+//                    print(eventName+" SuccessFully sent")
+//                }else {
+//                    print(eventName+" Failure in sending")
+//                }
+//            })
             
         }
     }
