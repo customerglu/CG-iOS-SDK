@@ -2148,6 +2148,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
             
+        }else{
+            CGFileDownloader.deletePIPVideo()
         }
     }
     

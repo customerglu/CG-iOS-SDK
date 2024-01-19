@@ -83,6 +83,7 @@ class CGFileDownloader {
                                 do
                                 {
                                     try data.write(to: destinationUrl, options: Data.WritingOptions.atomic)
+
                                     completion(destinationUrl.path, error)
                                 }
                                 catch let error2 as NSError
@@ -105,4 +106,26 @@ class CGFileDownloader {
             task.resume()
         
     }
+    
+    static func deletePIPVideo()
+    {
+        var documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        documentsUrl.appendPathComponent("GluFiles", isDirectory: true)
+        
+        // Check if the directory exists
+        if FileManager.default.fileExists(atPath: documentsUrl.path) {
+            do {
+                // Attempt to remove the directory
+                try FileManager.default.removeItem(at: documentsUrl)
+                print("GluFiles directory deleted successfully.")
+            } catch {
+                // Handle the error if deletion fails
+                print("Error deleting GluFiles directory: \(error.localizedDescription)")
+            }
+        } else {
+            // If the directory doesn't exist, you can choose to handle it accordingly
+            print("GluFiles directory does not exist.")
+        }
+    }
+
 }
