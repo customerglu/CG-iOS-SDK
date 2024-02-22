@@ -9,8 +9,24 @@ import Foundation
 import UIKit
 import AVFoundation
 
-class CGPiPExpandedViewController : UIViewController {
+class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
    
+    func onVideo25Completed() {
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_25_COMPLETED, entry_point_id: self.pipInfo?.mobile._id ?? "", entry_point_name: self.pipInfo?.name ?? "",content_campaign_id: self.pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
+    }
+    func onVideo75Completed() {
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_75_COMPLETED, entry_point_id: self.pipInfo?.mobile._id ?? "", entry_point_name: self.pipInfo?.name ?? "",content_campaign_id: self.pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
+    }
+    
+    func onVideo50Completed() {
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_50_COMPLETED, entry_point_id: self.pipInfo?.mobile._id ?? "", entry_point_name: self.pipInfo?.name ?? "",content_campaign_id: self.pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
+    }
+    
+    func onVideoCompleted() {
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_COMPLETED, entry_point_id: self.pipInfo?.mobile._id ?? "", entry_point_name: self.pipInfo?.name ?? "",content_campaign_id: self.pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
+    }
+    
+    
     var pipInfo: CGData?
     var startTime: CMTime?
     @IBOutlet weak var pipRedirectCTA: UIButton!
@@ -50,6 +66,7 @@ class CGPiPExpandedViewController : UIViewController {
         screenWidth = screenRect.width
         screenHeight = screenRect.height
         setupVideoPlayer()
+
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_LOAD, entry_point_id: pipInfo?.mobile._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
         
     }
@@ -65,7 +82,8 @@ class CGPiPExpandedViewController : UIViewController {
         muteButton.translatesAutoresizingMaskIntoConstraints = false
         expandButton.translatesAutoresizingMaskIntoConstraints = false
         closeButton.translatesAutoresizingMaskIntoConstraints  = false
-        
+        movieView?.setCGVideoCallbacks(delegate: self)
+
         if let pipInfo = pipInfo, let cgButton = pipInfo.mobile.content[0].action.button{
             if let ctaText = cgButton.buttonText{
                 
@@ -131,11 +149,15 @@ class CGPiPExpandedViewController : UIViewController {
      }
     
     @objc func didTapOnExpand(_ buttton: UIButton){
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.COLLAPSE_PIP_VIDEO, entry_point_id: self.pipInfo?.mobile._id ?? "", entry_point_name: self.pipInfo?.name ?? "",content_campaign_id: self.pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
         let pipInfo = pipInfo!
+        
         movieView?.player?.pause()
         let currentTime = movieView?.player?.currentTime()
         dismiss(animated: true) {
-            CustomerGlu.getInstance.displayPiPFromCollapseCTA(with: pipInfo, startTime: currentTime)
+            CGPIPHelper.shared.setIs25Completed(value: false)
+            CGPIPHelper.shared.setIs50Completed(value: false)
+            CustomerGlu.getInstance.displayPiPFromCollapseCTA(with: pipInfo, startTime: CMTime.zero)
         }
      }
     

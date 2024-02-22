@@ -17,6 +17,7 @@ public struct CGPIP: Codable{
     var loopVideoPIP : Bool?
     var removeOnDismissExpanded : Bool?
     var removeOnDismissPIP : Bool?
+    var openExpandedView : Bool?
     
     /**
      * Instantiate the instance using the passed dictionary values to set the properties values
@@ -29,6 +30,7 @@ public struct CGPIP: Codable{
         darkPlayer = dictionary["darkPlayer"] as? Bool
         removeOnDismissExpanded = dictionary["removeOnDismissExpanded"] as? Bool
         removeOnDismissPIP = dictionary["removeOnDismissPIP"] as? Bool
+        openExpandedView = dictionary["openExpandedView"] as? Bool
         
     }
     
@@ -59,6 +61,10 @@ public struct CGPIP: Codable{
         if removeOnDismissPIP != nil{
             dictionary["removeOnDismissPIP"] = removeOnDismissPIP
         }
+        if openExpandedView != nil{
+            dictionary["openExpandedView"] = openExpandedView
+        }
+        
         return dictionary
     }
     

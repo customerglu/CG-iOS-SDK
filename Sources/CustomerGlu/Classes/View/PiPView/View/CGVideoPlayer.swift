@@ -21,6 +21,13 @@ public enum CGMediaPlayingBehaviour {
 public protocol CGVideoplayerListener{
     func showPlayerCTA()
 }
+public protocol CGPiPMovieVideoCallbacks {
+    func onVideo25Completed()
+    func onVideo50Completed()
+    func onVideo75Completed()
+    func onVideoCompleted()
+}
+
 public class CGVideoPlayer: UIView {
     
     public override class var layerClass: AnyClass {
@@ -47,6 +54,7 @@ public class CGVideoPlayer: UIView {
     private var isMuted = false
     private var shouldVideoLoop = false
     var delegate: CGVideoplayerListener?
+    var videoListeners: CGPiPMovieVideoCallbacks?
     
     // One of the value from here containing the actual playable media in avassets
     // Read more: https://developer.apple.com/documentation/avfoundation/avasset?language=objc
@@ -103,6 +111,9 @@ public class CGVideoPlayer: UIView {
     public func setCGVideoPlayerListener(delegate: CGVideoplayerListener){
         self.delegate = delegate
     }
+    public func setCGVideoCallbacks(delegate: CGPiPMovieVideoCallbacks){
+        self.videoListeners = delegate
+    }
     
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
@@ -135,6 +146,7 @@ public class CGVideoPlayer: UIView {
     private func playIfBehaviourAllowsOnLoad() {
         switch mediaPlayingBehaviour {
         case .autoPlayOnLoad:
+            self.checkVideoTime()
             player?.play()
             isPlayerMuted() ? self.mute() : unmute()
             if let delegate = self.delegate {
@@ -171,6 +183,7 @@ public class CGVideoPlayer: UIView {
     
     @objc private func appMovedToForeground() {
         if !isPaused {
+            self.checkVideoTime()
             player?.play()
         }
     }
@@ -186,6 +199,7 @@ public class CGVideoPlayer: UIView {
         screenTimeBehaviour: CGMediaPlayerScreenTimeBehaviour = .preventFromIdle
     ) {
         self.setupPlayerLooping()
+        self.checkVideoTime()
         self.mediaPlayingBehaviour = behaviour
         self.screenTimeBehaviour = screenTimeBehaviour
         loadAsset(with: url) { [weak self] (asset: AVAsset) in
@@ -203,7 +217,10 @@ public class CGVideoPlayer: UIView {
         behaviour: CGMediaPlayingBehaviour = .autoPlayOnLoad,
         screenTimeBehaviour: CGMediaPlayerScreenTimeBehaviour = .preventFromIdle
     ) {
+        
         self.setupPlayerLooping()
+        self.checkVideoTime()
+
         self.mediaPlayingBehaviour = behaviour
         self.screenTimeBehaviour = screenTimeBehaviour
         let url = URL(fileURLWithPath: filePath)
@@ -230,6 +247,7 @@ public class CGVideoPlayer: UIView {
             return
         }
         self.setupPlayerLooping()
+        self.checkVideoTime()
         self.mediaPlayingBehaviour = behaviour
         self.screenTimeBehaviour = screenTimeBehaviour
         loadAsset(with: url) { [weak self] (asset: AVAsset) in
@@ -252,7 +270,13 @@ public class CGVideoPlayer: UIView {
     // Handle Looping of video - Notification logic
     @objc func playerItemDidReachEnd(notification: Notification) {
         if let playerItem = notification.object as? AVPlayerItem {
+            if let delegate = self.videoListeners{
+                delegate.onVideoCompleted()
+            }
             if self.shouldVideoLoop {
+                CGPIPHelper.shared.setIs25Completed(value:false)
+                CGPIPHelper.shared.setIs50Completed(value:false)
+               
                 playerItem.seek(to: CMTime.zero, completionHandler: nil)
                 if let player = self.player {
                     player.play()
@@ -265,6 +289,52 @@ public class CGVideoPlayer: UIView {
                     
                 let duration = firstVideoTrack.timeRange.duration
                 player?.seek(to: duration, toleranceBefore: .zero, toleranceAfter: .zero)
+            }
+        }
+    }
+ 
+    @objc func checkVideoTime(){
+        player?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 1), queue: DispatchQueue.main) { [weak self] time in
+            guard let self = self else { return }
+            
+            let duration = CMTimeGetSeconds(self.player?.currentItem?.duration ?? CMTime.zero)
+            let currentTime = CMTimeGetSeconds(time)
+            
+            // Check if video is 50% completed
+            if !CGPIPHelper.shared.is25Completd {
+                if currentTime >= duration * 0.25 {
+                    
+                    print("Video is 25% completed")
+                    if let delegate = self.videoListeners{
+                        delegate.onVideo25Completed()
+                    }
+                    CGPIPHelper.shared.setIs25Completed(value: true)
+                    
+                }
+            }
+            if !CGPIPHelper.shared.is50Completd {
+                
+                if currentTime >= duration * 0.5 {
+                    print("Video is 50% completed")
+                    if let delegate = self.videoListeners{
+                        delegate.onVideo50Completed()
+                    }
+                    CGPIPHelper.shared.setIs50Completed(value: true)
+                    
+                    // Do something here when video reaches 50% completion
+                }
+            }
+            
+            if !CGPIPHelper.shared.is75Completd {
+                if currentTime >= duration * 0.75 {
+                    
+                    print("Video is 75% completed")
+                    if let delegate = self.videoListeners{
+                        delegate.onVideo75Completed()
+                    }
+                    CGPIPHelper.shared.setIs75Completed(value: true)
+                    
+                }
             }
         }
     }

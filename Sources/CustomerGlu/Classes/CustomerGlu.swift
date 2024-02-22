@@ -137,7 +137,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private var pipVideoLocalPath: String = ""
     private var isShowingExpandedPiP: Bool = false
     internal  var isPiPViewLoadedEventPushed = false
-    
+    weak var diagonsticHelper: CGEventsDiagnosticsHelper? = CGEventsDiagnosticsHelper.shared
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     
     private override init() {
@@ -252,7 +252,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     @objc public func listenToDarkMode(allowToListenDarkMode: Bool){
         var eventData: [String: Any] = [:]
         eventData["listenToDarkMode"] = listenToDarkMode
-        CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_LISTEN_SYSTEM_DARK_MODE_CALLED, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData )
+        diagonsticHelper?.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_LISTEN_SYSTEM_DARK_MODE_CALLED, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData )
         CustomerGlu.listenToSystemDarkMode = allowToListenDarkMode
     }
     
