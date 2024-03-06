@@ -110,12 +110,12 @@ enum CGService {
 
 // Parameter Key's for all API's
 private struct BaseUrls {
-    static let baseurl = ApplicationManager.baseUrl
-    static let devbaseurl = ApplicationManager.devbaseUrl
-    static let streamurl = ApplicationManager.streamUrl
-    static let eventUrl = ApplicationManager.eventUrl
-    static let diagnosticUrl = ApplicationManager.diagnosticUrl
-    static let analyticsUrl = ApplicationManager.analyticsUrl
+    static let baseurl = ApplicationManager.shared.baseUrl
+    static let devbaseurl = ApplicationManager.shared.devbaseUrl
+    static let streamurl = ApplicationManager.shared.streamUrl
+    static let eventUrl = ApplicationManager.shared.eventUrl
+    static let diagnosticUrl = ApplicationManager.shared.diagnosticUrl
+    static let analyticsUrl = ApplicationManager.shared.analyticsUrl
 }
 
 // MARK: - CGRequestData
@@ -159,14 +159,14 @@ enum CGNetworkError: Error, LocalizedError {
 // MARK: - APIManager
 class APIManager {
     public var session: URLSession
-    init(session: URLSession = .shared) {
+   private init(session: URLSession = .shared) {
         self.session = session
     }
     
     // Singleton Instance
-    static let shared = APIManager()
+    static let shared = APIManager(session: .shared)
     
-    private static func performRequest(withData requestData: CGRequestData) {
+    private  func performRequest(withData requestData: CGRequestData) {
         
         //Grouped compelete API-call work flow into a DispatchGroup so that it can maintanted the oprational queue for task completion
         // Enter into DispatchGroup
@@ -186,7 +186,7 @@ class APIManager {
         urlRequest.setValue(ContentType.json.rawValue, forHTTPHeaderField: HTTPHeaderField.contentType.rawValue)
         urlRequest.setValue(CustomerGlu.sdkWriteKey, forHTTPHeaderField: HTTPHeaderField.xapikey.rawValue)
         urlRequest.setValue("ios", forHTTPHeaderField: HTTPHeaderField.platform.rawValue)
-        urlRequest.setValue(CustomerGlu.isDebugingEnabled.description, forHTTPHeaderField: HTTPHeaderField.sandbox.rawValue)
+        urlRequest.setValue(CustomerGlu.getInstance.isDebugingEnabled.description, forHTTPHeaderField: HTTPHeaderField.sandbox.rawValue)
         urlRequest.setValue(APIParameterKey.cgsdkversionvalue, forHTTPHeaderField: HTTPHeaderField.cgsdkversionkey.rawValue)
         
         if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
@@ -195,7 +195,7 @@ class APIManager {
         }
         
         if requestData.parametersDict.count > 0 { // Check Parameters & Move Accordingly
-            if(true == CustomerGlu.isDebugingEnabled){
+            if(true == CustomerGlu.getInstance.isDebugingEnabled){
                 print(requestData.parametersDict as Any)
             }
             if requestData.methodandpath.method == "GET" {
@@ -213,11 +213,11 @@ class APIManager {
             }
         }
         
-        if(true == CustomerGlu.isDebugingEnabled) {
+        if(true == CustomerGlu.getInstance.isDebugingEnabled) {
             print(urlRequest)
         }
         
-        let task = shared.session.dataTask(with: urlRequest) { data, response, error in
+        let task = session.dataTask(with: urlRequest) { data, response, error in
             
             // Leave from dispachgroup
             requestData.dispatchGroup.leave()
@@ -239,22 +239,26 @@ class APIManager {
                 // Get JSON, Clean it and Convert to Object
                 guard let JSON = json else { return }
                 JSON.printJson()
-                let cleanedJSON = cleanJSON(json: JSON, isReturn: true)
-                if isRetry {
-                    requestData.completionBlock?(.success, cleanedJSON, CGNetworkError.badURLRetry)
-                } else {
-                    requestData.completionBlock?(.success, cleanedJSON, nil)
-                }
+                let cleanedJSON = self.cleanJSON(json: JSON, isReturn: true)
+//                if isRetry {
+//                    requestData.completionBlock?(.success, cleanedJSON, CGNetworkError.badURLRetry)
+//                } else {
+//                    requestData.completionBlock?(.success, cleanedJSON, nil)
+//                }
+                requestData.completionBlock?(.success, cleanedJSON, nil)
+
             } catch let error {
-                if(true == CustomerGlu.isDebugingEnabled){
+                if(true == CustomerGlu.getInstance.isDebugingEnabled){
                     print(error)
                 }
                 
-                if isRetry {
-                    requestData.completionBlock?(.failure, nil, CGNetworkError.badURLRetry)
-                } else {
-                    requestData.completionBlock?(.failure, nil, error as? CGNetworkError)
-                }
+//                if isRetry {
+//                    requestData.completionBlock?(.failure, nil, CGNetworkError.badURLRetry)
+//                } else {
+//                    requestData.completionBlock?(.failure, nil, error as? CGNetworkError)
+//                }
+                requestData.completionBlock?(.failure, nil, error as? CGNetworkError)
+
             }
         }
         task.resume()
@@ -263,52 +267,53 @@ class APIManager {
         requestData.dispatchGroup.wait()
     }
     
-    private static func blockOperationForService(withRequestData requestData: CGRequestData) {
+    private  func blockOperationForService(withRequestData requestData: CGRequestData) {
         // create a blockOperation for avoiding miltiple API call at same time
         let blockOperation = BlockOperation()
         
         // Added Task into Queue
         blockOperation.addExecutionBlock {
-            performRequest(withData: requestData)
+            self.performRequest(withData: requestData)
         }
         
         // Add dependency to finish previus task before starting new one
-        if let lastOperation = ApplicationManager.operationQueue.operations.last {
+        if let lastOperation = ApplicationManager.shared.operationQueue.operations.last {
             blockOperation.addDependency(lastOperation)
         }
         
         //Added task into Queue
-        ApplicationManager.operationQueue.addOperation(blockOperation)
+        ApplicationManager.shared.operationQueue.addOperation(blockOperation)
     }
     
-    private static func blockOperationForServiceWithDelay(andRequestData requestData: CGRequestData) {
+    private  func blockOperationForServiceWithDelay(andRequestData requestData: CGRequestData) {
         // Delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
             // Background thread
             DispatchQueue.global(qos: .userInitiated).async {
-                blockOperationForService(withRequestData: requestData)
+                self.blockOperationForService(withRequestData: requestData)
             }
         })
     }
     
-    private static func serviceCall<T: Decodable>(for type: CGService, parametersDict: NSDictionary, dispatchGroup: DispatchGroup = DispatchGroup(), completion: @escaping (Result<T, CGNetworkError>) -> Void) {
+    private func serviceCall<T: Decodable>(for type: CGService, parametersDict: NSDictionary, dispatchGroup: DispatchGroup = DispatchGroup(), completion: @escaping (Result<T, CGNetworkError>) -> Void) {
         let methodandpath = MethodandPath(serviceType: type)
-        var requestData = CGRequestData(baseurl: methodandpath.baseurl, methodandpath: methodandpath, parametersDict: parametersDict, dispatchGroup: dispatchGroup, retryCount: CustomerGlu.getInstance.appconfigdata?.allowedRetryCount ?? 1) 
+        var requestData = CGRequestData(baseurl: methodandpath.baseurl, methodandpath: methodandpath, parametersDict: parametersDict, dispatchGroup: dispatchGroup, retryCount:  1)
         
         // Call Login API with API Router
-        let block: (_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void = { (status, data, error) in
+        let block: (_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void = { [weak self](status, data, error) in
+            guard let strongSelf = self else { return }
             switch status {
             case .success:
                 if let data {
                     requestData.retryCount = requestData.retryCount - 1
                     if let error, error == .badURLRetry, requestData.retryCount >= 1 {
-                        blockOperationForServiceWithDelay(andRequestData: requestData)
+                        strongSelf.blockOperationForServiceWithDelay(andRequestData: requestData)
                     } else {
                         if let error, error == .badURLRetry {
                             completion(.failure(CGNetworkError.badURLRetry))
                         } else if type == .getReward || type == .getProgram {
-                            completion(.success(APIManager.dictionaryToString(data) as! T))
-                        } else if let object = dictToObject(dict: data, type: T.self) {
+                            completion(.success(strongSelf.dictionaryToString(data) as! T))
+                        } else if let object = strongSelf.dictToObject(dict: data, type: T.self) {
                             completion(.success(object))
                         } else {
                             completion(.failure(CGNetworkError.other))
@@ -321,7 +326,7 @@ class APIManager {
             case .failure:
                 requestData.retryCount = requestData.retryCount - 1
                 if let error, error == .badURLRetry, requestData.retryCount >= 1 {
-                    blockOperationForServiceWithDelay(andRequestData: requestData)
+                    strongSelf.blockOperationForServiceWithDelay(andRequestData: requestData)
                 } else {
                     completion(.failure(CGNetworkError.other))
                 }
@@ -329,10 +334,10 @@ class APIManager {
         }
         
         requestData.completionBlock = block
-        blockOperationForService(withRequestData: requestData)
+        self.blockOperationForService(withRequestData: requestData)
     }
     
-    static func dictionaryToString(_ dictionary: [String: Any]) -> String? {
+     func dictionaryToString(_ dictionary: [String: Any]) -> String? {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: dictionary, options: [.prettyPrinted])
             if let jsonString = String(data: jsonData, encoding: .ascii) {
@@ -344,63 +349,63 @@ class APIManager {
         return nil
     }
         
-    static func userRegister(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
-        serviceCall(for: .userRegister, parametersDict: queryParameters,completion: completion)
+     func userRegister(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
+        self.serviceCall(for: .userRegister, parametersDict: queryParameters,completion: completion)
     }
     
-    static func getWalletRewards(queryParameters: NSDictionary, completion: @escaping (Result<CGCampaignsModel, CGNetworkError>) -> Void) {
-        serviceCall(for: .getWalletRewards, parametersDict: queryParameters,completion: completion)
+     func getWalletRewards(queryParameters: NSDictionary, completion: @escaping (Result<CGCampaignsModel, CGNetworkError>) -> Void) {
+        self.serviceCall(for: .getWalletRewards, parametersDict: queryParameters,completion: completion)
     }
     
-    static func addToCart(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
-        serviceCall(for: .addToCart, parametersDict: queryParameters, completion: completion)
+     func addToCart(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
+         self.serviceCall(for: .addToCart, parametersDict: queryParameters, completion: completion)
     }
     
-    static func crashReport(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
+     func crashReport(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
         serviceCall(for: .crashReport, parametersDict: queryParameters, completion: completion)
     }
     
-    static func getEntryPointdata(queryParameters: NSDictionary, completion: @escaping (Result<CGEntryPoint, CGNetworkError>) -> Void) {
-        serviceCall(for: .entryPointdata, parametersDict: queryParameters, completion: completion)
+     func getEntryPointdata(queryParameters: NSDictionary, completion: @escaping (Result<CGEntryPoint, CGNetworkError>) -> Void) {
+         self.serviceCall(for: .entryPointdata, parametersDict: queryParameters, completion: completion)
     }
     
-    static func entrypoints_config(queryParameters: NSDictionary, completion: @escaping (Result<EntryConfig, CGNetworkError>) -> Void) {
+     func entrypoints_config(queryParameters: NSDictionary, completion: @escaping (Result<EntryConfig, CGNetworkError>) -> Void) {
         serviceCall(for: .entrypoints_config, parametersDict: queryParameters, completion: completion)
     }
     
-    static func sendAnalyticsEvent(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
+     func sendAnalyticsEvent(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
         serviceCall(for: .send_analytics_event, parametersDict: queryParameters, completion: completion)
     }
     
-    static func sendEventsDiagnostics(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
+     func sendEventsDiagnostics(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
         serviceCall(for: .cgMetricDiagnostics, parametersDict: queryParameters, completion: completion)
     }
     
-    static func getCGDeeplinkData(queryParameters: NSDictionary, completion: @escaping (Result<CGDeeplink, CGNetworkError>) -> Void) {
+     func getCGDeeplinkData(queryParameters: NSDictionary, completion: @escaping (Result<CGDeeplink, CGNetworkError>) -> Void) {
         serviceCall(for: .cgdeeplink, parametersDict: queryParameters, completion: completion)
     }
     
-    static func appConfig(queryParameters: NSDictionary, completion: @escaping (Result<CGAppConfig, CGNetworkError>) -> Void) {
-        serviceCall(for: .appconfig, parametersDict: queryParameters, completion: completion)
+     func appConfig(queryParameters: NSDictionary, completion: @escaping (Result<CGAppConfig, CGNetworkError>) -> Void) {
+         self.serviceCall(for: .appconfig, parametersDict: queryParameters, completion: completion)
     }
     
-    static func nudgeIntegration(queryParameters: NSDictionary, completion: @escaping (Result<CGNudgeIntegrationModel, CGNetworkError>) -> Void) {
+     func nudgeIntegration(queryParameters: NSDictionary, completion: @escaping (Result<CGNudgeIntegrationModel, CGNetworkError>) -> Void) {
         serviceCall(for: .cgNudgeIntegration, parametersDict: queryParameters, completion: completion)
     }
     
-    static func onboardingSDKNotificationConfig(queryParameters: NSDictionary, completion: @escaping (Result<CGClientTestingModel, CGNetworkError>) -> Void) {
+     func onboardingSDKNotificationConfig(queryParameters: NSDictionary, completion: @escaping (Result<CGClientTestingModel, CGNetworkError>) -> Void) {
         serviceCall(for: .onboardingSDKNotificationConfig, parametersDict: queryParameters, completion: completion)
     }
     
-    static func onboardingSDKTestSteps(queryParameters: NSDictionary, completion: @escaping (Result<CGSDKTestStepsResponseModel, CGNetworkError>) -> Void) {
+     func onboardingSDKTestSteps(queryParameters: NSDictionary, completion: @escaping (Result<CGSDKTestStepsResponseModel, CGNetworkError>) -> Void) {
         serviceCall(for: .onboardingSDKTestSteps, parametersDict: queryParameters, completion: completion)
     }
     
-    static func getReward(queryParameters: NSDictionary, completion: @escaping (Result<String?, CGNetworkError>) -> Void) {
+     func getReward(queryParameters: NSDictionary, completion: @escaping (Result<String?, CGNetworkError>) -> Void) {
         serviceCall(for: .getReward, parametersDict: queryParameters, completion: completion)
     }
     
-    static func getProgram(queryParameters: NSDictionary, completion: @escaping (Result<String?, CGNetworkError>) -> Void) {
+     func getProgram(queryParameters: NSDictionary, completion: @escaping (Result<String?, CGNetworkError>) -> Void) {
         serviceCall(for: .getProgram, parametersDict: queryParameters, completion: completion)
     }
     
@@ -408,7 +413,7 @@ class APIManager {
     
     // Recursive Method
     @discardableResult
-    static private func cleanJSON(json: Dictionary<String, Any>, isReturn: Bool = false) -> Dictionary<String, Any> {
+     private func cleanJSON(json: Dictionary<String, Any>, isReturn: Bool = false) -> Dictionary<String, Any> {
         
         // Create Local Object to Mutate
         var actualJson = json
@@ -448,7 +453,7 @@ class APIManager {
         }
     }
     
-    static private func dictToObject <T: Decodable>(dict: Dictionary<String, Any>, type: T.Type) -> T? {
+     private func dictToObject <T: Decodable>(dict: Dictionary<String, Any>, type: T.Type) -> T? {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted)
             let jsonDecoder = JSONDecoder()

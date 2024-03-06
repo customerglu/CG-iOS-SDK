@@ -90,17 +90,17 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         
         
         if let horizontalPadding = Int(pipInfo.mobile.container.horizontal_padding ?? "0"), horizontalPadding > 0{
-            CustomerGlu.horizontalPadding = horizontalPadding
+            CustomerGlu.getInstance.horizontalPadding = horizontalPadding
         }
         
         if let verticalPadding = Int(pipInfo.mobile.container.vertical_padding ?? "0"), verticalPadding > 0 {
-            CustomerGlu.verticalPadding = verticalPadding
+            CustomerGlu.getInstance.verticalPadding = verticalPadding
         }
         
         
-        let bottomSpace = CustomerGlu.verticalPadding
-        let sideSpace = Int(CustomerGlu.horizontalPadding)
-        let topSpace = Int(CustomerGlu.verticalPadding)
+        let bottomSpace = CustomerGlu.getInstance.verticalPadding
+        let sideSpace = Int(CustomerGlu.getInstance.horizontalPadding)
+        let topSpace = Int(CustomerGlu.getInstance.verticalPadding)
         
         pipMediaPlayer.setCGVideoPlayerListener(delegate: self)
         pipMediaPlayer.setVideoShouldLoop(with: true)

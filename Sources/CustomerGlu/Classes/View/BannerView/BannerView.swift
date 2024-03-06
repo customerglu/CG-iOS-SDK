@@ -137,7 +137,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 self.imgScrollView.subviews.forEach({ $0.removeFromSuperview() })
             }
             
-            let bannerViews = CustomerGlu.entryPointdata.filter {
+            let bannerViews = CustomerGlu.getInstance.entryPointdata.filter {
                 $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId
             }
             
@@ -337,7 +337,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
                     let nudgeConfiguration = CGNudgeConfiguration()
                     nudgeConfiguration.layout = dict.openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
                     nudgeConfiguration.opacity = condition?.backgroundOpacity ?? 0.5
-                    nudgeConfiguration.closeOnDeepLink = dict.closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                    nudgeConfiguration.closeOnDeepLink = dict.closeOnDeepLink ?? CustomerGlu.getInstance.auto_close_webview!
                     nudgeConfiguration.relativeHeight = dict.relativeHeight ?? 0.0
                     nudgeConfiguration.absoluteHeight = dict.absoluteHeight ?? 0.0
                     nudgeConfiguration.isHyperLink = true
@@ -355,7 +355,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
                         let nudgeConfiguration = CGNudgeConfiguration()
                         nudgeConfiguration.layout = dict.openLayout.lowercased()
                         nudgeConfiguration.opacity = condition?.backgroundOpacity ?? 0.5
-                        nudgeConfiguration.closeOnDeepLink = dict.closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                        nudgeConfiguration.closeOnDeepLink = dict.closeOnDeepLink ?? CustomerGlu.getInstance.auto_close_webview!
                         nudgeConfiguration.relativeHeight = dict.relativeHeight ?? 0.0
                         nudgeConfiguration.absoluteHeight = dict.absoluteHeight ?? 0.0
                         
@@ -371,13 +371,13 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 let nudgeConfiguration = CGNudgeConfiguration()
                 nudgeConfiguration.layout = dict.openLayout.lowercased()
                 nudgeConfiguration.opacity = condition?.backgroundOpacity ?? 0.5
-                nudgeConfiguration.closeOnDeepLink = dict.closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                nudgeConfiguration.closeOnDeepLink = dict.closeOnDeepLink ?? CustomerGlu.getInstance.auto_close_webview!
                 nudgeConfiguration.relativeHeight = dict.relativeHeight ?? 0.0
                 nudgeConfiguration.absoluteHeight = dict.absoluteHeight ?? 0.0
                 
                 CustomerGlu.getInstance.openCampaignById(campaign_id: dict.campaignId, nudgeConfiguration: nudgeConfiguration)
             }
-            let bannerViews = CustomerGlu.entryPointdata.filter {
+            let bannerViews = CustomerGlu.getInstance.entryPointdata.filter {
                 $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId ?? ""
             }
             
@@ -391,7 +391,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
     private func callLoadBannerAnalytics(){
         
         if (false == loadedapicalled){
-            let bannerViews = CustomerGlu.entryPointdata.filter {
+            let bannerViews = CustomerGlu.getInstance.entryPointdata.filter {
                 $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId ?? ""
             }
             

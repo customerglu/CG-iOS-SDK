@@ -11,16 +11,16 @@ import Foundation
 // MARK: - CGEventsDiagnosticsHelperMock
 class CGEventsDiagnosticsHelperMock: CGEventsDiagnosticsHelper {
     var sendDiagnosticsReportCalled: Bool = false
-    private var parent: CGEventsDiagnosticsHelper?
+     var parent: CGEventsDiagnosticsHelper
     
-    init(parent: CGEventsDiagnosticsHelper) {
-        super.init()
-        sendDiagnosticsReportCalled = false
-        self.parent = parent
-    }
+//    init(parent: CGEventsDiagnosticsHelper) {
+//        super.init()
+//        sendDiagnosticsReportCalled = false
+//        self.parent = parent
+//    }
     
     override func sendDiagnosticsReport(eventName: String, eventType: String, eventMeta:[String:Any]) {
         sendDiagnosticsReportCalled = true
-        self.parent?.sendDiagnosticsReport(eventName: eventName, eventType: eventType, eventMeta: eventMeta)
+//        self.parent.sendDiagnosticsReport(eventName: eventName, eventType: eventType, eventMeta: eventMeta)
     }
 }

@@ -16,7 +16,7 @@ class CGProxyHelper {
     func getProgram() -> Void {
         var campaignIds: [String : Any] = [:]
         
-        for id in CustomerGlu.allCampaignsIds {
+        for id in CustomerGlu.getInstance.allCampaignsIds {
             campaignIds[id] = true
         }
         
@@ -30,11 +30,11 @@ class CGProxyHelper {
             "page" : 1
         ]
         
-        APIManager.getProgram(queryParameters: request) { result in
+        APIManager.shared.getProgram(queryParameters: request) {[weak self]  result in
             switch result {
             case .success(let response):
                 if let response = response {
-                    self.encryptUserDefaultKey(str: response, userdefaultKey: CGConstants.CGGetProgramResponse)
+                    self?.encryptUserDefaultKey(str: response, userdefaultKey: CGConstants.CGGetProgramResponse)
                 }
             case .failure(let error):
                 CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "getProgram", posttoserver: false)
@@ -45,7 +45,7 @@ class CGProxyHelper {
     func getReward() -> Void {
         var campaignIds: [String : Any] = [:]
         
-        for id in CustomerGlu.allCampaignsIds {
+        for id in CustomerGlu.getInstance.allCampaignsIds {
             campaignIds[id] = true
         }
         
@@ -59,11 +59,11 @@ class CGProxyHelper {
             "page" : 1
         ]
         
-        APIManager.getReward(queryParameters: request) { result in
+        APIManager.shared.getReward(queryParameters: request) {[weak self] result in
             switch result {
             case .success(let response):
                 if let response = response {
-                    self.encryptUserDefaultKey(str: response, userdefaultKey: CGConstants.CGGetRewardResponse)
+                    self?.encryptUserDefaultKey(str: response, userdefaultKey: CGConstants.CGGetRewardResponse)
                 }
             case .failure(let error):
                 CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "getReward", posttoserver: false)

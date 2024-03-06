@@ -133,7 +133,7 @@ class CGMqttClientHelper: NSObject {
         
         for topic in topics {
             client.subscribe(to: topic)
-            if CustomerGlu.isDebugingEnabled {
+            if CustomerGlu.getInstance.isDebugingEnabled {
                 print("Topic name \(topic)")
             }
             

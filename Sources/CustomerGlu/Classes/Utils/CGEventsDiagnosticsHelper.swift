@@ -10,25 +10,28 @@ import Foundation
 public class CGEventsDiagnosticsHelper {
    static let shared = CGEventsDiagnosticsHelper()
     
+    private init(){
+        
+    }
     
     /***
         Sending DIagnostics events 
      */
     func sendDiagnosticsReport(eventName: String, eventType: String, eventMeta:[String:Any]){
         
-        if eventType == CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS && !(CustomerGlu.isDiagnosticsEnabled ?? false){
+        if eventType == CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS && !(CustomerGlu.getInstance.isDiagnosticsEnabled ?? false){
             return
         }
         
-        if eventType == CGDiagnosticConstants.CG_TYPE_METRICS && !(CustomerGlu.isMetricsEnabled ?? true){
+        if eventType == CGDiagnosticConstants.CG_TYPE_METRICS && !(CustomerGlu.getInstance.isMetricsEnabled ?? true){
             return
         }
         
-        if (eventType == CGDiagnosticConstants.CG_TYPE_CRASH || eventType == CGDiagnosticConstants.CG_TYPE_EXCEPTION) && !(CustomerGlu.isCrashLogsEnabled ?? true) {
+        if (eventType == CGDiagnosticConstants.CG_TYPE_CRASH || eventType == CGDiagnosticConstants.CG_TYPE_EXCEPTION) && !(CustomerGlu.getInstance.isCrashLogsEnabled ?? true) {
             return
         }
         
-        if let sdkIsDisabled = CustomerGlu.sdk_disable, !sdkIsDisabled {
+ //       if let sdkIsDisabled = CustomerGlu.sdk_disable, !sdkIsDisabled {
 //            ApplicationManager.sendEventsDiagnostics(eventLogType: eventType, eventName: eventName, eventMeta: eventMeta, completion: { [self] success, diagnosticsEventResponse in
 //                if success {
 //                    print(eventName+" SuccessFully sent")
@@ -37,7 +40,7 @@ public class CGEventsDiagnosticsHelper {
 //                }
 //            })
             
-        }
+  //      }
     }
     
     /***

@@ -12,12 +12,12 @@ final class CustomerGluTests: XCTestCase {
     
     func disableGluSdk_Method() {
         CustomerGlu.getInstance.disableGluSdk(disable: true)
-        XCTAssertEqual(CustomerGlu.sdk_disable, true)
+        XCTAssertEqual(CustomerGlu.getInstance.sdk_disable, true)
     }
         
     func enableGluSdk_Method() {
         CustomerGlu.getInstance.disableGluSdk(disable: false)
-        XCTAssertEqual(CustomerGlu.sdk_disable, false)
+        XCTAssertEqual(CustomerGlu.getInstance.sdk_disable, false)
     }
     
     func test_loginApiResource_With_ValidRequest_Returns_ValidResponse() {
@@ -249,29 +249,29 @@ final class CustomerGluTests: XCTestCase {
     }
       
     func test_doValidateToken() {
-        if ApplicationManager.doValidateToken() == true {
-            XCTAssertTrue(ApplicationManager.doValidateToken())
+        if ApplicationManager.shared.doValidateToken() == true {
+            XCTAssertTrue(ApplicationManager.shared.doValidateToken())
         }
     }
     
     func test_isFcmApn_Method() {
         CustomerGlu.getInstance.isFcmApn(fcmApn: "fcm")
-        XCTAssertEqual(CustomerGlu.fcm_apn, "fcm")
+        XCTAssertEqual(CustomerGlu.getInstance.fcm_apn, "fcm")
     }
     
     func test_setDefaultBannerImage_Method() {
         CustomerGlu.getInstance.setDefaultBannerImage(bannerUrl: "")
-        XCTAssertEqual(CustomerGlu.defaultBannerUrl, "")
+        XCTAssertEqual(CustomerGlu.getInstance.defaultBannerUrl, "")
     }
     
     func test_configureLoaderColour_Method() {
         CustomerGlu.getInstance.configureLoaderColour(color: [UIColor.red])
-        XCTAssertEqual(CustomerGlu.arrColor, [UIColor.red])
+        XCTAssertEqual(CustomerGlu.getInstance.arrColor, [UIColor.red])
     }
     
     func test_closeWebviewOnDeeplinkEvent_Method() {
         CustomerGlu.getInstance.closeWebviewOnDeeplinkEvent(close: true)
-        XCTAssertEqual(CustomerGlu.auto_close_webview, true)
+        XCTAssertEqual(CustomerGlu.getInstance.auto_close_webview, true)
     }
     
     func testStringValueDecodedSuccessfully() throws {
@@ -297,12 +297,12 @@ final class CustomerGluTests: XCTestCase {
     }
             
     func test_BaseUrl() {
-        let url = ApplicationManager.baseUrl
+        let url = ApplicationManager.shared.baseUrl
         XCTAssertEqual(url, "api.customerglu.com/")
     }
     
     func test_StreamUrl() {
-        let url = ApplicationManager.streamUrl
+        let url = ApplicationManager.shared.streamUrl
         XCTAssertEqual(url, "stream.customerglu.com/")
     }
     
@@ -336,7 +336,7 @@ final class CustomerGluTests: XCTestCase {
 
     func test_customerGluDidCatchCrash() {
         let dict = MockData.mockDataForCrash
-        ApplicationManager.callCrashReport(cglog: dict["callStack"] ?? "", isException: true, methodName: "CustomerGluCrash", user_id: "")
+        ApplicationManager.shared.callCrashReport(cglog: dict["callStack"] ?? "", isException: true, methodName: "CustomerGluCrash", user_id: "")
     }
 
 //    func test_loadingStoryBoardOpenWalletViewController() {

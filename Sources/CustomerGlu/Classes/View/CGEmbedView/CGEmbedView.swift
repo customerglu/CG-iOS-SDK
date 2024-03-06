@@ -77,7 +77,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
             }
             
             if bodyStruct?.eventName == WebViewsKey.analytics {
-                if (true == CustomerGlu.analyticsEvent) {
+                if (true == CustomerGlu.getInstance.analyticsEvent) {
                     let dict = OtherUtils.shared.convertToDictionary(text: (message.body as? String)!)
                     if(dict != nil && dict!.count>0 && dict?["data"] != nil){
                         NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_ANALYTICS_EVENT").rawValue), object: nil, userInfo: dict?["data"] as? [String: Any])
@@ -116,7 +116,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     let contentController = WKUserContentController()
     let config = WKWebViewConfiguration()
     var documentInteractionController: UIDocumentInteractionController!
-    public var closeOnDeepLink = CustomerGlu.auto_close_webview!
+    public var closeOnDeepLink = CustomerGlu.getInstance.auto_close_webview!
     private var defaulttimer : Timer?
     var spinner = SpinnerView()
     var progressView = LottieAnimationView()
@@ -192,7 +192,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
                     // Set your image's URL into here
                     let url = URL(string: imageString)!
                     data(from: url) { data, response, error in
-                        if(true == CustomerGlu.isDebugingEnabled){
+                        if(true == CustomerGlu.getInstance.isDebugingEnabled){
                             print(response as Any)
                         }
                         guard let data = data, error == nil else { return }
@@ -251,7 +251,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
         // Set your image's URL into here
         let url = URL(string: imageString)!
         data(from: url) { data, response, error in
-            if(true == CustomerGlu.isDebugingEnabled){
+            if(true == CustomerGlu.getInstance.isDebugingEnabled){
                 print(response as Any)
             }
             guard let data = data, error == nil else { return }
@@ -299,7 +299,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
             
             self.view.subviews.forEach({ $0.removeFromSuperview() })
             
-            let embedViews = CustomerGlu.entryPointdata.filter {
+            let embedViews = CustomerGlu.getInstance.entryPointdata.filter {
                 $0.mobile.container.type == "EMBEDDED" && $0.mobile.container.bannerId == self.embedId
             }
             
@@ -372,28 +372,28 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     private func loadAllCampaignsApi(){
         
         //        embedviewHeightchanged(height: 0.0)
-        ApplicationManager.loadAllCampaignsApi(type: "", value: "", loadByparams: [:]) { [self] success, campaignsModel in
+        ApplicationManager.shared.loadAllCampaignsApi(type: "", value: "", loadByparams: [:]) {  success, campaignsModel in
             if success {
                 //                CustomerGlu.getInstance.loaderHide()
-                if arrContent.first?.campaignId.count == 0 {
+                if self.arrContent.first?.campaignId.count == 0 {
                     DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
-                        self.setEmbedView(height: finalHeight, url: campaignsModel?.defaultUrl ?? "")
+                        self.setEmbedView(height: self.finalHeight ?? 0, url: campaignsModel?.defaultUrl ?? "")
                     }
-                } else if (arrContent.first?.campaignId.contains("http://"))! || (arrContent.first?.campaignId.contains("https://"))! {
+                } else if (self.arrContent.first?.campaignId.contains("http://"))! || (self.arrContent.first?.campaignId.contains("https://"))! {
                     DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
                         //self.setupWebViewCustomFrame(url: self.campaign_id)
-                        self.setEmbedView(height: finalHeight, url: (arrContent.first?.campaignId)!)
+                        self.setEmbedView(height: self.finalHeight ?? 0, url: (self.arrContent.first?.campaignId)!)
                     }
                 } else {
                     let campaigns: [CGCampaigns] = (campaignsModel?.campaigns)!
-                    let filteredArray = campaigns.filter{($0.campaignId.elementsEqual((arrContent.first?.campaignId)!)) || ($0.banner != nil && $0.banner?.tag != nil && $0.banner?.tag != "" && ($0.banner!.tag!.elementsEqual((arrContent.first?.campaignId)!)))}
+                    let filteredArray = campaigns.filter{($0.campaignId.elementsEqual((self.arrContent.first?.campaignId)!)) || ($0.banner != nil && $0.banner?.tag != nil && $0.banner?.tag != "" && ($0.banner!.tag!.elementsEqual((self.arrContent.first?.campaignId)!)))}
                     if filteredArray.count > 0 {
                         DispatchQueue.main.async {
-                            self.setEmbedView(height: self.finalHeight, url: filteredArray[0].url)
+                            self.setEmbedView(height: self.finalHeight ?? 0, url: filteredArray[0].url)
                         }
                     } else {
                         DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
-                            self.setEmbedView(height: finalHeight, url: campaignsModel?.defaultUrl ?? "")
+                            self.setEmbedView(height: self.finalHeight ?? 0, url: campaignsModel?.defaultUrl ?? "")
                         }
                     }
                 }
@@ -415,7 +415,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
             let content = arrContent[0]
             let absoluteHeight = content.absoluteHeight ?? 0.0
             let relativeHeight =  content.relativeHeight ?? 0.0
-            self.closeOnDeepLink = content.closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+            self.closeOnDeepLink = content.closeOnDeepLink ?? CustomerGlu.getInstance.auto_close_webview!
             
             if(relativeHeight > 0){
                 finalheight = (UIScreen.main.bounds.height) * (relativeHeight/100)
@@ -430,7 +430,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     private func callLoadEmbedAnalytics(){
         
         if (false == loadedapicalled){
-            let embedViews = CustomerGlu.entryPointdata.filter {
+            let embedViews = CustomerGlu.getInstance.entryPointdata.filter {
                 $0.mobile.container.type == "EMBEDDED" && $0.mobile.container.bannerId == self.embedId ?? ""
             }
             

@@ -37,24 +37,24 @@ public class CGConnfigData: Codable {
 public class CGMobileData: Codable {
     
     public var androidStatusBarColor: String?
-    public var disableSdk: Bool? = CustomerGlu.sdk_disable
-    public var enableAnalytics: Bool? = CustomerGlu.analyticsEvent
-    public var enableEntryPoints: Bool? = CustomerGlu.isEntryPointEnabled
-    public var errorCodeForDomain: Int? = CustomerGlu.doamincode
-    public var errorMessageForDomain: String? = CustomerGlu.textMsg
+    public var disableSdk: Bool? = false
+    public var enableAnalytics: Bool? = CustomerGlu.getInstance.analyticsEvent
+    public var enableEntryPoints: Bool? = CustomerGlu.getInstance.isEntryPointEnabled
+    public var errorCodeForDomain: Int? = CustomerGlu.getInstance.doamincode
+    public var errorMessageForDomain: String? = CustomerGlu.getInstance.textMsg
     public var iosSafeArea: CGIosSafeArea? = CGIosSafeArea()
-    public var loadScreenColor: String? = CustomerGlu.defaultBGCollor.hexString
-    public var loaderColor: String? = CustomerGlu.arrColor[0].hexString
-    public var whiteListedDomains: [String]? = CustomerGlu.whiteListedDomains
-    public var testUserIds: [String]? = CustomerGlu.testUsers
+    public var loadScreenColor: String? = CustomerGlu.getInstance.defaultBGCollor.hexString
+    public var loaderColor: String? = CustomerGlu.getInstance.arrColor[0].hexString
+    public var whiteListedDomains: [String]? = CustomerGlu.getInstance.whiteListedDomains
+    public var testUserIds: [String]? = CustomerGlu.getInstance.testUsers
     public var secretKey: String? = ""
     public var enableSentry: Bool? = false
     public var forceUserRegistration: Bool? = false
     public var allowUserRegistration: Bool? = false
-    public var enableDarkMode: Bool? = CustomerGlu.enableDarkMode
-    public var listenToSystemDarkLightMode: Bool? = CustomerGlu.listenToSystemDarkMode
-    public var lightBackground: String? = CustomerGlu.lightBackground.hexString
-    public var darkBackground: String? = CustomerGlu.darkBackground.hexString
+    public var enableDarkMode: Bool? = CustomerGlu.getInstance.enableDarkMode
+    public var listenToSystemDarkLightMode: Bool? = CustomerGlu.getInstance.listenToSystemDarkMode
+    public var lightBackground: String? = CustomerGlu.getInstance.lightBackground.hexString
+    public var darkBackground: String? = CustomerGlu.getInstance.darkBackground.hexString
     public var loaderConfig: CGLoaderConfig? = CGLoaderConfig()
     public var androidStatusBarLightColor: String?
     public var androidStatusBarDarkColor: String?
@@ -78,27 +78,27 @@ public class CGMobileData: Codable {
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        self.disableSdk = try container.decodeIfPresent(Bool.self, forKey: .disableSdk) ?? CustomerGlu.sdk_disable
-        self.enableAnalytics = try container.decodeIfPresent(Bool.self, forKey: .enableAnalytics) ?? CustomerGlu.analyticsEvent
-        self.enableEntryPoints = try container.decodeIfPresent(Bool.self, forKey: .enableEntryPoints) ?? CustomerGlu.isEntryPointEnabled
-        self.errorCodeForDomain = try container.decodeIfPresent(Int.self, forKey: .errorCodeForDomain) ?? CustomerGlu.doamincode
-        self.errorMessageForDomain = try container.decodeIfPresent(String.self, forKey: .errorMessageForDomain) ?? CustomerGlu.textMsg
+        self.disableSdk = try container.decodeIfPresent(Bool.self, forKey: .disableSdk) ?? CustomerGlu.getInstance.sdk_disable
+        self.enableAnalytics = try container.decodeIfPresent(Bool.self, forKey: .enableAnalytics) ?? CustomerGlu.getInstance.analyticsEvent
+        self.enableEntryPoints = try container.decodeIfPresent(Bool.self, forKey: .enableEntryPoints) ?? CustomerGlu.getInstance.isEntryPointEnabled
+        self.errorCodeForDomain = try container.decodeIfPresent(Int.self, forKey: .errorCodeForDomain) ?? CustomerGlu.getInstance.doamincode
+        self.errorMessageForDomain = try container.decodeIfPresent(String.self, forKey: .errorMessageForDomain) ?? CustomerGlu.getInstance.textMsg
         self.iosSafeArea = try container.decodeIfPresent(CGIosSafeArea.self, forKey: .iosSafeArea) ?? CGIosSafeArea()
-        self.loadScreenColor = try container.decodeIfPresent(String.self, forKey: .loadScreenColor) ?? CustomerGlu.defaultBGCollor.hexString
-        self.loaderColor = try container.decodeIfPresent(String.self, forKey: .loaderColor) ?? CustomerGlu.arrColor[0].hexString
+        self.loadScreenColor = try container.decodeIfPresent(String.self, forKey: .loadScreenColor) ?? CustomerGlu.getInstance.defaultBGCollor.hexString
+        self.loaderColor = try container.decodeIfPresent(String.self, forKey: .loaderColor) ?? CustomerGlu.getInstance.arrColor[0].hexString
         if let whiteListedDomains = try? container.decodeIfPresent([String].self, forKey: .whiteListedDomains) {
             self.whiteListedDomains = whiteListedDomains
         } else {
-            self.whiteListedDomains = CustomerGlu.whiteListedDomains
+            self.whiteListedDomains = CustomerGlu.getInstance.whiteListedDomains
         }
         self.secretKey = try container.decodeIfPresent(String.self, forKey: .secretKey) ?? ""
         self.enableSentry = try container.decodeIfPresent(Bool.self, forKey: .enableSentry) ?? false
         self.forceUserRegistration = try container.decodeIfPresent(Bool.self, forKey: .forceUserRegistration) ?? false
         self.allowUserRegistration = try container.decodeIfPresent(Bool.self, forKey: .allowUserRegistration) ?? false
-        self.enableDarkMode = try container.decodeIfPresent(Bool.self, forKey: .enableDarkMode) ?? CustomerGlu.enableDarkMode
-        self.listenToSystemDarkLightMode = try container.decodeIfPresent(Bool.self, forKey: .listenToSystemDarkLightMode) ?? CustomerGlu.listenToSystemDarkMode
-        self.lightBackground = try container.decodeIfPresent(String.self, forKey: .lightBackground) ?? CustomerGlu.lightBackground.hexString
-        self.darkBackground = try container.decodeIfPresent(String.self, forKey: .darkBackground) ?? CustomerGlu.darkBackground.hexString
+        self.enableDarkMode = try container.decodeIfPresent(Bool.self, forKey: .enableDarkMode) ?? CustomerGlu.getInstance.enableDarkMode
+        self.listenToSystemDarkLightMode = try container.decodeIfPresent(Bool.self, forKey: .listenToSystemDarkLightMode) ?? CustomerGlu.getInstance.listenToSystemDarkMode
+        self.lightBackground = try container.decodeIfPresent(String.self, forKey: .lightBackground) ?? CustomerGlu.getInstance.lightBackground.hexString
+        self.darkBackground = try container.decodeIfPresent(String.self, forKey: .darkBackground) ?? CustomerGlu.getInstance.darkBackground.hexString
         self.loaderConfig = try container.decodeIfPresent(CGLoaderConfig.self, forKey: .loaderConfig) ?? CGLoaderConfig()
         self.androidStatusBarDarkColor = try container.decodeIfPresent(String.self, forKey: .androidStatusBarDarkColor) ?? ""
         self.androidStatusBarLightColor = try container.decodeIfPresent(String.self, forKey: .androidStatusBarLightColor) ?? ""
@@ -111,7 +111,7 @@ public class CGMobileData: Codable {
         if let testUserIds = try? container.decodeIfPresent([String].self, forKey: .testUserIds) {
             self.testUserIds = testUserIds
         } else {
-            self.testUserIds = CustomerGlu.testUsers
+            self.testUserIds = CustomerGlu.getInstance.testUsers
         }
         self.activityIdList = try container.decodeIfPresent(PlatformList.self, forKey: .activityIdList) ?? PlatformList()
         self.bannerIds = try container.decodeIfPresent(PlatformList.self, forKey: .bannerIds) ?? PlatformList()
@@ -135,23 +135,23 @@ public class CGMobileData: Codable {
 
 public class CGIosSafeArea: Codable {
     
-    public var bottomColor: String? = CustomerGlu.bottomSafeAreaColor.hexString
-    public var bottomHeight: Int? = CustomerGlu.bottomSafeAreaHeight
-    public var topColor: String? = CustomerGlu.topSafeAreaColor.hexString
-    public var topHeight: Int? = CustomerGlu.topSafeAreaHeight
-    public var darkTopColor: String? = CustomerGlu.topSafeAreaColor.hexString
-    public var lightTopColor: String? = CustomerGlu.topSafeAreaColor.hexString
-    public var lightBottomColor: String? = CustomerGlu.bottomSafeAreaColor.hexString
-    public var darkBottomColor: String? = CustomerGlu.bottomSafeAreaColor.hexString
+    public var bottomColor: String? = CustomerGlu.getInstance.bottomSafeAreaColor.hexString
+    public var bottomHeight: Int? = CustomerGlu.getInstance.bottomSafeAreaHeight
+    public var topColor: String? = CustomerGlu.getInstance.topSafeAreaColor.hexString
+    public var topHeight: Int? = CustomerGlu.getInstance.topSafeAreaHeight
+    public var darkTopColor: String? = CustomerGlu.getInstance.topSafeAreaColor.hexString
+    public var lightTopColor: String? = CustomerGlu.getInstance.topSafeAreaColor.hexString
+    public var lightBottomColor: String? = CustomerGlu.getInstance.bottomSafeAreaColor.hexString
+    public var darkBottomColor: String? = CustomerGlu.getInstance.bottomSafeAreaColor.hexString
     public var newBottomHeight: Int? = CGConstants.CG_SAFE_AREA_DEFAULT
     public var newTopHeight: Int? = CGConstants.CG_SAFE_AREA_DEFAULT
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.bottomColor = try container.decodeIfPresent(String.self, forKey: .bottomColor) ?? CustomerGlu.bottomSafeAreaColor.hexString
-        self.bottomHeight = try container.decodeIfPresent(Int.self, forKey: .bottomHeight) ?? CustomerGlu.bottomSafeAreaHeight
-        self.topColor = try container.decodeIfPresent(String.self, forKey: .topColor) ?? CustomerGlu.topSafeAreaColor.hexString
-        self.topHeight = try container.decodeIfPresent(Int.self, forKey: .topHeight) ?? CustomerGlu.topSafeAreaHeight
+        self.bottomColor = try container.decodeIfPresent(String.self, forKey: .bottomColor) ?? CustomerGlu.getInstance.bottomSafeAreaColor.hexString
+        self.bottomHeight = try container.decodeIfPresent(Int.self, forKey: .bottomHeight) ?? CustomerGlu.getInstance.bottomSafeAreaHeight
+        self.topColor = try container.decodeIfPresent(String.self, forKey: .topColor) ?? CustomerGlu.getInstance.topSafeAreaColor.hexString
+        self.topHeight = try container.decodeIfPresent(Int.self, forKey: .topHeight) ?? CustomerGlu.getInstance.topSafeAreaHeight
         self.darkTopColor = try container.decodeIfPresent(String.self, forKey: .darkTopColor) ?? ""
         self.lightTopColor = try container.decodeIfPresent(String.self, forKey: .lightTopColor) ?? ""
         self.lightBottomColor = try container.decodeIfPresent(String.self, forKey: .lightBottomColor) ?? ""

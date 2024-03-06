@@ -10,7 +10,7 @@ import Foundation
 @objc(CGNudgeConfiguration)
 public class CGNudgeConfiguration:NSObject {
     
-    public var closeOnDeepLink = CustomerGlu.auto_close_webview!
+    public var closeOnDeepLink = CustomerGlu.getInstance.auto_close_webview!
     public var opacity = 0.5
     public var layout = ""
     public var url = ""
@@ -23,7 +23,7 @@ public class CGNudgeConfiguration:NSObject {
         
     }
     
-    public init(closeOnDeepLink : Bool = CustomerGlu.auto_close_webview!, opacity : Double = 0.5, layout : String = "",url : String = "", absoluteHeight : Double = 0.0, relativeHeight : Double = 0.0/*, notificationHandler : Bool = false*/) {
+    public init(closeOnDeepLink : Bool = CustomerGlu.getInstance.auto_close_webview!, opacity : Double = 0.5, layout : String = "",url : String = "", absoluteHeight : Double = 0.0, relativeHeight : Double = 0.0/*, notificationHandler : Bool = false*/) {
         
         self.closeOnDeepLink = closeOnDeepLink
         self.opacity = opacity
@@ -38,7 +38,7 @@ public class CGNudgeConfiguration:NSObject {
     /***
        Added isHyperlink support  for Entrypoint s
      */
-    public init(closeOnDeepLink : Bool = CustomerGlu.auto_close_webview!, opacity : Double = 0.5, layout : String = "",url : String = "", absoluteHeight : Double = 0.0, relativeHeight : Double = 0.0,isHyperLink: Bool) {
+    public init(closeOnDeepLink : Bool = CustomerGlu.getInstance.auto_close_webview!, opacity : Double = 0.5, layout : String = "",url : String = "", absoluteHeight : Double = 0.0, relativeHeight : Double = 0.0,isHyperLink: Bool) {
         
         self.closeOnDeepLink = closeOnDeepLink
         self.opacity = opacity

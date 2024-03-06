@@ -11,7 +11,7 @@ import UIKit
 @IBDesignable
 class SpinnerView: UIView {
     
-    var arrColor = CustomerGlu.arrColor
+    var arrColor = CustomerGlu.getInstance.arrColor
     
     override var layer: CAShapeLayer {
         get {

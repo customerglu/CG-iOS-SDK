@@ -183,7 +183,7 @@ class CGPiPExpandedViewController : UIViewController {
                 let nudgeConfiguration = CGNudgeConfiguration()
                 nudgeConfiguration.layout = pipInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
                 nudgeConfiguration.opacity = pipInfo?.mobile.conditions.backgroundOpacity ?? 0.5
-                nudgeConfiguration.closeOnDeepLink = pipInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                nudgeConfiguration.closeOnDeepLink = pipInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.getInstance.auto_close_webview!
                 nudgeConfiguration.relativeHeight = pipInfo?.mobile.content[0].relativeHeight ?? 0.0
                 nudgeConfiguration.absoluteHeight = pipInfo?.mobile.content[0].absoluteHeight ?? 0.0
                 nudgeConfiguration.isHyperLink = true
@@ -205,7 +205,7 @@ class CGPiPExpandedViewController : UIViewController {
                     let nudgeConfiguration = CGNudgeConfiguration()
                     nudgeConfiguration.layout = pipInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
                     nudgeConfiguration.opacity = pipInfo?.mobile.conditions.backgroundOpacity ?? 0.5
-                    nudgeConfiguration.closeOnDeepLink = pipInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                    nudgeConfiguration.closeOnDeepLink = pipInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.getInstance.auto_close_webview!
                     nudgeConfiguration.relativeHeight = pipInfo?.mobile.content[0].relativeHeight ?? 0.0
                     nudgeConfiguration.absoluteHeight = pipInfo?.mobile.content[0].absoluteHeight ?? 0.0
                     
@@ -229,7 +229,7 @@ class CGPiPExpandedViewController : UIViewController {
             let nudgeConfiguration = CGNudgeConfiguration()
             nudgeConfiguration.layout = pipInfo?.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
             nudgeConfiguration.opacity = pipInfo?.mobile.conditions.backgroundOpacity ?? 0.5
-            nudgeConfiguration.closeOnDeepLink = pipInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+            nudgeConfiguration.closeOnDeepLink = pipInfo?.mobile.content[0].closeOnDeepLink ?? CustomerGlu.getInstance.auto_close_webview!
             nudgeConfiguration.relativeHeight = pipInfo?.mobile.content[0].relativeHeight ?? 0.0
             nudgeConfiguration.absoluteHeight = pipInfo?.mobile.content[0].absoluteHeight ?? 0.0
             

@@ -38,7 +38,7 @@ class CGPreloadWKWebViewHelper: NSObject, WKNavigationDelegate {
             }
 
             let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
-            ApplicationManager.encryptUserDefaultKey(str: remoteCertificateData.base64EncodedString(), userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
+            ApplicationManager.shared.encryptUserDefaultKey(str: remoteCertificateData.base64EncodedString(), userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
             completionHandler(.useCredential, URLCredential(trust: serverTrust))
         }
     }

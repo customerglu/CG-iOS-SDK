@@ -31,7 +31,7 @@ public class CGDeeplinkData: NSObject,Codable {
 public class CGDeepContent: NSObject, Codable {
     
     var campaignId: String? = ""
-    var closeOnDeepLink: Bool? = CustomerGlu.auto_close_webview
+    var closeOnDeepLink: Bool? = CustomerGlu.getInstance.auto_close_webview
     var type: String? = ""
     var url: String? = ""
     

@@ -26,7 +26,7 @@ public class CGSentryHelper{
 //        }
     }
     
-    func setupUser(userId: String, clientId: String, cgappplatform: String = CustomerGlu.app_platform, cgsdkversion:String = CustomerGlu.sdk_version){
+    func setupUser(userId: String, clientId: String, cgappplatform: String = CustomerGlu.getInstance.app_platform, cgsdkversion:String = CustomerGlu.getInstance.sdk_version){
 //        if CustomerGlu.sentry_enable! {
 //            let user = User()
 //            user.userId = userId
@@ -42,13 +42,13 @@ public class CGSentryHelper{
     }
     
     func logoutSentryUser(){
-        if CustomerGlu.sentry_enable! {
+        if CustomerGlu.getInstance.sentry_enable! {
 //            SentrySDK.setUser(nil)
         }
     }
     
     func captureExceptionEvent(exceptionLog: String){
-        if CustomerGlu.sentry_enable! {
+        if CustomerGlu.getInstance.sentry_enable! {
 //            let exception =  NSError(domain: exceptionLog, code: 0, userInfo: nil)
 //            SentrySDK.capture(error: exception)
         }

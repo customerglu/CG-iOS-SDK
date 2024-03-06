@@ -42,21 +42,21 @@ public class CGClientTestingViewController: UIViewController {
         let bottomPadding = (window?.safeAreaInsets.bottom) ?? CGSafeAreaConstants.SAFE_AREA_PADDING
         
         if topPadding <= 20 || bottomPadding < 20 {
-            CustomerGlu.topSafeAreaHeight = 20
-            CustomerGlu.bottomSafeAreaHeight = 0
-            CustomerGlu.topSafeAreaColor = UIColor.clear
+            CustomerGlu.getInstance.topSafeAreaHeight = 20
+            CustomerGlu.getInstance.bottomSafeAreaHeight = 0
+            CustomerGlu.getInstance.topSafeAreaColor = UIColor.clear
         }
         
-        topHeight.constant = CGFloat(CustomerGlu.topSafeAreaHeight == -1 ? Int(topPadding) : CustomerGlu.topSafeAreaHeight)
-        bottomHeight.constant = CGFloat(CustomerGlu.bottomSafeAreaHeight == -1 ? Int(bottomPadding) : CustomerGlu.bottomSafeAreaHeight)
+        topHeight.constant = CGFloat(CustomerGlu.getInstance.topSafeAreaHeight == -1 ? Int(topPadding) : CustomerGlu.getInstance.topSafeAreaHeight)
+        bottomHeight.constant = CGFloat(CustomerGlu.getInstance.bottomSafeAreaHeight == -1 ? Int(bottomPadding) : CustomerGlu.getInstance.bottomSafeAreaHeight)
         
         
         if CustomerGlu.getInstance.isDarkModeEnabled(){
-            topSafeArea.backgroundColor = CustomerGlu.topSafeAreaColorDark
-            bottomSafeArea.backgroundColor = CustomerGlu.bottomSafeAreaColorDark
+            topSafeArea.backgroundColor = CustomerGlu.getInstance.topSafeAreaColorDark
+            bottomSafeArea.backgroundColor = CustomerGlu.getInstance.bottomSafeAreaColorDark
         } else {
-            topSafeArea.backgroundColor = CustomerGlu.topSafeAreaColorLight
-            bottomSafeArea.backgroundColor = CustomerGlu.bottomSafeAreaColorLight
+            topSafeArea.backgroundColor = CustomerGlu.getInstance.topSafeAreaColorLight
+            bottomSafeArea.backgroundColor = CustomerGlu.getInstance.bottomSafeAreaColorLight
         }
     }
     

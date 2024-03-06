@@ -25,7 +25,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     public var urlStr = ""
     private var loadedurl = ""
     private var defaultwalleturl = ""
-    public var auto_close_webview = CustomerGlu.auto_close_webview
+    public var auto_close_webview = CustomerGlu.getInstance.auto_close_webview
     var notificationHandler = false
     var ismiddle = false
     var isbottomsheet = false
@@ -56,20 +56,20 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         let bottomPadding = (window?.safeAreaInsets.bottom)!
         
         if topPadding <= 20 || bottomPadding < 20 {
-            CustomerGlu.topSafeAreaHeight = 20
-            CustomerGlu.bottomSafeAreaHeight = 0
+            CustomerGlu.getInstance.topSafeAreaHeight = 20
+            CustomerGlu.getInstance.bottomSafeAreaHeight = 0
             //            CustomerGlu.topSafeAreaColor = UIColor.clear
         }
         
-        topHeight.constant = CGFloat(CustomerGlu.topSafeAreaHeight)
-        bottomHeight.constant = CGFloat(CustomerGlu.bottomSafeAreaHeight)
+        topHeight.constant = CGFloat(CustomerGlu.getInstance.topSafeAreaHeight)
+        bottomHeight.constant = CGFloat(CustomerGlu.getInstance.bottomSafeAreaHeight)
         
         if CustomerGlu.getInstance.isDarkModeEnabled(){
-            topSafeArea.backgroundColor = CustomerGlu.topSafeAreaColorDark
-            bottomSafeArea.backgroundColor = CustomerGlu.bottomSafeAreaColorDark
+            topSafeArea.backgroundColor = CustomerGlu.getInstance.topSafeAreaColorDark
+            bottomSafeArea.backgroundColor = CustomerGlu.getInstance.bottomSafeAreaColorDark
         }else {
-            topSafeArea.backgroundColor = CustomerGlu.topSafeAreaColorLight
-            bottomSafeArea.backgroundColor = CustomerGlu.bottomSafeAreaColorLight
+            topSafeArea.backgroundColor = CustomerGlu.getInstance.topSafeAreaColorLight
+            bottomSafeArea.backgroundColor = CustomerGlu.getInstance.bottomSafeAreaColorLight
         }
         
     }
@@ -91,8 +91,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         } else {
             let topPadding = (window?.safeAreaInsets.top) ?? CGSafeAreaConstants.SAFE_AREA_PADDING
             let bottomPadding = (window?.safeAreaInsets.bottom) ?? CGSafeAreaConstants.SAFE_AREA_PADDING
-            topHeight.constant = CGFloat(CustomerGlu.topSafeAreaHeight == -1 ? Int(topPadding) : CustomerGlu.topSafeAreaHeight)
-            bottomHeight.constant = CGFloat(CustomerGlu.bottomSafeAreaHeight == -1 ? Int(bottomPadding) : CustomerGlu.bottomSafeAreaHeight)
+            topHeight.constant = CGFloat(CustomerGlu.getInstance.topSafeAreaHeight == -1 ? Int(topPadding) : CustomerGlu.getInstance.topSafeAreaHeight)
+            bottomHeight.constant = CGFloat(CustomerGlu.getInstance.bottomSafeAreaHeight == -1 ? Int(bottomPadding) : CustomerGlu.getInstance.bottomSafeAreaHeight)
             rect = CGRect(x: 0, y: topHeight.constant, width: self.view.frame.width, height: self.view.frame.height - (topHeight.constant + bottomHeight.constant))
         }
         
@@ -153,7 +153,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             
             campaign_id = campaign_id.trimSpace()
             
-            ApplicationManager.loadAllCampaignsApi(type: "", value: campaign_id, loadByparams: [:]) { success, campaignsModel in
+            ApplicationManager.shared.loadAllCampaignsApi(type: "", value: campaign_id, loadByparams: [:]) { success, campaignsModel in
                 if success {
                     self.loaderHide()
                     self.defaultwalleturl = String(campaignsModel?.defaultUrl ?? "")
@@ -209,8 +209,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             webView = WKWebView(frame: getframe(), configuration: config) //set your own frame
             y = self.view.frame.midY - 30
         } else {
-            topHeight.constant = CGFloat(CustomerGlu.topSafeAreaHeight)
-            bottomHeight.constant = CGFloat(CustomerGlu.bottomSafeAreaHeight)
+            topHeight.constant = CGFloat(CustomerGlu.getInstance.topSafeAreaHeight)
+            bottomHeight.constant = CGFloat(CustomerGlu.getInstance.bottomSafeAreaHeight)
             webView = WKWebView(frame: getframe(), configuration: config) //set your own frame
             y = self.view.frame.midY - 30
         }
@@ -236,7 +236,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(false)
         if (!(ismiddle || isbottomdefault || isbottomsheet)){
-            self.view.backgroundColor = CustomerGlu.getInstance.checkIsDarkMode() ? CustomerGlu.darkBackground: CustomerGlu.lightBackground
+            self.view.backgroundColor = CustomerGlu.getInstance.checkIsDarkMode() ? CustomerGlu.getInstance.darkBackground: CustomerGlu.getInstance.lightBackground
         }
     }
     
@@ -269,7 +269,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 eventInfo[APIParameterKey.messagekey] = "Invalid campaignId, opening Wallet"
                 NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CG_INVALID_CAMPAIGN_ID").rawValue), object: nil, userInfo: eventInfo)
             }
-            webView.backgroundColor = CustomerGlu.getInstance.checkIsDarkMode() ? CustomerGlu.darkBackground: CustomerGlu.lightBackground
+            webView.backgroundColor = CustomerGlu.getInstance.checkIsDarkMode() ? CustomerGlu.getInstance.darkBackground: CustomerGlu.getInstance.lightBackground
             var darkUrl = url // .replacingOccurrences(of: "dev-constellation.customerglu.com", with: "87f2-2406-7400-54-4114-8cd9-776e-b643-2f25.ngrok-free.app")
             if let nudgeConfiguration = nudgeConfiguration, !nudgeConfiguration.isHyperLink {
                 darkUrl = url + "&darkMode=" + (CustomerGlu.getInstance.checkIsDarkMode() ? "true" : "false")
@@ -338,16 +338,16 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
             
             let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
-            guard let localCertificateData: NSData = ApplicationManager.getLocalCertificateAsNSData() else {
+            guard let localCertificateData: NSData = ApplicationManager.shared.getLocalCertificateAsNSData() else {
                 return
             }
             
             if isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data) {
                 CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
-                ApplicationManager.saveRemoteCertificateAsNSData(remoteCertificateData)
+                ApplicationManager.shared.saveRemoteCertificateAsNSData(remoteCertificateData)
                 completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 return
-            } else if let savedRemoteCertificateAsNSData = ApplicationManager.getRemoteCertificateAsNSData(), savedRemoteCertificateAsNSData.isEqual(to: localCertificateData as Data) {
+            } else if let savedRemoteCertificateAsNSData = ApplicationManager.shared.getRemoteCertificateAsNSData(), savedRemoteCertificateAsNSData.isEqual(to: localCertificateData as Data) {
                 CustomerGlu.getInstance.printlog(cglog: "Certificate matched", isException: false, methodName: "CustomerWebViewController-ssl-delegate", posttoserver: false)
                 completionHandler(.useCredential, URLCredential(trust: serverTrust))
                 return
@@ -514,9 +514,9 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             
             if bodyStruct?.eventName == WebViewsKey.analytics {
                 
-                diagnosticsEventData["analyticsEvent"] = CustomerGlu.analyticsEvent
+                diagnosticsEventData["analyticsEvent"] = CustomerGlu.getInstance.analyticsEvent
 
-                if (true == CustomerGlu.analyticsEvent) {
+                if (true == CustomerGlu.getInstance.analyticsEvent) {
                     let dict = OtherUtils.shared.convertToDictionary(text: (message.body as? String)!)
                     if(dict != nil && dict!.count > 0 && dict?["data"] != nil) {
                         if let dict = dict, let data = dict["data"] as? [String: Any], let eventName = data["event_name"] as? String, eventName.caseInsensitiveCompare("GAME_PLAYED") == .orderedSame {
@@ -664,7 +664,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         // Set your image's URL into here
         let url = URL(string: imageString)!
         data(from: url) { data, response, error in
-            if(true == CustomerGlu.isDebugingEnabled){
+            if(true == CustomerGlu.getInstance.isDebugingEnabled){
                 print(response as Any)
             }
             guard let data = data, error == nil else { return }
@@ -692,7 +692,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                     // Set your image's URL into here
                     let url = URL(string: imageString)!
                     data(from: url) { data, response, error in
-                        if(true == CustomerGlu.isDebugingEnabled){
+                        if(true == CustomerGlu.getInstance.isDebugingEnabled){
                             print(response as Any)
                         }
                         guard let data = data, error == nil else { return }
@@ -723,7 +723,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     
     private func postAnalyticsEventForWebView(isopenevent:Bool,dismissaction:String) {
-        if (false == CustomerGlu.analyticsEvent) {
+        if (false == CustomerGlu.getInstance.analyticsEvent) {
             return
         }
         var eventInfo = [String: Any]()
@@ -774,7 +774,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         webview_content[APIParameterKey.relative_height] = relative_height
         eventInfo[APIParameterKey.webview_content] = webview_content
         
-        ApplicationManager.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: campaign_id, broadcastEventData: false) { success, _ in
+        ApplicationManager.shared.sendAnalyticsEvent(eventNudge: eventInfo, campaignId: campaign_id, broadcastEventData: false) { success, _ in
             if success {
                 CustomerGlu.getInstance.printlog(cglog: String(success), isException: false, methodName: "WebView-postAnalyticsEventForWebView", posttoserver: false)
             } else {

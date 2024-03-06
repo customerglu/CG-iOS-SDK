@@ -89,7 +89,7 @@ class OtherUtils {
             campaignIsValid = campaignValidateLogic(campaignId: campaignId)
             innerCompletion(campaignIsValid)
         }else{
-            ApplicationManager.openWalletApi { success, response in
+            ApplicationManager.shared.openWalletApi { success, response in
                 if success{
                     if let campaignModel = response{
                         CustomerGlu.campaignsAvailable = campaignModel
@@ -121,7 +121,7 @@ class OtherUtils {
             campaignState = campaignFilterStatus(campaignId: campaignId)
             innerCompletion(campaignState)
         } else {
-            ApplicationManager.openWalletApi { success, response in
+            ApplicationManager.shared.openWalletApi { success, response in
                 if success{
                     if let campaignModel = response{
                         CustomerGlu.campaignsAvailable = campaignModel

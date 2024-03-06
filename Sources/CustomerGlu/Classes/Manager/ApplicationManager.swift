@@ -9,19 +9,21 @@ import Foundation
 import UIKit
 
 class ApplicationManager {
-    public static var baseUrl = "api.customerglu.com/"
-    public static var devbaseUrl = "dev-api.customerglu.com/"
-    public static var streamUrl = "stream.customerglu.com/"
-    public static var eventUrl = "events.customerglu.com/"
-    public static var analyticsUrl = "analytics.customerglu.com/"
-    public static var diagnosticUrl = "diagnostics.customerglu.com/"
-    public static var accessToken: String?
-    public static var operationQueue = OperationQueue()
-    public static var appSessionId = UUID().uuidString
-    public static let userDefaults = UserDefaults.standard
+     static let shared = ApplicationManager()
     
-    public static func openWalletApi(completion: @escaping (Bool, CGCampaignsModel?) -> Void) {
-        if CustomerGlu.sdk_disable! == true {
+    public  var baseUrl = "api.customerglu.com/"
+    public  var devbaseUrl = "dev-api.customerglu.com/"
+    public  var streamUrl = "stream.customerglu.com/"
+    public  var eventUrl = "events.customerglu.com/"
+    public  var analyticsUrl = "analytics.customerglu.com/"
+    public  var diagnosticUrl = "diagnostics.customerglu.com/"
+    public  var accessToken: String?
+    public  var operationQueue = OperationQueue()
+    public  var appSessionId = UUID().uuidString
+    public  let userDefaults = UserDefaults.standard
+    
+    public  func openWalletApi(completion: @escaping (Bool, CGCampaignsModel?) -> Void) {
+        if CustomerGlu.getInstance.sdk_disable! == true {
             return
         }
         var eventData: [String: Any] = [:]
@@ -33,16 +35,16 @@ class ApplicationManager {
 
         }
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_LOAD_CAMPAIGN_START, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
-        APIManager.getWalletRewards(queryParameters: [:]) { result in
+        APIManager.shared.getWalletRewards(queryParameters: [:]) { result in
             switch result {
             case .success(let response):
                 // Save this - To open / not open wallet incase of failure / invalid campaignId in loadCampaignById
                 CustomerGlu.getInstance.setCampaignsModel(response)
-                CustomerGlu.allCampaignsIds = response.campaigns?.compactMap { $0.campaignId } ?? []
+                CustomerGlu.getInstance.allCampaignsIds = response.campaigns?.compactMap { $0.campaignId } ?? []
                 CustomerGlu.campaignsAvailable = response
                 let responseCampaignIds = response.campaigns?.compactMap { $0.campaignId }.joined(separator: ", ")
                 if let allCampaignAsString = responseCampaignIds {
-                    ApplicationManager.encryptUserDefaultKey(str: allCampaignAsString, userdefaultKey: CGConstants.allCampaignsIdsAsString)
+                    ApplicationManager.shared.encryptUserDefaultKey(str: allCampaignAsString, userdefaultKey: CGConstants.allCampaignsIdsAsString)
                 }
                 
                 completion(true, response)
@@ -55,12 +57,12 @@ class ApplicationManager {
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_LOAD_CAMPAIGN_END, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
     }
     
-    static func encryptUserDefaultKey(str: String, userdefaultKey: String) {
+     func encryptUserDefaultKey(str: String, userdefaultKey: String) {
         UserDefaults.standard.set(EncryptDecrypt.shared.encryptText(str: str), forKey: userdefaultKey)
     }
     
-    public static func loadAllCampaignsApi(type: String, value: String, loadByparams: NSDictionary, completion: @escaping (Bool, CGCampaignsModel?) -> Void) {
-        if CustomerGlu.sdk_disable! == true {
+    public  func loadAllCampaignsApi(type: String, value: String, loadByparams: NSDictionary, completion: @escaping (Bool, CGCampaignsModel?) -> Void) {
+        if CustomerGlu.getInstance.sdk_disable! == true {
             return
         }
         
@@ -74,7 +76,7 @@ class ApplicationManager {
             }
         }
         
-        APIManager.getWalletRewards(queryParameters: params as NSDictionary) { result in
+        APIManager.shared.getWalletRewards(queryParameters: params as NSDictionary) { result in
             switch result {
             case .success(let response):
                 // Save this - To open / not open wallet incase of failure / invalid campaignId in loadCampaignById
@@ -88,7 +90,7 @@ class ApplicationManager {
         }
     }
     
-    public static func getLocalCertificateAsNSData() -> NSData? {
+    public  func getLocalCertificateAsNSData() -> NSData? {
         let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
         if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
             return NSData(data: data)
@@ -97,7 +99,7 @@ class ApplicationManager {
         return nil
     }
     
-    public static func getRemoteCertificateAsNSData() -> NSData? {
+    public  func getRemoteCertificateAsNSData() -> NSData? {
         let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.remoteSSLCertificateAsStringKey)
         if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
             return NSData(data: data)
@@ -106,12 +108,12 @@ class ApplicationManager {
         return nil
     }
     
-    public static func saveRemoteCertificateAsNSData(_ nsData: NSData) {
+    public  func saveRemoteCertificateAsNSData(_ nsData: NSData) {
         let base64String = nsData.base64EncodedString()
-        ApplicationManager.encryptUserDefaultKey(str: base64String, userdefaultKey: CGConstants.remoteSSLCertificateAsStringKey)
+        ApplicationManager.shared.encryptUserDefaultKey(str: base64String, userdefaultKey: CGConstants.remoteSSLCertificateAsStringKey)
     }
     
-    public static func getLocalCertificate() -> SecCertificate? {
+    public  func getLocalCertificate() -> SecCertificate? {
         let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
         if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
             let certificateData = NSData(data: data)
@@ -121,7 +123,7 @@ class ApplicationManager {
         return nil
     }
     
-    public static func downloadCertificateFile(from urlString: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    public  func downloadCertificateFile(from urlString: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
             return
@@ -140,7 +142,7 @@ class ApplicationManager {
 
             let data = NSData(contentsOf: tempLocalURL)
             if let data = data {
-                ApplicationManager.encryptUserDefaultKey(str: data.base64EncodedString(), userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
+                ApplicationManager.shared.encryptUserDefaultKey(str: data.base64EncodedString(), userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
                 completion(.success(()))
             } else {
                 completion(.failure(NSError(domain: "Invalid data conversion", code: 0, userInfo: nil)))
@@ -150,8 +152,8 @@ class ApplicationManager {
         task.resume()
     }
     
-    public static func sendEventData(eventName: String, eventProperties: [String: Any]?, completion: @escaping (Bool, CGAddCartModel?) -> Void) {
-        if CustomerGlu.sdk_disable! == true {
+    public  func sendEventData(eventName: String, eventProperties: [String: Any]?, completion: @escaping (Bool, CGAddCartModel?) -> Void) {
+        if CustomerGlu.getInstance.sdk_disable! == true {
             return
         }
         let event_id = UUID().uuidString
@@ -165,7 +167,7 @@ class ApplicationManager {
             APIParameterKey.timestamp: timestamp,
             APIParameterKey.event_properties: eventProperties ?? [String: Any]()] as [String: Any]
         
-        APIManager.addToCart(queryParameters: eventData as NSDictionary) { result in
+        APIManager.shared.addToCart(queryParameters: eventData as NSDictionary) { result in
             switch result {
             case .success(let response):
                 completion(true, response)
@@ -177,18 +179,18 @@ class ApplicationManager {
         }
     }
     
-    public static func callCrashReport(cglog: String = "", isException: Bool = false, methodName: String = "", user_id: String) {
+    public  func callCrashReport(cglog: String = "", isException: Bool = false, methodName: String = "", user_id: String) {
         if user_id.count < 0 {
             return
         }
-        if CustomerGlu.sdk_disable != true {
+        if CustomerGlu.getInstance.sdk_disable != true {
             CGSentryHelper.shared.captureExceptionEvent(exceptionLog: cglog)
         }
         // Removed the crash event old implementation
 
     }
     
-    public static func sendEventsDiagnostics(eventLogType: String,eventName: String,eventMeta:[String:Any],completion: @escaping(Bool, CGAddCartModel?) -> Void){
+    public  func sendEventsDiagnostics(eventLogType: String,eventName: String,eventMeta:[String:Any],completion: @escaping(Bool, CGAddCartModel?) -> Void){
         var params: [String: Any] = [:]
         
         let deviceModel = UIDevice.current.model
@@ -205,7 +207,7 @@ class ApplicationManager {
         params["event_id"] = eventId
         params["event_name"] = eventName
         params["log_type"] = eventLogType
-        params["sdk_version"] = CustomerGlu.sdk_version
+        params["sdk_version"] = CustomerGlu.getInstance.sdk_version
         params["session_time"] = timestamp
         params["timestamp"] = timestamp
         params["type"] = "SYSTEM"
@@ -219,7 +221,7 @@ class ApplicationManager {
         platformDetails["os_version"] = systemVersion
         params["platformDetails"] = platformDetails
         
-        APIManager.sendEventsDiagnostics(queryParameters:params as NSDictionary, completion:{ result in
+        APIManager.shared.sendEventsDiagnostics(queryParameters:params as NSDictionary, completion:{ result in
             switch(result) {
             case .success(let response):
                 completion(true, response)
@@ -230,12 +232,12 @@ class ApplicationManager {
         })
     }
     
-    private static func crashReport(parameters: NSDictionary, completion: @escaping (Bool, CGAddCartModel?) -> Void) {
-        if CustomerGlu.sdk_disable! == true {
+    private  func crashReport(parameters: NSDictionary, completion: @escaping (Bool, CGAddCartModel?) -> Void) {
+        if CustomerGlu.getInstance.sdk_disable! == true {
             
             return
         }
-        APIManager.crashReport(queryParameters: parameters) { result in
+        APIManager.shared.crashReport(queryParameters: parameters) { result in
             switch result {
             case .success(let response):
                 completion(true, response)
@@ -247,7 +249,7 @@ class ApplicationManager {
         }
     }
     
-    public static func doValidateToken() -> Bool {
+    public  func doValidateToken() -> Bool {
         if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
             let arr = JWTDecode.shared.decode(jwtToken: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN))
             let expTime = Date(timeIntervalSince1970: (arr["exp"] as? Double ?? 0))
@@ -261,7 +263,7 @@ class ApplicationManager {
         return false
     }
     
-    public static func isAnonymousUesr() -> Bool {
+    public  func isAnonymousUesr() -> Bool {
         if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
             let arr = JWTDecode.shared.decode(jwtToken: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN))
             let userId = arr[APIParameterKey.userId] as? String
@@ -274,8 +276,8 @@ class ApplicationManager {
         return false
     }
     
-    public static func sendAnalyticsEvent(eventNudge: [String: Any], campaignId: String, broadcastEventData: Bool ,completion: @escaping (Bool, CGAddCartModel?) -> Void) {
-        if CustomerGlu.sdk_disable! == true {
+    public  func sendAnalyticsEvent(eventNudge: [String: Any], campaignId: String, broadcastEventData: Bool ,completion: @escaping (Bool, CGAddCartModel?) -> Void) {
+        if CustomerGlu.getInstance.sdk_disable! == true {
             return
         }
         
@@ -284,14 +286,14 @@ class ApplicationManager {
         eventInfo[APIParameterKey.analytics_version] = APIParameterKey.analytics_version_value
         eventInfo[APIParameterKey.event_id] = UUID().uuidString
         eventInfo[APIParameterKey.user_id] = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
-        eventInfo[APIParameterKey.timestamp] = ApplicationManager.fetchTimeStamp(dateFormat: CGConstants.DATE_FORMAT)
+        eventInfo[APIParameterKey.timestamp] = ApplicationManager.shared.fetchTimeStamp(dateFormat: CGConstants.DATE_FORMAT)
         eventInfo[APIParameterKey.type] = "track"
         
         var platform_details = [String: String]()
         platform_details[APIParameterKey.device_type] = "MOBILE"
         platform_details[APIParameterKey.os] = "IOS"
-        platform_details[APIParameterKey.app_platform] = CustomerGlu.app_platform
-        platform_details[APIParameterKey.sdk_version] = CustomerGlu.sdk_version
+        platform_details[APIParameterKey.app_platform] = CustomerGlu.getInstance.app_platform
+        platform_details[APIParameterKey.sdk_version] = CustomerGlu.getInstance.sdk_version
         eventInfo[APIParameterKey.platform_details] = platform_details
         eventInfo[APIParameterKey.campaign_id] = campaignId
         
@@ -300,7 +302,7 @@ class ApplicationManager {
         }
         
         
-        APIManager.sendAnalyticsEvent(queryParameters: eventInfo as NSDictionary) { result in
+        APIManager.shared.sendAnalyticsEvent(queryParameters: eventInfo as NSDictionary) { result in
             switch result {
             case .success(let response):
                 completion(true, response)
@@ -313,7 +315,7 @@ class ApplicationManager {
     }
     
     
-    public static func fetchTimeStamp(dateFormat: String) -> String {
+    public  func fetchTimeStamp(dateFormat: String) -> String {
         let date = Date()
         let dateformatter = DateFormatter()
         dateformatter.dateFormat = dateFormat

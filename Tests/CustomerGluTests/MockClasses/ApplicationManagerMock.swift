@@ -18,7 +18,7 @@ class ApplicationManagerMock: ApplicationManager {
         apiCalled = false
         self.parent = parent
         
-        APIManager.crashReport(queryParameters: NSDictionary()) { result in
+        APIManager.shared.crashReport(queryParameters: NSDictionary()) { result in
             print("result")
         }
     }

@@ -11,7 +11,7 @@ import UIKit
 public class LoadAllCampaignsViewController: UIViewController {
     
     public static let storyboardVC = StoryboardType.main.instantiate(vcType: LoadAllCampaignsViewController.self)
-    public var auto_close_webview = CustomerGlu.auto_close_webview
+    public var auto_close_webview = CustomerGlu.getInstance.auto_close_webview
     
     @IBOutlet weak var topSafeArea: UIView!
     @IBOutlet weak var bottomSafeArea: UIView!
@@ -20,7 +20,7 @@ public class LoadAllCampaignsViewController: UIViewController {
     
     @IBOutlet weak var tblRewardList: UITableView!
     var campaigns: [CGCampaigns] = []
-    var bannerDefaultUrl = CustomerGlu.defaultBannerUrl
+    var bannerDefaultUrl = CustomerGlu.getInstance.defaultBannerUrl
     var loadCampignType = ""
     var loadCampignValue = ""
     var loadByparams = NSDictionary()
@@ -34,20 +34,20 @@ public class LoadAllCampaignsViewController: UIViewController {
         let bottomPadding = (window?.safeAreaInsets.bottom)!
         
         if topPadding <= 20 || bottomPadding < 20 {
-            CustomerGlu.topSafeAreaHeight = 20
-            CustomerGlu.bottomSafeAreaHeight = 0
-            CustomerGlu.topSafeAreaColor = UIColor.clear
+            CustomerGlu.getInstance.topSafeAreaHeight = 20
+            CustomerGlu.getInstance.bottomSafeAreaHeight = 0
+            CustomerGlu.getInstance.topSafeAreaColor = UIColor.clear
         }
         
-        topHeight.constant = CGFloat(CustomerGlu.topSafeAreaHeight)
-        bottomHeight.constant = CGFloat(CustomerGlu.bottomSafeAreaHeight)
+        topHeight.constant = CGFloat(CustomerGlu.getInstance.topSafeAreaHeight)
+        bottomHeight.constant = CGFloat(CustomerGlu.getInstance.bottomSafeAreaHeight)
         
         if CustomerGlu.getInstance.isDarkModeEnabled(){
-            topSafeArea.backgroundColor = CustomerGlu.topSafeAreaColorDark
-            bottomSafeArea.backgroundColor = CustomerGlu.bottomSafeAreaColorDark
+            topSafeArea.backgroundColor = CustomerGlu.getInstance.topSafeAreaColorDark
+            bottomSafeArea.backgroundColor = CustomerGlu.getInstance.bottomSafeAreaColorDark
         }else {
-            topSafeArea.backgroundColor = CustomerGlu.topSafeAreaColorLight
-            bottomSafeArea.backgroundColor = CustomerGlu.bottomSafeAreaColorLight
+            topSafeArea.backgroundColor = CustomerGlu.getInstance.topSafeAreaColorLight
+            bottomSafeArea.backgroundColor = CustomerGlu.getInstance.bottomSafeAreaColorLight
         }
     }
     
@@ -57,7 +57,7 @@ public class LoadAllCampaignsViewController: UIViewController {
         
         self.configureSafeAreaForDevices()
         
-        if ApplicationManager.doValidateToken() == true {
+        if ApplicationManager.shared.doValidateToken() == true {
             getCampaign()
         } else {
             loadAllCampaignsViewModel.updateProfile { success in
@@ -81,7 +81,7 @@ public class LoadAllCampaignsViewController: UIViewController {
     func getCampaign() {
         CustomerGlu.getInstance.loaderShow(withcoordinate: self.view.frame.midX, y: self.view.frame.midY)
         
-        ApplicationManager.loadAllCampaignsApi(type: loadCampignType, value: loadCampignValue, loadByparams: loadByparams) { success, campaignsModel in
+        ApplicationManager.shared.loadAllCampaignsApi(type: loadCampignType, value: loadCampignValue, loadByparams: loadByparams) { success, campaignsModel in
             if success {
                 CustomerGlu.getInstance.loaderHide()
                 self.campaigns = (campaignsModel?.campaigns)!

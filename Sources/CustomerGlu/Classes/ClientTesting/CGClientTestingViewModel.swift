@@ -186,11 +186,11 @@ public class CGClientTestingViewModel: NSObject {
 
         var queryParameters: [String: Any] = [:]
         queryParameters[APIParameterKey.userId] = CustomerGlu.getInstance.cgUserData.userId
-        if CustomerGlu.fcm_apn != "fcm" {
+        if CustomerGlu.getInstance.fcm_apn != "fcm" {
             queryParameters["flag"] = "staging"
         }
         
-        APIManager.nudgeIntegration(queryParameters: queryParameters as NSDictionary) {[weak self] result in
+        APIManager.shared.nudgeIntegration(queryParameters: queryParameters as NSDictionary) {[weak self] result in
             switch result {
             case .success(_):
                 let event: CGClientTestingRowItem = .nudgeHandling(status: .pending)
@@ -364,7 +364,7 @@ public class CGClientTestingViewModel: NSObject {
         guard let userId = CustomerGlu.getInstance.cgUserData.userId else { return }
         let queryParameters: [String: Any] = [APIParameterKey.userId: userId]
         
-        APIManager.onboardingSDKNotificationConfig(queryParameters: queryParameters as NSDictionary) { result in
+        APIManager.shared.onboardingSDKNotificationConfig(queryParameters: queryParameters as NSDictionary) { result in
             switch result {
             case .success(let response):
                 self.clientTestingModel = response
@@ -464,7 +464,7 @@ public class CGClientTestingViewModel: NSObject {
         }
         queryParameters["data"] = dataArray
         
-        APIManager.onboardingSDKTestSteps(queryParameters: queryParameters as NSDictionary) { result in
+        APIManager.shared.onboardingSDKTestSteps(queryParameters: queryParameters as NSDictionary) { result in
             switch result {
             case .success(let response):
                 self.testStepsResponseModel = response

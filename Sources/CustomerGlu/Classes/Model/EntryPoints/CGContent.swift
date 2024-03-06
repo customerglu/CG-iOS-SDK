@@ -17,7 +17,7 @@ public struct CGContent: Codable{
     
     var relativeHeight : Double? = 0.0
     var absoluteHeight : Double? = 0.0
-    var closeOnDeepLink : Bool? = CustomerGlu.auto_close_webview!
+    var closeOnDeepLink : Bool? = CustomerGlu.getInstance.auto_close_webview!
     var action: CGAction!
     
     /**
