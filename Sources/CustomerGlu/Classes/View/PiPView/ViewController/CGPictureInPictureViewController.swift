@@ -198,7 +198,6 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
        }else{
             performCTAAction()
            dismissPiPButton(shouldCallEvent: true)
-           
        }
      }
     
@@ -348,7 +347,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
             self.window.dismiss()
             CustomerGlu.getInstance.activePIPView = nil
             if shouldCallEvent {
-                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_DISMISS, entry_point_id: pipInfo.mobile._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: pipInfo.mobile._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
             }
         }
     }
@@ -359,7 +358,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
             CGPIPHelper.shared.setDailyRefresh()
             if (!CustomerGlu.getInstance.isPiPViewLoadedEventPushed) {
                 CustomerGlu.getInstance.isPiPViewLoadedEventPushed = true
-                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_LOAD, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_LOAD, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
             }
         })
     }
