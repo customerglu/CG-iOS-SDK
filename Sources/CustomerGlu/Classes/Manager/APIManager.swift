@@ -166,6 +166,59 @@ class APIManager {
     // Singleton Instance
     static let shared = APIManager(session: .shared)
     
+    
+    func fetchDataFromURL(_ urlString: String, completion: @escaping (Data?, Error?) -> Void) {
+      guard let url = URL(string: urlString) else {
+        completion(nil, NSError(domain: "InvalidURL", code: 1, userInfo: nil))
+        return
+      }
+
+      var urlRequest = URLRequest(url: url)
+        
+        // Common Headers
+        urlRequest.setValue(ContentType.json.rawValue, forHTTPHeaderField: HTTPHeaderField.contentType.rawValue)
+        urlRequest.setValue(CustomerGlu.sdkWriteKey, forHTTPHeaderField: HTTPHeaderField.xapikey.rawValue)
+        urlRequest.setValue("ios", forHTTPHeaderField: HTTPHeaderField.platform.rawValue)
+        urlRequest.setValue(CustomerGlu.getInstance.isDebugingEnabled.description, forHTTPHeaderField: HTTPHeaderField.sandbox.rawValue)
+        urlRequest.setValue(APIParameterKey.cgsdkversionvalue, forHTTPHeaderField: HTTPHeaderField.cgsdkversionkey.rawValue)
+        
+        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
+            urlRequest.setValue("\(APIParameterKey.bearer) " + CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN), forHTTPHeaderField: HTTPHeaderField.authorization.rawValue)
+            urlRequest.setValue("\(APIParameterKey.bearer) " + CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN), forHTTPHeaderField: HTTPHeaderField.xgluauth.rawValue)
+        }
+      urlRequest.httpMethod = "GET"
+
+      let session = URLSession.shared
+
+      let dataTask = session.dataTask(with: urlRequest) { data, response, error in
+        //  guard let data = data, error == nil else { return }
+          if let error = error {
+                completion(nil, error)
+              } else if let data = data {
+                // Attempt to decode JSON data
+                do {
+                    if let jsonString = String(data: data, encoding: .utf8) {
+                              print(jsonString)
+                          } else {
+                              print("Failed to convert data to string")
+                          }
+//                  let decoder = JSONDecoder()
+//                    let decodedData = try decoder.decode([CGAppConfig].self, from: data)
+                  completion(data, nil)
+                } catch {
+                  completion(nil, NSError(domain: "JSONDecodingError", code: 3, userInfo: nil))
+                }
+              } else {
+                completion(nil, NSError(domain: "UnknownError", code: 2, userInfo: nil))
+              }
+      }
+
+      dataTask.resume()
+    }
+    
+    
+    
+    
     private  func performRequest(withData requestData: CGRequestData) {
         
         //Grouped compelete API-call work flow into a DispatchGroup so that it can maintanted the oprational queue for task completion
@@ -413,7 +466,7 @@ class APIManager {
     
     // Recursive Method
     @discardableResult
-     private func cleanJSON(json: Dictionary<String, Any>, isReturn: Bool = false) -> Dictionary<String, Any> {
+     public func cleanJSON(json: Dictionary<String, Any>, isReturn: Bool = false) -> Dictionary<String, Any> {
         
         // Create Local Object to Mutate
         var actualJson = json

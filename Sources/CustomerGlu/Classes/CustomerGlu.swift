@@ -717,25 +717,36 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     @objc internal func getAppConfig(completion: @escaping (Bool) -> Void) {
         
         let eventInfo = [String: String]()
-        
-        
-        APIManager.shared.appConfig(queryParameters: eventInfo as NSDictionary) {[weak self] result in
-            switch result {
-            case .success(let response):
-                if (response.data != nil && response.data?.mobile != nil) {
-                    self?.appconfigdata = (response.data?.mobile)!
-                    self?.updatedAllConfigParam()
-                }
-                completion(true)
-                
-            case .failure(let error):
-                self?.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-getAppConfig", posttoserver: true)
-                completion(false)
+        var url =  "https://api.customerglu.com/client/v1/sdk/config"
+        APIManager.shared.fetchDataFromURL(url){ data, error in
+            if let error = error {
+                print("Error fetching data:", error)
+            } else if let data = data {
+               print(data)
+                // Parse the data here, for example, using JSONDecoder
             }
         }
         
+//
+//        APIManager.shared.appConfig(queryParameters: eventInfo as NSDictionary) {[weak self] result in
+//            switch result {
+//            case .success(let response):
+//                if (response.data != nil && response.data?.mobile != nil) {
+//                    self?.appconfigdata = (response.data?.mobile)!
+//                    self?.updatedAllConfigParam()
+//                }
+//                completion(true)
+//
+//            case .failure(let error):
+//                self?.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-getAppConfig", posttoserver: true)
+//                completion(false)
+//            }
+//        }
+        
         
     }
+    
+    
     func updatedAllConfigParam() -> Void{
         if(self.appconfigdata != nil) {
             if(self.appconfigdata!.disableSdk != nil){
