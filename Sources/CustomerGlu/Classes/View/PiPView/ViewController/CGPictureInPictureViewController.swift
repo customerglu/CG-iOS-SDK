@@ -12,19 +12,19 @@ import AVFoundation
 class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener,CGPiPMovieVideoCallbacks {
     
     func onVideo25Completed() {
-        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_25_COMPLETED, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_25_COMPLETED, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
     }
     func onVideo75Completed() {
-        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_75_COMPLETED, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_75_COMPLETED, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
     }
     
     
     func onVideo50Completed() {
-        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_50_COMPLETED, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_50_COMPLETED, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
     }
     
     func onVideoCompleted() {
-        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_COMPLETED, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_COMPLETED, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
     }
     
    
@@ -202,7 +202,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
      }
     
     func performCTAAction(){
-        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_CTA_CLICK, entry_point_id: pipInfo.mobile._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_CTA_CLICK, entry_point_id: self.pipInfo._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
         if let actionData = pipInfo.mobile.content[0].action, let type = actionData.type {
             
             if type == WebViewsKey.open_deeplink {
@@ -306,9 +306,9 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     
     @objc func didTapOnMute(){
         if pipMediaPlayer.isPlayerMuted(){
-            CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.UNMUTE_PIP_VIDEO, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+            CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.UNMUTE_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
         }else{
-            CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.MUTE_PIP_VIDEO, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+            CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.MUTE_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
         }
         pipMediaPlayer.isPlayerMuted() ? pipMediaPlayer.unmute() : pipMediaPlayer.mute()
         muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
@@ -330,7 +330,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         let currentTime = pipMediaPlayer.player?.currentTime()
         print(currentTime)
         dismissPiPButton()
-        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.EXPAND_PIP_VIDEO, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.EXPAND_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
             CGPIPHelper.shared.setIs25Completed(value: false)
             CGPIPHelper.shared.setIs50Completed(value: false)
@@ -347,7 +347,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
             self.window.dismiss()
             CustomerGlu.getInstance.activePIPView = nil
             if shouldCallEvent {
-                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: pipInfo.mobile._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: self.pipInfo._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
             }
         }
     }
@@ -358,7 +358,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
             CGPIPHelper.shared.setDailyRefresh()
             if (!CustomerGlu.getInstance.isPiPViewLoadedEventPushed) {
                 CustomerGlu.getInstance.isPiPViewLoadedEventPushed = true
-                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_LOAD, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_LOAD, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
             }
         })
     }
