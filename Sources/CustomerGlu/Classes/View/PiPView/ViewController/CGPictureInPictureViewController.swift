@@ -9,7 +9,28 @@ import Foundation
 import UIKit
 import AVFoundation
 
-class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener {
+class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener,CGPiPMovieVideoCallbacks {
+    
+    func onVideo25Completed() {
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_25_COMPLETED, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+    }
+    func onVideo75Completed() {
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_75_COMPLETED, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+    }
+    
+    
+    func onVideo50Completed() {
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_50_COMPLETED, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+    }
+    
+    func onVideoCompleted() {
+        CGPIPHelper.shared.setIs25Completed(value: false)
+        CGPIPHelper.shared.setIs50Completed(value: false)
+        CGPIPHelper.shared.setIs75Completed(value: false)
+
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_COMPLETED, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+    }
+    
    
     let pipInfo: CGData
     let startTime: CMTime?
@@ -103,7 +124,9 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         let topSpace = Int(CustomerGlu.verticalPadding)
         
         pipMediaPlayer.setCGVideoPlayerListener(delegate: self)
-        pipMediaPlayer.setVideoShouldLoop(with: true)
+        pipMediaPlayer.setCGVideoCallbacks(delegate: self)
+        
+        pipMediaPlayer.setVideoShouldLoop(with: pipInfo.mobile.conditions.pip?.loopVideoPIP ?? true)
         
         let pipMoviePlayerHeight = Int(heightPer)
         let pipMoviePlayerWidth = Int(widthPer)
@@ -175,8 +198,101 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     }
     
     @objc func didTapOnMediaPlayer(){
-         launchPiPExpandedView()
+        if ((pipInfo.mobile.conditions.pip?.openExpandedView) != nil && pipInfo.mobile.conditions.pip?.openExpandedView == true){
+            launchPiPExpandedView()
+       }else{
+            performCTAAction()
+           dismissPiPButton(shouldCallEvent: true)
+       }
      }
+    
+    func performCTAAction(){
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_CTA_CLICK, entry_point_id: self.pipInfo._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
+        if let actionData = pipInfo.mobile.content[0].action, let type = actionData.type {
+            
+            if type == WebViewsKey.open_deeplink {
+                
+               
+                
+                //Incase of Handled by CG is true
+                if actionData.isHandledBySDK == true {
+                    guard let url = URL(string: "http://assets.customerglu.com/deeplink-redirect/?redirect=\(actionData.url)" as! String) else { return }
+                    
+                    if #available(iOS 10.0, *) {
+                        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                    } else {
+                        UIApplication.shared.openURL(url)
+                    }
+                }
+                
+                // Converted data for NSNotification.
+                var data: [String: Any]
+                var postdata: [String:Any] = ["eventName":WebViewsKey.open_deeplink,
+                                              "data": ["deepLink": actionData.url]]
+            
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
+                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_DEEPLINK_EVENT").rawValue), object: nil, userInfo: postdata)
+                })
+            } else if type == WebViewsKey.open_weblink {
+                
+                // Hyperlink logic
+                let nudgeConfiguration = CGNudgeConfiguration()
+                nudgeConfiguration.layout = pipInfo.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
+                nudgeConfiguration.opacity = pipInfo.mobile.conditions.backgroundOpacity ?? 0.5
+                nudgeConfiguration.closeOnDeepLink = pipInfo.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                nudgeConfiguration.relativeHeight = pipInfo.mobile.content[0].relativeHeight ?? 0.0
+                nudgeConfiguration.absoluteHeight = pipInfo.mobile.content[0].absoluteHeight ?? 0.0
+                nudgeConfiguration.isHyperLink = true
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
+                    CustomerGlu.getInstance.openURLWithNudgeConfig(url: actionData.url, nudgeConfiguration: nudgeConfiguration)
+                })
+            } else {
+                //Incase of failure / API contract breach
+                // Check to open wallet or not in fallback case
+                let campaignId = pipInfo.mobile.content[0].campaignId
+                guard CustomerGlu.getInstance.checkToOpenWalletOrNot(withCampaignID: campaignId ?? "") else {
+                    return
+                }
+
+                // Opening Campaign using CampaignId from payload
+                if let campaignId = campaignId {
+                    let nudgeConfiguration = CGNudgeConfiguration()
+                    nudgeConfiguration.layout = pipInfo.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
+                    nudgeConfiguration.opacity = pipInfo.mobile.conditions.backgroundOpacity ?? 0.5
+                    nudgeConfiguration.closeOnDeepLink = pipInfo.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                    nudgeConfiguration.relativeHeight = pipInfo.mobile.content[0].relativeHeight ?? 0.0
+                    nudgeConfiguration.absoluteHeight = pipInfo.mobile.content[0].absoluteHeight ?? 0.0
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
+                        CustomerGlu.getInstance.openCampaignById(campaign_id: campaignId, nudgeConfiguration: nudgeConfiguration)
+                    })
+                  
+                   
+                    
+                } else {
+                    //Incase Campaign Id is nil / unavailable
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
+                        CustomerGlu.getInstance.openWallet()
+                    })
+                }
+            }
+        } else {
+            
+            let nudgeConfiguration = CGNudgeConfiguration()
+            nudgeConfiguration.layout = pipInfo.mobile.content[0].openLayout.lowercased() ?? CGConstants.FULL_SCREEN_NOTIFICATION
+            nudgeConfiguration.opacity = pipInfo.mobile.conditions.backgroundOpacity ?? 0.5
+            nudgeConfiguration.closeOnDeepLink = pipInfo.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+            nudgeConfiguration.relativeHeight = pipInfo.mobile.content[0].relativeHeight ?? 0.0
+            nudgeConfiguration.absoluteHeight = pipInfo.mobile.content[0].absoluteHeight ?? 0.0
+            
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
+                CustomerGlu.getInstance.openCampaignById(campaign_id: (self.pipInfo.mobile.content[0].campaignId)!, nudgeConfiguration: nudgeConfiguration)
+            })
+        }
+    }
 
 
     func hidePiPCTAs(){
@@ -194,43 +310,62 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     
     
     @objc func didTapOnMute(){
+        if pipMediaPlayer.isPlayerMuted(){
+            CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.UNMUTE_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        }else{
+            CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.MUTE_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        }
         pipMediaPlayer.isPlayerMuted() ? pipMediaPlayer.unmute() : pipMediaPlayer.mute()
         muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
         muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .selected)
      }
     
     @objc func didTapOnExpand(){
-        launchPiPExpandedView()
+            
+            self.launchPiPExpandedView()
+   
      }
     
     @objc func didTapOnClose(){
-        self.dismissPiPButton(shouldCallEvent: true)
+            
+            self.dismissPiPButton(shouldCallEvent: true)
+        
     }
     
     func launchPiPExpandedView(){
         let pipInfo = self.pipInfo
+        DispatchQueue.main.async() {
+            self.pipMediaPlayer.player?.pause()
+        }
+            
         
-        pipMediaPlayer.player?.pause()
-        let currentTime = pipMediaPlayer.player?.currentTime()
-        
-        dismissPiPButton()
-        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_CLICK, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.EXPAND_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        CGPIPHelper.shared.setIs25Completed(value: false)
+        CGPIPHelper.shared.setIs50Completed(value: false)
+        CGPIPHelper.shared.setIs75Completed(value: false)
+        self.dismissPiPButton()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
-            CustomerGlu.getInstance.showExpandedPiP(pipInfo: pipInfo, currentTime: currentTime)
+            
+          
+            CustomerGlu.getInstance.showExpandedPiP(pipInfo: pipInfo, currentTime: CMTime.zero)
         })
     }
     
     
     public func dismissPiPButton(shouldCallEvent: Bool = false) {
-        if CustomerGlu.getInstance.activePIPView != nil {
-            pipMediaPlayer.pause()
-            self.pipMediaPlayer.unRegisterLooper()
-            self.window.dismiss()
-            CustomerGlu.getInstance.activePIPView = nil
+    //    if CustomerGlu.getInstance.activePIPView != nil {
+         
+                self.window.dismiss()
+                self.pipMediaPlayer.pause()
+                self.pipMediaPlayer.unRegisterLooper()
+                CustomerGlu.getInstance.activePIPView = nil
+                
+            
+    
             if shouldCallEvent {
-                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_DISMISS, entry_point_id: pipInfo.mobile._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: self.pipInfo._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
             }
-        }
+    //    }
     }
 
     func showPlayerCTA() {
@@ -239,7 +374,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
             CGPIPHelper.shared.setDailyRefresh()
             if (!CustomerGlu.getInstance.isPiPViewLoadedEventPushed) {
                 CustomerGlu.getInstance.isPiPViewLoadedEventPushed = true
-                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.ENTRY_POINT_LOAD, entry_point_id: self.pipInfo.mobile._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_LOAD, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
             }
         })
     }
