@@ -23,6 +23,9 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
     }
     
     func onVideoCompleted() {
+        CGPIPHelper.shared.setIs25Completed(value: false)
+        CGPIPHelper.shared.setIs50Completed(value: false)
+        CGPIPHelper.shared.setIs75Completed(value: false)
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_COMPLETED, entry_point_id: self.pipInfo?._id ?? "", entry_point_name: self.pipInfo?.name ?? "",content_campaign_id: self.pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
     }
     
@@ -65,6 +68,7 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
         let screenRect = UIScreen.main.bounds
         screenWidth = screenRect.width
         screenHeight = screenRect.height
+        
         setupVideoPlayer()
 
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_LOAD, entry_point_id: self.pipInfo?._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
@@ -151,19 +155,24 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
     @objc func didTapOnExpand(_ buttton: UIButton){
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.COLLAPSE_PIP_VIDEO, entry_point_id: self.pipInfo?._id ?? "", entry_point_name: self.pipInfo?.name ?? "",content_campaign_id: self.pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
         let pipInfo = pipInfo!
-        
-        movieView?.player?.pause()
-        let currentTime = movieView?.player?.currentTime()
-        dismiss(animated: true) {
-            CGPIPHelper.shared.setIs25Completed(value: false)
-            CGPIPHelper.shared.setIs50Completed(value: false)
-            CustomerGlu.getInstance.displayPiPFromCollapseCTA(with: pipInfo, startTime: CMTime.zero)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5 , execute: {
+            self.movieView?.player?.pause()
+            let currentTime = self.movieView?.player?.currentTime()
+            self.dismiss(animated: true) {
+                CGPIPHelper.shared.setIs25Completed(value: false)
+                CGPIPHelper.shared.setIs50Completed(value: false)
+                CustomerGlu.getInstance.displayPiPFromCollapseCTA(with: pipInfo, startTime: CMTime.zero)
+            }
+                })
         }
-     }
+     
     
     @objc func didTapOnClose(_ buttton: UIButton){
+        
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: self.pipInfo?._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
-        dismiss(animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5 , execute: {
+            self.closePiPExpandedView()
+        })
      }
     
     

@@ -283,6 +283,8 @@ class ApplicationManager {
         
         eventInfo[APIParameterKey.analytics_version] = APIParameterKey.analytics_version_value
         eventInfo[APIParameterKey.event_id] = UUID().uuidString
+        eventInfo[APIParameterKey.session_id] = appSessionId
+
         eventInfo[APIParameterKey.user_id] = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
         eventInfo[APIParameterKey.timestamp] = ApplicationManager.fetchTimeStamp(dateFormat: CGConstants.DATE_FORMAT)
         eventInfo[APIParameterKey.type] = "track"

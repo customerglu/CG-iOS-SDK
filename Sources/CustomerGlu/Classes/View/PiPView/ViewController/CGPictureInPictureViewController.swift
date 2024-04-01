@@ -24,6 +24,10 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     }
     
     func onVideoCompleted() {
+        CGPIPHelper.shared.setIs25Completed(value: false)
+        CGPIPHelper.shared.setIs50Completed(value: false)
+        CGPIPHelper.shared.setIs75Completed(value: false)
+
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_VIDEO_COMPLETED, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
     }
     
@@ -121,7 +125,8 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         
         pipMediaPlayer.setCGVideoPlayerListener(delegate: self)
         pipMediaPlayer.setCGVideoCallbacks(delegate: self)
-        pipMediaPlayer.setVideoShouldLoop(with: true)
+        
+        pipMediaPlayer.setVideoShouldLoop(with: pipInfo.mobile.conditions.pip?.loopVideoPIP ?? true)
         
         let pipMoviePlayerHeight = Int(heightPer)
         let pipMoviePlayerWidth = Int(widthPer)
@@ -316,40 +321,51 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
      }
     
     @objc func didTapOnExpand(){
-        launchPiPExpandedView()
+            
+            self.launchPiPExpandedView()
+   
      }
     
     @objc func didTapOnClose(){
-        self.dismissPiPButton(shouldCallEvent: true)
+            
+            self.dismissPiPButton(shouldCallEvent: true)
+        
     }
     
     func launchPiPExpandedView(){
         let pipInfo = self.pipInfo
-        
-        pipMediaPlayer.player?.pause()
-        let currentTime = pipMediaPlayer.player?.currentTime()
-        print(currentTime)
-        dismissPiPButton()
-        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.EXPAND_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
-            CGPIPHelper.shared.setIs25Completed(value: false)
-            CGPIPHelper.shared.setIs50Completed(value: false)
+        DispatchQueue.main.async() {
+            self.pipMediaPlayer.player?.pause()
+        }
             
+        
+        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.EXPAND_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+        CGPIPHelper.shared.setIs25Completed(value: false)
+        CGPIPHelper.shared.setIs50Completed(value: false)
+        CGPIPHelper.shared.setIs75Completed(value: false)
+        self.dismissPiPButton()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
+            
+          
             CustomerGlu.getInstance.showExpandedPiP(pipInfo: pipInfo, currentTime: CMTime.zero)
         })
     }
     
     
     public func dismissPiPButton(shouldCallEvent: Bool = false) {
-        if CustomerGlu.getInstance.activePIPView != nil {
-            pipMediaPlayer.pause()
-            self.pipMediaPlayer.unRegisterLooper()
-            self.window.dismiss()
-            CustomerGlu.getInstance.activePIPView = nil
+    //    if CustomerGlu.getInstance.activePIPView != nil {
+         
+                self.window.dismiss()
+                self.pipMediaPlayer.pause()
+                self.pipMediaPlayer.unRegisterLooper()
+                CustomerGlu.getInstance.activePIPView = nil
+                
+            
+    
             if shouldCallEvent {
                 CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: self.pipInfo._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
             }
-        }
+    //    }
     }
 
     func showPlayerCTA() {

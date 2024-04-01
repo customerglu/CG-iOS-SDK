@@ -276,6 +276,7 @@ public class CGVideoPlayer: UIView {
             if self.shouldVideoLoop {
                 CGPIPHelper.shared.setIs25Completed(value:false)
                 CGPIPHelper.shared.setIs50Completed(value:false)
+                CGPIPHelper.shared.setIs75Completed(value:false)
                
                 playerItem.seek(to: CMTime.zero, completionHandler: nil)
                 if let player = self.player {

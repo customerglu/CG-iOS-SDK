@@ -1849,7 +1849,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     internal func showExpandedPiP(pipInfo: CGData, currentTime: CMTime?) {
         guard !isShowingExpandedPiP else { return }
-        
         let clientTestingVC = StoryboardType.main.instantiate(vcType: CGPiPExpandedViewController.self)
         clientTestingVC.pipInfo = pipInfo
         clientTestingVC.startTime = currentTime
