@@ -108,6 +108,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     public override func viewDidLoad() {
         super.viewDidLoad()
+       
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(rotated),
                                                name: UIDevice.orientationDidChangeNotification,
@@ -520,6 +521,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                     let dict = OtherUtils.shared.convertToDictionary(text: (message.body as? String)!)
                     if(dict != nil && dict!.count > 0 && dict?["data"] != nil) {
                         if let dict = dict, let data = dict["data"] as? [String: Any], let eventName = data["event_name"] as? String, eventName.caseInsensitiveCompare("GAME_PLAYED") == .orderedSame {
+                            CustomerGlu.getInstance.activescreenname = "CGSCreen"
                             CustomerGlu.getInstance.doLoadCampaignAndEntryPointCall()
                         }
                         

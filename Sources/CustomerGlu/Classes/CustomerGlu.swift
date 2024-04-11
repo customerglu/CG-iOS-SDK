@@ -204,6 +204,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    @objc public func getActiveScreenName() -> String {
+       return activescreenname
+    }
+    
     @objc public func allowAnonymousRegistration(enabled: Bool) {
         CustomerGlu.isAnonymousFlowAllowed = enabled
     }
@@ -2018,7 +2022,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             sendEntryPointsIdLists()
             
             CustomerGlu.getInstance.activescreenname = className
-            
+            print("MyScreen " + CustomerGlu.getInstance.getActiveScreenName())
+
             screenNameLogicForFloatingButton(className: className)
             screenNameLogicForPIPView(className: className)
             
