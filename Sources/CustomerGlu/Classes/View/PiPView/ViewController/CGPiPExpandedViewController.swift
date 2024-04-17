@@ -68,7 +68,7 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
         let screenRect = UIScreen.main.bounds
         screenWidth = screenRect.width
         screenHeight = screenRect.height
-        
+        CustomerGlu.getInstance.setCurrentClassName(className: "CGSCreen")
         setupVideoPlayer()
 
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_LOAD, entry_point_id: self.pipInfo?._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")

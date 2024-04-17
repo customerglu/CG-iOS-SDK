@@ -2008,7 +2008,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func setCurrentClassName(className: String) {
-        
+
         if(popuptimer != nil){
             popuptimer?.invalidate()
             popuptimer = nil
