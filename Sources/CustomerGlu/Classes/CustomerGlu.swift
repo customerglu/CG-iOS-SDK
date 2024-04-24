@@ -139,11 +139,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal  var isPiPViewLoadedEventPushed = false
     weak var diagonsticHelper: CGEventsDiagnosticsHelper? = CGEventsDiagnosticsHelper.shared
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
+    public static var appName: String = ""
+
     
     private override init() {
         super.init()
         migrateUserDefaultKey()
-        
+        setAppANme()
         if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
             if CustomerGlu.isEntryPointEnabled {
                 getEntryPointData()
@@ -182,6 +184,16 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
         }
+    }
+    
+    @objc public func setAppANme(){
+        if let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String {
+            print("App Name: \(appName)")
+            CustomerGlu.appName = appName
+        } else {
+            print("Unable to retrieve app name.")
+        }
+        
     }
     
     internal func getPiPLocalPath()-> String{
@@ -719,7 +731,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         let eventInfo = [String: String]()
         
         
-        APIManager.appConfig(queryParameters: eventInfo as NSDictionary) { result in
+        APIManager.appConfig(queryParameters: ["x-api-key": CustomerGlu.sdkWriteKey]) { result in
             switch result {
             case .success(let response):
                 if (response.data != nil && response.data?.mobile != nil) {

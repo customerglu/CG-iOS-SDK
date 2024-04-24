@@ -14,6 +14,7 @@ private enum HTTPHeaderField: String {
     case contentType = "Content-Type"
     case authorization = "Authorization"
     case xapikey = "x-api-key"
+    case xappname = "x-app-name"
     case platform = "platform"
     case xgluauth = "X-GLU-AUTH"
     case cgsdkversionkey = "cg-sdk-version"
@@ -185,6 +186,7 @@ class APIManager {
         // Common Headers
         urlRequest.setValue(ContentType.json.rawValue, forHTTPHeaderField: HTTPHeaderField.contentType.rawValue)
         urlRequest.setValue(CustomerGlu.sdkWriteKey, forHTTPHeaderField: HTTPHeaderField.xapikey.rawValue)
+        urlRequest.setValue(CustomerGlu.appName, forHTTPHeaderField: HTTPHeaderField.xappname.rawValue)
         urlRequest.setValue("ios", forHTTPHeaderField: HTTPHeaderField.platform.rawValue)
         urlRequest.setValue(CustomerGlu.isDebugingEnabled.description, forHTTPHeaderField: HTTPHeaderField.sandbox.rawValue)
         urlRequest.setValue(APIParameterKey.cgsdkversionvalue, forHTTPHeaderField: HTTPHeaderField.cgsdkversionkey.rawValue)
