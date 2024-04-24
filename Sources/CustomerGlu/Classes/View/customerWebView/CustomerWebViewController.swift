@@ -150,7 +150,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             setupWebViewCustomFrame(url: urlStr)
         } else if iscampignId {
     
-            self.loaderShow(withcoordinate: getframe().midX, y: getframe().midY)
+         //   self.loaderShow(withcoordinate: getframe().midX, y: getframe().midY)
             
             campaign_id = campaign_id.trimSpace()
             
