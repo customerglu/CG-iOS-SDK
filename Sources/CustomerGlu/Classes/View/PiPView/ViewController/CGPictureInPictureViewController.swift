@@ -335,10 +335,10 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     func launchPiPExpandedView(){
         let pipInfo = self.pipInfo
         DispatchQueue.main.async() {
+            self.pipMediaPlayer.mute()
             self.pipMediaPlayer.player?.pause()
         }
             
-        
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.EXPAND_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
         CGPIPHelper.shared.setIs25Completed(value: false)
         CGPIPHelper.shared.setIs50Completed(value: false)
