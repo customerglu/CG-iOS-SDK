@@ -98,6 +98,10 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
     }
               
     @objc func applicationDidBecomeActive(notification: NSNotification) {
+        movieView?.player?.seek(to: CMTime.zero)
+        CGPIPHelper.shared.setIs25Completed(value:false)
+        CGPIPHelper.shared.setIs50Completed(value:false)
+        CGPIPHelper.shared.setIs75Completed(value:false)
         if  movieView?.isHidden == false && movieView?.superview != nil{
            // movieView?.resume()
             if  CustomerGlu.isPIPExpandedViewMuted {
