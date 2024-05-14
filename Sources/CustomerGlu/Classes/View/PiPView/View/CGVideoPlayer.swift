@@ -52,6 +52,7 @@ public class CGVideoPlayer: UIView {
     private var screenTimeBehaviour: CGMediaPlayerScreenTimeBehaviour = .keepSystemIdleBehaviour
     private var isPaused = false
     private var isMuted = false
+    private var isMoveToForeground = true
     private var shouldVideoLoop = false
     var delegate: CGVideoplayerListener?
     var videoListeners: CGPiPMovieVideoCallbacks?
@@ -178,13 +179,27 @@ public class CGVideoPlayer: UIView {
     }
     
     @objc private func appMovedToBackground() {
+        isMoveToForeground = false
         player?.pause()
+        try? AVAudioSession.sharedInstance().setActive(false)
+        print("App moved to background. Player paused. Mute state: %{PUBLIC}@", String(describing: isMuted))
+
     }
     
     @objc private func appMovedToForeground() {
-        if !isPaused {
-            self.checkVideoTime()
-            player?.play()
+        if !isMoveToForeground{
+            isMoveToForeground = false
+            
+            print("App moved to foreground. Player state paused: %{PUBLIC}@, Mute state: %{PUBLIC}@", String(describing: isPaused), String(describing: isMuted))
+            try? AVAudioSession.sharedInstance().setActive(true)
+            try? AVAudioSession.sharedInstance().setCategory(.playback)
+            if !isPaused {
+                self.checkVideoTime()
+                player?.play()
+                player?.isMuted = isMuted
+                print("App moved Player resumed. Current Mute state: %{PUBLIC}@", String(describing: player?.isMuted))
+                
+            }
         }
     }
     
@@ -288,8 +303,8 @@ public class CGVideoPlayer: UIView {
                   return
                 }
                     
-                let duration = firstVideoTrack.timeRange.duration
-                player?.seek(to: duration, toleranceBefore: .zero, toleranceAfter: .zero)
+//                let duration = firstVideoTrack.timeRange.duration
+//                player?.seek(to: duration, toleranceBefore: .zero, toleranceAfter: .zero)
             }
         }
     }

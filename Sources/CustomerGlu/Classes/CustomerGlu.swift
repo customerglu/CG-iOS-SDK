@@ -140,6 +140,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     weak var diagonsticHelper: CGEventsDiagnosticsHelper? = CGEventsDiagnosticsHelper.shared
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     public static var appName: String = ""
+    public static var isPIPExpandedViewMuted: Bool = false
 
     
     private override init() {
