@@ -39,6 +39,7 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
     
     var screenHeight: CGFloat?
     var screenWidth: CGFloat?
+    var isMuted: Bool = true
    
     
     lazy var closeButton: UIButton = {
@@ -68,13 +69,49 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
         let screenRect = UIScreen.main.bounds
         screenWidth = screenRect.width
         screenHeight = screenRect.height
-        CustomerGlu.getInstance.setCurrentClassName(className: "CGSCreen")
         setupVideoPlayer()
-
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationWillResignActive(notification:)),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+              self,
+              selector: #selector(applicationDidBecomeActive(notification:)),
+              name: UIApplication.didBecomeActiveNotification,
+              object: nil)
+      
+        CustomerGlu.getInstance.setCurrentClassName(className: "CGSCreen")
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_LOAD, entry_point_id: self.pipInfo?._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
         
+        
     }
-    
+    @objc func applicationWillResignActive(notification: NSNotification) {
+        if  movieView?.isHidden == false && movieView?.superview != nil{
+        
+                movieView?.mute()
+               // movieView?.pause()
+            //movieView?.unRegisterLooper()
+            
+        }
+    }
+              
+    @objc func applicationDidBecomeActive(notification: NSNotification) {
+        if  movieView?.isHidden == false && movieView?.superview != nil{
+           // movieView?.resume()
+            if  CustomerGlu.isPIPExpandedViewMuted {
+                movieView?.mute()
+            }else{
+                movieView?.unmute()
+            }
+//            (self.isMuted) ? movieView?.mute() : movieView?.unmute()
+
+            muteButton.setImage( (movieView?.isPlayerMuted())! ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
+            muteButton.setImage( (movieView?.isPlayerMuted())! ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .selected)
+            }
+        }
+              
     
     
     func setupVideoPlayer(){
@@ -147,9 +184,22 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
     
     
     @objc func didTapOnMute(_ buttton: UIButton){
-        (movieView?.isPlayerMuted())! ? movieView?.unmute() : movieView?.mute()
-        muteButton.setImage( (movieView?.isPlayerMuted())! ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
-        muteButton.setImage( (movieView?.isPlayerMuted())! ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .selected)
+        
+            
+            (self.movieView?.isPlayerMuted())! ? self.movieView?.unmute() : self.movieView?.mute()
+            self.muteButton.setImage( (self.movieView?.isPlayerMuted())! ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
+            self.muteButton.setImage( (self.movieView?.isPlayerMuted())! ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .selected)
+            if(self.movieView?.isPlayerMuted())! {
+                CustomerGlu.isPIPExpandedViewMuted = true
+            }
+            else{
+                CustomerGlu.isPIPExpandedViewMuted = false
+
+            }
+        
+  
+
+
      }
     
     @objc func didTapOnExpand(_ buttton: UIButton){
@@ -184,8 +234,6 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
         if let actionData = pipInfo?.mobile.content[0].action, let type = actionData.type {
             
             if type == WebViewsKey.open_deeplink {
-                
-               
                 
                 //Incase of Handled by CG is true
                 if actionData.isHandledBySDK == true {
@@ -244,8 +292,6 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                         CustomerGlu.getInstance.openCampaignById(campaign_id: campaignId, nudgeConfiguration: nudgeConfiguration)
                     })
-                  
-                   
                     
                 } else {
                     //Incase Campaign Id is nil / unavailable
@@ -272,6 +318,16 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
         }
         
        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        if (self.movieView != nil) {
+            
+            self.movieView?.pause()
+            self.movieView?.mute()
+            self.movieView?.unRegisterLooper()
+            CustomerGlu.getInstance.activePIPView = nil
+        }
     }
     
     

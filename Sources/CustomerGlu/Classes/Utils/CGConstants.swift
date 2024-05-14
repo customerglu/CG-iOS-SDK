@@ -215,7 +215,7 @@ struct APIParameterKey {
     static let relative_height = "relative_height"
     static let platform_details = "platform_details"
     static let device_type = "device_type"
-    static let os = "os" 
+    static let os = "os"
     static let app_platform = "app_platform"
     static let sdk_version = "sdk_version"
     static let messagekey = "message"
