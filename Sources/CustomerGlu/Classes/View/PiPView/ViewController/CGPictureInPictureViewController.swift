@@ -174,21 +174,20 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
 //              selector: #selector(applicationDidBecomeActive(notification:)),
 //              name: UIApplication.didBecomeActiveNotification,
 //              object: nil)
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(applicationWillResignActive(notification:)),
-//            name: UIApplication.willResignActiveNotification,
-//            object: nil
-//        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationWillResignActive(notification:)),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
         setupPiPCTAs()
     }
     
-//    @objc func applicationWillResignActive(notification: NSNotification) {
-//        if  pipMediaPlayer.isHidden == false && pipMediaPlayer.superview != nil{
-//            pipMediaPlayer.mute()
-//            pipMediaPlayer.pause()
-//        }
-//    }
+    @objc func applicationWillResignActive(notification: NSNotification) {
+      //  if  pipMediaPlayer.isHidden == false && pipMediaPlayer.superview != nil{
+            pipMediaPlayer.player?.seek(to: CMTime.zero)
+        //}
+    }
 
     
        
@@ -348,9 +347,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
      }
     
     @objc func didTapOnExpand(){
-            
             self.launchPiPExpandedView()
-   
      }
     
     @objc func didTapOnClose(){
