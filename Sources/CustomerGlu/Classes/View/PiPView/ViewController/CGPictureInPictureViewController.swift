@@ -81,6 +81,16 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow(note:)), name: UIResponder.keyboardDidShowNotification, object: nil)
     }
     
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        if (self.window != nil && self.pipMediaPlayer != nil) {
+            
+            self.window.dismiss()
+            self.pipMediaPlayer.pause()
+            self.pipMediaPlayer.unRegisterLooper()
+            CustomerGlu.getInstance.activePIPView = nil
+        }
+    }
     override func viewDidAppear(_ animated: Bool) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: { [self] in
             if let pipIsMute = self.pipInfo.mobile.conditions.pip?.muteOnDefaultPIP, pipIsMute {
@@ -159,21 +169,34 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
             pipMediaPlayer.addGestureRecognizer(pipMediaPlayerTapped)
         }
         
-        NotificationCenter.default.addObserver(
-              self,
-              selector: #selector(applicationDidBecomeActive(notification:)),
-              name: UIApplication.didBecomeActiveNotification,
-              object: nil)
-        
+//        NotificationCenter.default.addObserver(
+//              self,
+//              selector: #selector(applicationDidBecomeActive(notification:)),
+//              name: UIApplication.didBecomeActiveNotification,
+//              object: nil)
+//        NotificationCenter.default.addObserver(
+//            self,
+//            selector: #selector(applicationWillResignActive(notification:)),
+//            name: UIApplication.willResignActiveNotification,
+//            object: nil
+//        )
         setupPiPCTAs()
     }
     
+//    @objc func applicationWillResignActive(notification: NSNotification) {
+//        if  pipMediaPlayer.isHidden == false && pipMediaPlayer.superview != nil{
+//            pipMediaPlayer.mute()
+//            pipMediaPlayer.pause()
+//        }
+//    }
+
+    
        
-    @objc func applicationDidBecomeActive(notification: NSNotification) {
-        if  pipMediaPlayer.isHidden == false && pipMediaPlayer.superview != nil{
-            pipMediaPlayer.resume()
-        }
-    }
+//    @objc func applicationDidBecomeActive(notification: NSNotification) {
+//        if  pipMediaPlayer.isHidden == false && pipMediaPlayer.superview != nil{
+//            pipMediaPlayer.resume()
+//        }
+//    }
     
     
     public func setupPiPCTAs(){
@@ -310,12 +333,16 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     
     
     @objc func didTapOnMute(){
+       
+            self.pipMediaPlayer.isPlayerMuted() ? self.pipMediaPlayer.unmute() : self.pipMediaPlayer.mute()
+        
+        
         if pipMediaPlayer.isPlayerMuted(){
             CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.UNMUTE_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
         }else{
             CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.MUTE_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
         }
-        pipMediaPlayer.isPlayerMuted() ? pipMediaPlayer.unmute() : pipMediaPlayer.mute()
+        
         muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
         muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .selected)
      }
@@ -334,19 +361,22 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     
     func launchPiPExpandedView(){
         let pipInfo = self.pipInfo
-        DispatchQueue.main.async() {
-            self.pipMediaPlayer.mute()
-            self.pipMediaPlayer.player?.pause()
-        }
+        self.pipMediaPlayer.mute()
+        muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .normal)
+        muteButton.setImage( pipMediaPlayer.isPlayerMuted() ? UIImage(named: "ic_mute", in: .module, compatibleWith: nil) : UIImage(named: "ic_unmute", in: .module, compatibleWith: nil), for: .selected)
+
+        DispatchQueue.global(qos: .utility).async {
+            CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.EXPAND_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+            CGPIPHelper.shared.setIs25Completed(value: false)
+            CGPIPHelper.shared.setIs50Completed(value: false)
+            CGPIPHelper.shared.setIs75Completed(value: false)
             
-        CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.EXPAND_PIP_VIDEO, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
-        CGPIPHelper.shared.setIs25Completed(value: false)
-        CGPIPHelper.shared.setIs50Completed(value: false)
-        CGPIPHelper.shared.setIs75Completed(value: false)
-        self.dismissPiPButton()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+            self.dismissPiPButton()
+        })
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
             
-          
             CustomerGlu.getInstance.showExpandedPiP(pipInfo: pipInfo, currentTime: CMTime.zero)
         })
     }
@@ -360,10 +390,10 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
                 self.pipMediaPlayer.unRegisterLooper()
                 CustomerGlu.getInstance.activePIPView = nil
                 
-            
-    
             if shouldCallEvent {
-                CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: self.pipInfo._id ?? "", entry_point_name: pipInfo.name ?? "",content_campaign_id: pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+                DispatchQueue.global(qos: .utility).async {
+                    CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
+                }
             }
     //    }
     }
