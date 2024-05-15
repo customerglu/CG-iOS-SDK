@@ -132,6 +132,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var verticalPadding = 0
     public static var horizontalPadding = 0
     public static var floatingHorizontalPadding = 10
+    public static var loadCampaignCount = 0
+    public static var entryPointCount = 0
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
     private var pipVideoLocalPath: String = ""
@@ -147,11 +149,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         super.init()
         migrateUserDefaultKey()
         setAppANme()
-        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
-            if CustomerGlu.isEntryPointEnabled {
-                getEntryPointData()
-            }
-        }
+//        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
+//            if CustomerGlu.isEntryPointEnabled {
+//                getEntryPointData()
+//            }
+//        }
         if !(decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH).isEmpty){
             self.pipVideoLocalPath = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
         }
@@ -753,6 +755,14 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         if(self.appconfigdata != nil) {
             if(self.appconfigdata!.disableSdk != nil){
                 CustomerGlu.getInstance.disableGluSdk(disable: (self.appconfigdata!.disableSdk ?? CustomerGlu.sdk_disable)!)
+            }
+            
+            if(self.appconfigdata!.campaignCount != nil){
+                CustomerGlu.loadCampaignCount = self.appconfigdata!.campaignCount
+            }
+            
+            if(self.appconfigdata!.entryPointCount != nil){
+                CustomerGlu.entryPointCount = self.appconfigdata!.entryPointCount
             }
             
             if self.appconfigdata!.isCrashLoggingEnabled != nil {

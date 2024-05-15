@@ -70,6 +70,8 @@ public class CGMobileData: Codable {
     public var enableMqtt: Bool?
     public var mqttEnabledComponents: [String]?
     public var allowedRetryCount: Int = 1
+    public var campaignCount: Int = 1
+    public var entryPointCount: Int = 1
     public var allowAnonymousRegistration: Bool?
     public var enableSslPinning: Bool?
     public var derCertificate: String?
@@ -123,6 +125,8 @@ public class CGMobileData: Codable {
             self.mqttEnabledComponents = []
         }
         self.allowedRetryCount = try container.decodeIfPresent(Int.self, forKey: .allowedRetryCount) ?? 1
+        self.campaignCount = try container.decodeIfPresent(Int.self, forKey: .campaignCount) ?? 0
+        self.entryPointCount = try container.decodeIfPresent(Int.self, forKey: .entryPointCount) ?? 0
         self.allowAnonymousRegistration = try container.decodeIfPresent(Bool.self, forKey: .allowAnonymousRegistration) ?? false
         self.enableSslPinning = try container.decodeIfPresent(Bool.self, forKey: .enableSslPinning) ?? true
         self.derCertificate = try container.decodeIfPresent(String.self, forKey: .derCertificate) ?? ""
