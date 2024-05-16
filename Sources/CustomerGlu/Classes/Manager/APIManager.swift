@@ -42,6 +42,9 @@ internal class MethodandPath: Codable {
         case .userRegister:
             self.method = "POST"
             self.path = "user/v1/user/sdk?token=true"
+        case .updateUserAttributes:
+            self.method = "POST"
+            self.path = "user/v1/user/sdk/updateuser?token=true"
         case .getWalletRewards:
             self.method = "GET"
             self.path = "reward/v1.1/user"
@@ -93,6 +96,7 @@ internal class MethodandPath: Codable {
 
 enum CGService {
     case userRegister
+    case updateUserAttributes
     case getWalletRewards
     case addToCart
     case crashReport
@@ -348,6 +352,9 @@ class APIManager {
         
     static func userRegister(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
         serviceCall(for: .userRegister, parametersDict: queryParameters,completion: completion)
+    }
+    static func updateUserAttributes(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
+        serviceCall(for: .updateUserAttributes, parametersDict: queryParameters,completion: completion)
     }
     
     static func getWalletRewards(queryParameters: NSDictionary, completion: @escaping (Result<CGCampaignsModel, CGNetworkError>) -> Void) {
