@@ -120,7 +120,6 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
     
     func setupVideoPlayer(){
         movieView = CGVideoPlayer()
-        print("loopVideoExpanded ", pipInfo?.mobile.conditions.pip?.loopVideoExpanded)
         movieView?.setVideoShouldLoop(with: pipInfo?.mobile.conditions.pip?.loopVideoExpanded ?? false)
         movieView?.addAppStateObservers()
         self.view.addSubview(movieView!)
