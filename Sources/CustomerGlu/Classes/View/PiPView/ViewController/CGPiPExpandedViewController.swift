@@ -120,6 +120,8 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
     
     func setupVideoPlayer(){
         movieView = CGVideoPlayer()
+        print("loopVideoExpanded ", pipInfo?.mobile.conditions.pip?.loopVideoExpanded)
+        movieView?.setVideoShouldLoop(with: pipInfo?.mobile.conditions.pip?.loopVideoExpanded ?? false)
         movieView?.addAppStateObservers()
         self.view.addSubview(movieView!)
         
@@ -128,6 +130,7 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
         expandButton.translatesAutoresizingMaskIntoConstraints = false
         closeButton.translatesAutoresizingMaskIntoConstraints  = false
         movieView?.setCGVideoCallbacks(delegate: self)
+
 
         if let pipInfo = pipInfo, let cgButton = pipInfo.mobile.content[0].action.button{
             if let ctaText = cgButton.buttonText{
@@ -178,7 +181,7 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
         muteButton.addTarget(self, action: #selector(didTapOnMute(_:)), for: .touchUpInside)
         expandButton.addTarget(self, action: #selector(didTapOnExpand(_:)), for: .touchUpInside)
         closeButton.addTarget(self, action: #selector(didTapOnClose(_:)), for: .touchUpInside)
-        movieView?.setVideoShouldLoop(with: false)
+    //    movieView?.setVideoShouldLoop(with: false)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1 , execute: {
             self.movieView?.play(with: CustomerGlu.getInstance.getPiPLocalPath(), startTime: self.startTime)
