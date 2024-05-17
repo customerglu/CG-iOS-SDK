@@ -42,11 +42,11 @@ internal class MethodandPath: Codable {
         case .userRegister:
             self.method = "POST"
             self.path = "user/v1/user/sdk/generateusertoken?token=true"
-            self.baseurl = "0a78-2405-201-500e-c85e-bcb7-281a-50a8-77fe.ngrok-free.app/"
+            self.baseurl = "106f-2405-201-500e-c85e-3cb8-fcf9-ddb4-5023.ngrok-free.app/"
         case .updateUserAttributes:
             self.method = "POST"
             self.path = "user/v1/user/sdk/updateuser?token=true"
-            self.baseurl = "0a78-2405-201-500e-c85e-bcb7-281a-50a8-77fe.ngrok-free.app/"
+            self.baseurl = "106f-2405-201-500e-c85e-3cb8-fcf9-ddb4-5023.ngrok-free.app/"
         case .getWalletRewards:
             self.method = "GET"
             self.path = "reward/v1.1/user"
@@ -70,7 +70,7 @@ internal class MethodandPath: Codable {
         case .appconfig:
             self.method = "GET"
             self.path = "client/v1/sdk/config"
-            self.baseurl = "38d4-2409-4051-2ecb-6ca1-ec8d-75ef-d6b3-73be.ngrok-free.app/"
+            self.baseurl = "a799-2401-4900-1c2b-bec7-3c40-391b-4ee3-2fcc.ngrok-free.app/"
         case .cgdeeplink:
             self.method = "GET"
             self.path = "api/v1/wormhole/sdk/url"

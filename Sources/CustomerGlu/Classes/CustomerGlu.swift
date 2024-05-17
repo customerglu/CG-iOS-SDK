@@ -216,7 +216,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     @objc public func enableEntryPoints(enabled: Bool) {
         CustomerGlu.isEntryPointEnabled = enabled
         if CustomerGlu.isEntryPointEnabled && CustomerGlu.entryPointCount > 0{
-            getEntryPointData()
+        //    getEntryPointData()
         }
     }
     
@@ -961,13 +961,20 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 userData.removeValue(forKey: APIParameterKey.userId)
             } else if (t_anonymousIdS.count > 0) {
                 // Pass anonymousId and UserID Both
+                userData[APIParameterKey.userId] = t_userid
                 userData[APIParameterKey.anonymousId] = t_anonymousIdS
+            //    self.encryptUserDefaultKey(str: "false", userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
+
             } else {
+                self.encryptUserDefaultKey(str: "false", userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
                 // Pass only UserID and removed anonymousId
+                userData[APIParameterKey.userId] = t_userid
                 userData.removeValue(forKey: APIParameterKey.anonymousId)
             }
         } else {
             // Pass only UserID and removed anonymousId
+            userData[APIParameterKey.userId] = t_userid
+            self.encryptUserDefaultKey(str: "false", userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
             userData.removeValue(forKey: APIParameterKey.anonymousId)
         }
         
@@ -978,7 +985,15 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
         var needToMigrateUser = false;
         
-        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER) != nil && UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER) as! String == "true"{
+        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER) != nil {
+            let my_anonymous = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
+
+            print("is Anonymous",my_anonymous)
+
+        }
+        
+        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER) != nil &&  CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER) == "true"{
+            print( UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER))
             needToMigrateUser = true;
         }
         
@@ -995,7 +1010,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                         self.encryptUserDefaultKey(str: response.data?.token ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
                         self.encryptUserDefaultKey(str: response.data?.user?.userId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
                         self.encryptUserDefaultKey(str: response.data?.user?.anonymousId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
-                        
+                        if (t_anonymousIdS.count > 0) {
+                            // Pass anonymousId and UserID Both
+                            userData[APIParameterKey.userId] = t_userid
+                            userData[APIParameterKey.anonymousId] = t_anonymousIdS
+                            self.encryptUserDefaultKey(str: "false", userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
+
+                        }
                         self.cgUserData = response.data?.user ??     CGUser()
                         var data: Data?
                         do {
@@ -1109,9 +1130,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             userData[APIParameterKey.deviceId] = uuid
         }
         let user_id = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
-        if user_id.count < 0 {
-            CustomerGlu.getInstance.printlog(cglog: "user_id is nil", isException: false, methodName: "CustomerGlu-updateProfile-2", posttoserver: true)
-            return
+        print(user_id)
+        if user_id.count > 0 {
+            userData[APIParameterKey.userId] = user_id
+
         }
         //user_id.count will always be > 0
         
@@ -1121,7 +1143,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userData[APIParameterKey.deviceName] = getDeviceName()
         userData[APIParameterKey.appVersion] = appVersion
         userData[APIParameterKey.writeKey] = writekey
-        userData[APIParameterKey.userId] = user_id
         userData[APIParameterKey.customAttributes] = customAttributes
         if CustomerGlu.fcm_apn == "fcm" {
             userData[APIParameterKey.apnsDeviceToken] = ""
