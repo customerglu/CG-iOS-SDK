@@ -129,6 +129,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             
         }
         
+        
+        
         contentController.add(self, name: WebViewsKey.callback) //name is the key you want the app to listen to.\
         config.userContentController = contentController
         config.allowsInlineMediaPlayback = true
