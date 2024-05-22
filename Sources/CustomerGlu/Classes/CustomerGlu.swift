@@ -1184,7 +1184,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
 
-    
+     
     
     @objc public func updateProfile(userdata: [String: AnyHashable], completion: @escaping (Bool) -> Void) {
         if CustomerGlu.sdk_disable! == true || Reachability.shared.isConnectedToNetwork() != true || userDefaults.string(forKey: CGConstants.CUSTOMERGLU_TOKEN) == nil {
@@ -1235,76 +1235,27 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             userData.removeValue(forKey: APIParameterKey.anonymousId)
         }
         
-        APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
+        APIManager.updateUserAttributes(queryParameters: userData as NSDictionary) { result in
             switch result {
             case .success(let response):
                 if response.success! {
-                    self.encryptUserDefaultKey(str: response.data?.token ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
-                    self.encryptUserDefaultKey(str: response.data?.user?.userId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
-                    self.encryptUserDefaultKey(str: response.data?.user?.anonymousId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
+                    CustomerGlu.getInstance.printlog(cglog: "User Attributes Update Successfully", isException: false, methodName: "CustomerGlu-updateUserAttributes", posttoserver: false)
                     
-                    self.cgUserData = response.data?.user ?? CGUser()
-                    var data: Data?
-                    do {
-                        data = try JSONEncoder().encode(self.cgUserData)
-                    } catch(let error) {
-                        CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "updateProfile", posttoserver: true)
+                    if CustomerGlu.loadCampaignCount > 0 {
+                        self.doLoadCampaignAndEntryPointCall()
                     }
-                    
-                    guard let data = data, let jsonString = String(data: data, encoding: .utf8) else { return }
-                    self.encryptUserDefaultKey(str: jsonString, userdefaultKey: CGConstants.CUSTOMERGLU_USERDATA)
-                    
-                    self.userDefaults.synchronize()
-                    
-                    if CustomerGlu.isEntryPointEnabled {
-                        CustomerGlu.bannersHeight = nil
-                        CustomerGlu.embedsHeight = nil
-                        APIManager.getEntryPointdata(queryParameters:  ["consumer": "MOBILE","x-api-key": CustomerGlu.sdkWriteKey,"campaignIds":CustomerGlu.allCampaignsIdsString]) { result in
-                            switch result {
-                            case .success(let responseGetEntry):
-                                DispatchQueue.main.async {
-                                    self.dismissFloatingButtons(is_remove: false)
-                                }
-                                CustomerGlu.entryPointdata.removeAll()
-                                CustomerGlu.entryPointdata = responseGetEntry.data
-                                
-                                // FLOATING Buttons
-                                let floatingButtons = CustomerGlu.entryPointdata.filter {
-                                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" || $0.mobile.container.type == "PIP"
-                                }
-                                
-                                self.entryPointInfoAddDelete(entryPoint: floatingButtons)
-                                self.addFloatingBtns()
-                                self.addPIPViews()
-                                self.postBannersCount()
-                                NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("EntryPointLoaded").rawValue), object: nil, userInfo: nil)
-                                completion(true)
-                                
-                            case .failure(let error):
-                                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-updateProfile-3", posttoserver: true)
-                                CustomerGlu.bannersHeight = [String:Any]()
-                                CustomerGlu.embedsHeight = [String:Any]()
-                                completion(true)
-                            }
-                        }
-                    } else {
-                        CustomerGlu.bannersHeight = [String:Any]()
-                        CustomerGlu.embedsHeight = [String:Any]()
-                        completion(true)
-                    }
+               
                 } else {
-                    CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-updateProfile-4", posttoserver: true)
+                    CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-updateUserAttributes", posttoserver: true)
                     CustomerGlu.bannersHeight = [String:Any]()
                     CustomerGlu.embedsHeight = [String:Any]()
-                    completion(false)
                 }
             case .failure(let error):
-                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-updateProfile-5", posttoserver: true)
-                CustomerGlu.bannersHeight = [String:Any]()
-                CustomerGlu.embedsHeight = [String:Any]()
-                completion(false)
+                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-updateUserAttributes", posttoserver: true)
+                
             }
         }
+
     }
     
     
