@@ -1192,9 +1192,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    public func getNativeBanner(){
-        NativeBanner(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 0), bannerId: "demo-quiz-banner1")
-    }
+ 
     
     /***
         Update Embed Id list
