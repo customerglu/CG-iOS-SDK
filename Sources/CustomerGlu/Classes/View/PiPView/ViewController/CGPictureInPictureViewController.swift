@@ -398,23 +398,28 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     func showPlayerCTA() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.9, execute: {
             self.showPiPCTAs()
+        })
             CGPIPHelper.shared.setDailyRefresh()
             if (!CustomerGlu.getInstance.isPiPViewLoadedEventPushed) {
                 CustomerGlu.getInstance.isPiPViewLoadedEventPushed = true
                 CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_LOAD, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
             }
-        })
+        
     }
     
     public func hidePiPButton(ishidden: Bool) {
+        OtherUtils.shared.createAndWriteToFile(content:"hidePiPButton start")
         window.pipMoviePlayer?.isHidden = ishidden
         self.pipMediaPlayer.isHidden = ishidden
         window.isHidden = ishidden
         window.isUserInteractionEnabled = !ishidden
         if ishidden {
+            OtherUtils.shared.createAndWriteToFile(content:"hidePiPButton hide")
             self.pipMediaPlayer.pause()
             self.pipMediaPlayer.removeAppStateObservers()
         }else{
+            OtherUtils.shared.createAndWriteToFile(content:"hidePiPButton show")
+
 //            var path = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
 //            self.pipMediaPlayer.play(with: path)
             self.pipMediaPlayer.resume()

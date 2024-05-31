@@ -133,6 +133,64 @@ class OtherUtils {
         }
     }
     
+    func createAndWriteToFile(content:String) {
+//        let macFilePath = "/Users/himanshutrehan/Desktop/sdkTestReport.txt"  // Update this path accordingly
+//
+//        let fileManager = FileManager.default
+//           let fileExists = fileManager.fileExists(atPath: macFilePath)
+//        let dateFormatter = DateFormatter()
+//           dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+//           let timestamp = dateFormatter.string(from: Date())
+//        var  contentToUpload = "\n[\(timestamp)] " + content
+//        let contentToAppend = fileExists ? "\n" + contentToUpload : contentToUpload
+//           // Step 3: Convert the content to Data
+//        if let data = contentToAppend.data(using: .utf8) {
+//                let url = URL(fileURLWithPath: macFilePath)
+//                do {
+//                    if fileExists {
+//                        // Step 6: Append the data if file exists
+//                        let fileHandle = try FileHandle(forWritingTo: url)
+//                        fileHandle.seekToEndOfFile()
+//                        fileHandle.write(data)
+//                        fileHandle.closeFile()
+//                    } else {
+//                        // Step 7: Write the data to the file if it doesn't exist
+//                        try data.write(to: url)
+//                    }
+//                    print("Data written successfully at \(macFilePath)")
+//                } catch {
+//                    print("Error writing data to file: \(error.localizedDescription)")
+//                }
+//            } else {
+//                print("Error converting content to Data")
+//            }
+//        // Step 1: Get the path to the documents directory
+//        let fileManager = FileManager.default
+//        if let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+//            
+//            // Step 2: Create the file path
+//            let filePath = documentsDirectory.appendingPathComponent("example.txt")
+//            
+//            // Step 3: Define the content to write to the file
+//        //    let content = "Hello, Swift!"
+//            
+//            // Step 4: Convert the content to Data
+//            if let data = content.data(using: .utf8) {
+//                do {
+//                    // Step 5: Write the data to the file
+//                    try data.write(to: filePath)
+//                    print("File created and data written successfully at \(filePath)")
+//                } catch {
+//                    print("Error writing data to file: \(error.localizedDescription)")
+//                }
+//            } else {
+//                print("Error converting content to Data")
+//            }
+//        } else {
+//            print("Error accessing documents directory")
+//        }
+    }
+    
     
     func campaignFilterStatus(campaignId: String) -> CAMPAIGN_STATE{
         var campaignState: CAMPAIGN_STATE = CAMPAIGN_STATE.NOT_ELIGIBLE
