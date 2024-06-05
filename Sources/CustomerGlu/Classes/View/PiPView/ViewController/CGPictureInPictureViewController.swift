@@ -351,8 +351,8 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
      }
     
     @objc func didTapOnClose(){
-            
-            self.dismissPiPButton(shouldCallEvent: true)
+        CustomerGlu.pipDismissed = true
+        self.dismissPiPButton(shouldCallEvent: true)
         
     }
     
@@ -381,7 +381,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     
     public func dismissPiPButton(shouldCallEvent: Bool = false) {
     //    if CustomerGlu.getInstance.activePIPView != nil {
-         
+        
                 self.window.dismiss()
                 self.pipMediaPlayer.pause()
                 self.pipMediaPlayer.unRegisterLooper()
