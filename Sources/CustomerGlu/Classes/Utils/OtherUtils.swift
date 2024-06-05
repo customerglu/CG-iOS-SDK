@@ -132,7 +132,11 @@ class OtherUtils {
             }
         }
     }
-    
+    func cleanURL(url: String) -> String? {
+        var cleanedURL = url.replacingOccurrences(of: "%20", with: " ")
+        cleanedURL = cleanedURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        return cleanedURL
+    }
     
     func campaignFilterStatus(campaignId: String) -> CAMPAIGN_STATE{
         var campaignState: CAMPAIGN_STATE = CAMPAIGN_STATE.NOT_ELIGIBLE
