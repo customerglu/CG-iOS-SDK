@@ -94,6 +94,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     @objc public static var isEntryPointEnabled = false
     @objc public static var activeViewController = ""
     @objc public static var app_platform = "IOS"
+    @objc public static var pipEpochTimestamp = ""
     @objc public static var defaultBGCollor = UIColor.white
     @objc public static var lightBackground = UIColor.white
     @objc public static var darkBackground = UIColor.black
@@ -699,6 +700,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func initializeSdk() {
         if !sdkInitialized {
+            let iOSVersion = UIDevice.current.systemVersion
+            let deviceName = UIDevice.current.name
+            OtherUtils.shared.createAndWriteToFile(content:"iOS:\(deviceName)  \(iOSVersion)")
             // So SDK is initialized
             sdkInitialized = true
             
@@ -1986,6 +1990,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal func dismissFloatingButtons(is_remove: Bool) {
         for floatBtn in self.arrFloatingButton {
             floatBtn.dismissFloatingButton(is_remove: is_remove)
+            
         }
     }
     
@@ -2097,11 +2102,16 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func setCurrentClassName(className: String) {
+       // OtherUtils.shared.createAndWriteToFile(content:"setCurrentClassName "+className)
 
         if(popuptimer != nil){
             popuptimer?.invalidate()
             popuptimer = nil
         }
+        
+        activePIPView?.hidePiPButton(ishidden: true)
+        
+        
         
         if CustomerGlu.isEntryPointEnabled {
             if !configScreens.contains(className) {
@@ -2109,7 +2119,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
 
             }
             sendEntryPointsIdLists()
-            
+                        
             CustomerGlu.getInstance.activescreenname = className
             print("MyScreen " + CustomerGlu.getInstance.getActiveScreenName())
 
@@ -2117,7 +2127,44 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             screenNameLogicForPIPView(className: className)
             
             showPopup(className: className)
+          
+            
         }
+        
+    }
+    
+    @objc public func setCGCurrentClassName(className: String,timestamp: String ,completion: @escaping (String) -> Void) {
+        OtherUtils.shared.createAndWriteToFile(content:"setCurrentClassName "+className)
+        CustomerGlu.pipEpochTimestamp = timestamp
+        if(popuptimer != nil){
+            popuptimer?.invalidate()
+            popuptimer = nil
+        }
+
+        activePIPView?.hidePiPButton(ishidden: true)
+        
+        if CustomerGlu.isEntryPointEnabled {
+            if !configScreens.contains(className) {
+                configScreens.append(className)
+
+            }
+            sendEntryPointsIdLists()
+                        
+            CustomerGlu.getInstance.activescreenname = className
+            print("MyScreen " + CustomerGlu.getInstance.getActiveScreenName())
+
+            screenNameLogicForFloatingButton(className: className)
+            screenNameLogicForPIPView(className: className)
+            
+            showPopup(className: className)
+            
+        }
+        var finalTimeStamp = CustomerGlu.pipEpochTimestamp
+        CustomerGlu.pipEpochTimestamp = ""
+        print("finalTimeStamp " + finalTimeStamp)
+
+        completion(finalTimeStamp)
+        
     }
     private func screenNameLogicForFloatingButton(className:String)
     {
@@ -2168,7 +2215,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
         }
         if isHidden {
-            self.hidePiPView()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                self.hidePiPView()
+            })
+            
 
         }
 
@@ -2850,6 +2900,7 @@ extension CustomerGlu: CGMqttClientDelegate {
             if checkMqttEnabledComponents(containsKey: CGConstants.MQTT_Enabled_Components_State_Sync), let enableMQTT =  self.appconfigdata?.enableMqtt, enableMQTT {
                 // SDK Config Updation call & SDK re-initialised.
                 sdkInitialized = false // so the SDK can be re-initialised
+               
                 initializeSdk()
             }
         }
