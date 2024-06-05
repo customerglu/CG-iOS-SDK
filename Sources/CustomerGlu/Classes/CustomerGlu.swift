@@ -668,11 +668,14 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
         self.arrFloatingButton.removeAll()
         popupDict.removeAll()
+        
         CustomerGlu.entryPointdata.removeAll()
         entryPointPopUpModel = EntryPointPopUpModel()
         self.popupDisplayScreens.removeAll()
         
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
+        userDefaults.removeObject(forKey: CGConstants.CG_PIP_VID_SYNC_DATA)
+        userDefaults.removeObject(forKey: CGConstants.CG_PIP_DATE)
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_TOKEN)
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_USERID)
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
@@ -1190,12 +1193,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
 
      
     
-    @objc public func updateProfile(userdata: [String: AnyHashable], completion: @escaping (Bool) -> Void) {
+    @objc public func updateProfile(userdata: [String: AnyHashable]) {
         if CustomerGlu.sdk_disable! == true || Reachability.shared.isConnectedToNetwork() != true || userDefaults.string(forKey: CGConstants.CUSTOMERGLU_TOKEN) == nil {
             CustomerGlu.getInstance.printlog(cglog: "Fail to call updateProfile", isException: false, methodName: "CustomerGlu-updateProfile-1", posttoserver: true)
             CustomerGlu.bannersHeight = [String:Any]()
             CustomerGlu.embedsHeight = [String:Any]()
-            completion(false)
             return
         }
         
@@ -1528,15 +1530,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_OPEN_NUDGE_CALLED, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
         if ApplicationManager.doValidateToken() == true {
             openNudgeWithValidToken(nudgeId: nudgeId, layout: layout, bg_opacity: bg_opacity, closeOnDeeplink: closeOnDeeplink,nudgeConfiguration: nudgeConfiguration)
-        } else {
-            let userData = [String: AnyHashable]()
-            CustomerGlu.getInstance.updateProfile(userdata: userData) { success in
-                if success {
-                    self.openNudgeWithValidToken(nudgeId: nudgeId, layout: layout, bg_opacity: bg_opacity, closeOnDeeplink: closeOnDeeplink,nudgeConfiguration: nudgeConfiguration)
-                } else {
-                    CustomerGlu.getInstance.printlog(cglog: "UpdateProfile API fail", isException: false, methodName: "openNudge-updateProfile", posttoserver: true)
-                }
-            }
         }
     }
     
