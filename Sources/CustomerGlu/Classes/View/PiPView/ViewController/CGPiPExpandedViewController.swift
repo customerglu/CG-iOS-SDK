@@ -130,6 +130,7 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
         closeButton.translatesAutoresizingMaskIntoConstraints  = false
         movieView?.setCGVideoCallbacks(delegate: self)
 
+
         if let pipInfo = pipInfo, let cgButton = pipInfo.mobile.content[0].action.button{
             if let ctaText = cgButton.buttonText{
                 
@@ -179,7 +180,7 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
         muteButton.addTarget(self, action: #selector(didTapOnMute(_:)), for: .touchUpInside)
         expandButton.addTarget(self, action: #selector(didTapOnExpand(_:)), for: .touchUpInside)
         closeButton.addTarget(self, action: #selector(didTapOnClose(_:)), for: .touchUpInside)
-       // movieView?.setVideoShouldLoop(with: false)
+    //    movieView?.setVideoShouldLoop(with: false)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1 , execute: {
             self.movieView?.play(with: CustomerGlu.getInstance.getPiPLocalPath(), startTime: self.startTime)
@@ -202,8 +203,6 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
 
             }
         
-  
-
 
      }
     
@@ -223,7 +222,7 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
      
     
     @objc func didTapOnClose(_ buttton: UIButton){
-        
+        CustomerGlu.pipDismissed = true
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: self.pipInfo?._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5 , execute: {
             self.closePiPExpandedView()

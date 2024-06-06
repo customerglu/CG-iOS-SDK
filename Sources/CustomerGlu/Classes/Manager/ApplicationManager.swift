@@ -40,11 +40,12 @@ class ApplicationManager {
                 CustomerGlu.getInstance.setCampaignsModel(response)
                 CustomerGlu.allCampaignsIds = response.campaigns?.compactMap { $0.campaignId } ?? []
                 CustomerGlu.campaignsAvailable = response
-                let responseCampaignIds = response.campaigns?.compactMap { $0.campaignId }.joined(separator: ", ")
+                let responseCampaignIds = response.campaigns?.compactMap { $0.campaignId }.joined(separator: ",")
                 if let allCampaignAsString = responseCampaignIds {
+                    print("My Campaign Ids ", allCampaignAsString)
+                    CustomerGlu.allCampaignsIdsString = allCampaignAsString
                     ApplicationManager.encryptUserDefaultKey(str: allCampaignAsString, userdefaultKey: CGConstants.allCampaignsIdsAsString)
                 }
-                
                 completion(true, response)
                 
             case .failure(let error):
@@ -79,6 +80,14 @@ class ApplicationManager {
             case .success(let response):
                 // Save this - To open / not open wallet incase of failure / invalid campaignId in loadCampaignById
                 CustomerGlu.getInstance.setCampaignsModel(response)
+                CustomerGlu.allCampaignsIds = response.campaigns?.compactMap { $0.campaignId } ?? []
+                CustomerGlu.campaignsAvailable = response
+                let responseCampaignIds = response.campaigns?.compactMap { $0.campaignId }.joined(separator: ", ")
+                if let allCampaignAsString = responseCampaignIds {
+                    print("My Campaign Ids ", allCampaignAsString)
+                    CustomerGlu.allCampaignsIdsString = allCampaignAsString
+                    ApplicationManager.encryptUserDefaultKey(str: allCampaignAsString, userdefaultKey: CGConstants.allCampaignsIdsAsString)
+                }
                 completion(true, response)
                 
             case .failure(let error):
@@ -278,7 +287,8 @@ class ApplicationManager {
         if CustomerGlu.sdk_disable! == true {
             return
         }
-        
+        let deviceName = UIDevice.current.name
+        let systemVersion = UIDevice.current.systemVersion
         var eventInfo = eventNudge
         
         eventInfo[APIParameterKey.analytics_version] = APIParameterKey.analytics_version_value
@@ -290,7 +300,7 @@ class ApplicationManager {
         eventInfo[APIParameterKey.type] = "track"
         
         var platform_details = [String: String]()
-        platform_details[APIParameterKey.device_type] = "MOBILE"
+        platform_details[APIParameterKey.device_type] = deviceName + " " + systemVersion
         platform_details[APIParameterKey.os] = "IOS"
         platform_details[APIParameterKey.app_platform] = CustomerGlu.app_platform
         platform_details[APIParameterKey.sdk_version] = CustomerGlu.sdk_version

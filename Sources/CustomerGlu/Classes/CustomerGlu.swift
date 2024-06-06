@@ -94,11 +94,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     @objc public static var isEntryPointEnabled = false
     @objc public static var activeViewController = ""
     @objc public static var app_platform = "IOS"
+    @objc public static var pipEpochTimestamp = ""
     @objc public static var defaultBGCollor = UIColor.white
     @objc public static var lightBackground = UIColor.white
     @objc public static var darkBackground = UIColor.black
     @objc public static var sdk_version = APIParameterKey.cgsdkversionvalue
     public static var allCampaignsIds: [String] = []
+    public static var allCampaignsIdsString = ""
     public static var campaignsAvailable: CGCampaignsModel?
     internal var activescreenname = ""
     public static var bannersHeight: [String: Any]? = nil
@@ -132,26 +134,29 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var verticalPadding = 0
     public static var horizontalPadding = 0
     public static var floatingHorizontalPadding = 10
+    public static var loadCampaignCount = 0
+    public static var entryPointCount = 0
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
     private var pipVideoLocalPath: String = ""
     private var isShowingExpandedPiP: Bool = false
     internal  var isPiPViewLoadedEventPushed = false
+    public static var pipDismissed = false
+    public static var pipLoaded = false
     weak var diagonsticHelper: CGEventsDiagnosticsHelper? = CGEventsDiagnosticsHelper.shared
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     public static var appName: String = ""
     public static var isPIPExpandedViewMuted: Bool = false
-
     
     private override init() {
         super.init()
         migrateUserDefaultKey()
         setAppANme()
-        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
-            if CustomerGlu.isEntryPointEnabled {
-                getEntryPointData()
-            }
-        }
+//        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
+//            if CustomerGlu.isEntryPointEnabled {
+//                getEntryPointData()
+//            }
+//        }
         if !(decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH).isEmpty){
             self.pipVideoLocalPath = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_PIP_PATH)
         }
@@ -212,8 +217,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func enableEntryPoints(enabled: Bool) {
         CustomerGlu.isEntryPointEnabled = enabled
-        if CustomerGlu.isEntryPointEnabled {
-            getEntryPointData()
+        if CustomerGlu.isEntryPointEnabled && CustomerGlu.entryPointCount > 0{
+        //    getEntryPointData()
         }
     }
     
@@ -664,10 +669,14 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
         self.arrFloatingButton.removeAll()
         popupDict.removeAll()
+        
         CustomerGlu.entryPointdata.removeAll()
         entryPointPopUpModel = EntryPointPopUpModel()
         self.popupDisplayScreens.removeAll()
         
+        userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
+        userDefaults.removeObject(forKey: CGConstants.CG_PIP_VID_SYNC_DATA)
+        userDefaults.removeObject(forKey: CGConstants.CG_PIP_DATE)
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_TOKEN)
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_USERID)
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
@@ -695,6 +704,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func initializeSdk() {
         if !sdkInitialized {
+            let iOSVersion = UIDevice.current.systemVersion
+            let deviceName = UIDevice.current.name
+            OtherUtils.shared.createAndWriteToFile(content:"iOS:\(deviceName)  \(iOSVersion)")
             // So SDK is initialized
             sdkInitialized = true
             
@@ -753,6 +765,14 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         if(self.appconfigdata != nil) {
             if(self.appconfigdata!.disableSdk != nil){
                 CustomerGlu.getInstance.disableGluSdk(disable: (self.appconfigdata!.disableSdk ?? CustomerGlu.sdk_disable)!)
+            }
+            
+            if(self.appconfigdata!.campaignCount != nil){
+                CustomerGlu.loadCampaignCount = self.appconfigdata!.campaignCount
+            }
+            
+            if(self.appconfigdata!.entryPointCount != nil){
+                CustomerGlu.entryPointCount = self.appconfigdata!.entryPointCount
             }
             
             if self.appconfigdata!.isCrashLoggingEnabled != nil {
@@ -945,16 +965,24 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 } else {
                     userData[APIParameterKey.anonymousId] = UUID().uuidString
                 }
+                self.encryptUserDefaultKey(str: "true", userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
                 userData.removeValue(forKey: APIParameterKey.userId)
             } else if (t_anonymousIdS.count > 0) {
                 // Pass anonymousId and UserID Both
+                userData[APIParameterKey.userId] = t_userid
                 userData[APIParameterKey.anonymousId] = t_anonymousIdS
+            //    self.encryptUserDefaultKey(str: "false", userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
+
             } else {
+                self.encryptUserDefaultKey(str: "false", userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
                 // Pass only UserID and removed anonymousId
+                userData[APIParameterKey.userId] = t_userid
                 userData.removeValue(forKey: APIParameterKey.anonymousId)
             }
         } else {
             // Pass only UserID and removed anonymousId
+            userData[APIParameterKey.userId] = t_userid
+            self.encryptUserDefaultKey(str: "false", userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
             userData.removeValue(forKey: APIParameterKey.anonymousId)
         }
         
@@ -963,97 +991,129 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             completion(false)
             return
         }
+        var needToMigrateUser = false;
         
-        APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
-            switch result {
-            case .success(let response):
-                if response.success! {
-                    // Setup Sentry user
-                    CGSentryHelper.shared.setupUser(userId: response.data?.user?.userId ?? "", clientId: response.data?.user?.client ?? "")
-                    self.encryptUserDefaultKey(str: response.data?.token ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
-                    self.encryptUserDefaultKey(str: response.data?.user?.userId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
-                    self.encryptUserDefaultKey(str: response.data?.user?.anonymousId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
-                    
-                    self.cgUserData = response.data?.user ??     CGUser()
-                    var data: Data?
-                    do {
-                        data = try JSONEncoder().encode(self.cgUserData)
-                    } catch(let error) {
-                        CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "registerDevice", posttoserver: true)
-                    }
-                    guard let data = data, let jsonString = String(data: data, encoding: .utf8) else { return }
-                    self.encryptUserDefaultKey(str: jsonString, userdefaultKey: CGConstants.CUSTOMERGLU_USERDATA)
-                    self.userDefaults.synchronize()
-                    
-                    if let enableMqtt = self.appconfigdata?.enableMqtt, enableMqtt {
-                        if CGMqttClientHelper.shared.checkIsMQTTConnected() {
-                            CGMqttClientHelper.shared.disconnectMQTT()
+        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER) != nil {
+            let my_anonymous = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
+
+            print("is Anonymous",my_anonymous)
+
+        }
+        
+        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER) != nil &&  CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER) == "true"{
+            print( UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER))
+            needToMigrateUser = true;
+        }
+        
+        var isTokenValid = ApplicationManager.doValidateToken()
+        
+        
+        if !isTokenValid || needToMigrateUser {
+            APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
+                switch result {
+                case .success(let response):
+                    if response.success! {
+                        // Setup Sentry user
+                        CGSentryHelper.shared.setupUser(userId: response.data?.user?.userId ?? "", clientId: response.data?.user?.client ?? "")
+                        self.encryptUserDefaultKey(str: response.data?.token ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
+                        self.encryptUserDefaultKey(str: response.data?.user?.userId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
+                        self.encryptUserDefaultKey(str: response.data?.user?.anonymousId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
+                        if (t_anonymousIdS.count > 0) {
+                            // Pass anonymousId and UserID Both
+                            userData[APIParameterKey.userId] = t_userid
+                            userData[APIParameterKey.anonymousId] = t_anonymousIdS
+                            self.encryptUserDefaultKey(str: "false", userdefaultKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
+
                         }
-                        self.initializeMqtt()
-                    }
-                    CustomerGlu.oldCampaignIds = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString)
-                    
-                    ApplicationManager.openWalletApi { success, response in
-                        if success {
-                            CustomerGlu.campaignsAvailable = response
-                            if CustomerGlu.isEntryPointEnabled {
-                                CustomerGlu.bannersHeight = nil
-                                CustomerGlu.embedsHeight = nil
-                                APIManager.getEntryPointdata(queryParameters: ["consumer": "MOBILE"]) { result in
-                                    switch result {
-                                    case .success(let responseGetEntry):
-                                        DispatchQueue.main.async {
-                                            self.dismissFloatingButtons(is_remove: false)
+                        self.cgUserData = response.data?.user ??     CGUser()
+                        var data: Data?
+                        do {
+                            data = try JSONEncoder().encode(self.cgUserData)
+                        } catch(let error) {
+                            CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "registerDevice", posttoserver: true)
+                        }
+                        guard let data = data, let jsonString = String(data: data, encoding: .utf8) else { return }
+                        self.encryptUserDefaultKey(str: jsonString, userdefaultKey: CGConstants.CUSTOMERGLU_USERDATA)
+                        self.userDefaults.synchronize()
+                        
+                        if let enableMqtt = self.appconfigdata?.enableMqtt, enableMqtt {
+                            if CGMqttClientHelper.shared.checkIsMQTTConnected() {
+                                CGMqttClientHelper.shared.disconnectMQTT()
+                            }
+                            self.initializeMqtt()
+                        }
+                        CustomerGlu.oldCampaignIds = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString)
+                        if CustomerGlu.entryPointCount > 0 {
+                            ApplicationManager.openWalletApi { success, response in
+                                if success {
+                                    CustomerGlu.campaignsAvailable = response
+                                    if CustomerGlu.isEntryPointEnabled {
+                                        CustomerGlu.bannersHeight = nil
+                                        CustomerGlu.embedsHeight = nil
+                                        APIManager.getEntryPointdata(queryParameters: ["consumer": "MOBILE","x-api-key": CustomerGlu.sdkWriteKey,"campaignIds":CustomerGlu.allCampaignsIdsString]) { result in
+                                            switch result {
+                                            case .success(let responseGetEntry):
+                                                DispatchQueue.main.async {
+                                                    self.dismissFloatingButtons(is_remove: false)
+                                                }
+                                                CustomerGlu.entryPointdata.removeAll()
+                                                CustomerGlu.entryPointdata = responseGetEntry.data
+                                                
+                                                // FLOATING Buttons
+                                                let floatingButtons = CustomerGlu.entryPointdata.filter {
+                                                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" ||
+                                                    $0.mobile.container.type == "PIP"
+                                                }
+                                                
+                                                self.entryPointInfoAddDelete(entryPoint: floatingButtons)
+                                                self.addFloatingBtns()
+                                                self.postBannersCount()
+                                                self.addPIPViews()
+                                                NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("EntryPointLoaded").rawValue), object: nil, userInfo: nil)
+                                                completion(true)
+                                                
+                                            case .failure(let error):
+                                                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-registerDevice-2", posttoserver: true)
+                                                CustomerGlu.bannersHeight = [String:Any]()
+                                                CustomerGlu.embedsHeight = [String:Any]()
+                                                completion(true)
+                                            }
                                         }
-                                        CustomerGlu.entryPointdata.removeAll()
-                                        CustomerGlu.entryPointdata = responseGetEntry.data
-                                        
-                                        // FLOATING Buttons
-                                        let floatingButtons = CustomerGlu.entryPointdata.filter {
-                                            $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" ||
-                                            $0.mobile.container.type == "PIP"
-                                        }
-                                        
-                                        self.entryPointInfoAddDelete(entryPoint: floatingButtons)
-                                        self.addFloatingBtns()
-                                        self.postBannersCount()
-                                        self.addPIPViews()
-                                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("EntryPointLoaded").rawValue), object: nil, userInfo: nil)
-                                        completion(true)
-                                        
-                                    case .failure(let error):
-                                        CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-registerDevice-2", posttoserver: true)
+                                    } else {
                                         CustomerGlu.bannersHeight = [String:Any]()
                                         CustomerGlu.embedsHeight = [String:Any]()
                                         completion(true)
                                     }
+                                    if let allowProxy = self.appconfigdata?.allowProxy, allowProxy, CustomerGlu.oldCampaignIds != CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString) {
+//                                        CGProxyHelper.shared.getProgram()
+//                                        CGProxyHelper.shared.getReward()
+                                    }
+                                } else {
+                                    CustomerGlu.bannersHeight = [String:Any]()
+                                    CustomerGlu.embedsHeight = [String:Any]()
+                                    completion(true)
                                 }
-                            } else {
-                                CustomerGlu.bannersHeight = [String:Any]()
-                                CustomerGlu.embedsHeight = [String:Any]()
-                                completion(true)
                             }
-                            if let allowProxy = self.appconfigdata?.allowProxy, allowProxy, CustomerGlu.oldCampaignIds != CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString) {
-                                CGProxyHelper.shared.getProgram()
-                                CGProxyHelper.shared.getReward()
-                            }
-                        } else {
-                            CustomerGlu.bannersHeight = [String:Any]()
-                            CustomerGlu.embedsHeight = [String:Any]()
+                        }else{
                             completion(true)
                         }
+                    } else {
+                        CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-registerDevice-3", posttoserver: true)
+                        CustomerGlu.bannersHeight = [String:Any]()
+                        CustomerGlu.embedsHeight = [String:Any]()
+                        completion(false)
                     }
-                } else {
-                    CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-registerDevice-3", posttoserver: true)
+                case .failure(let error):
+                    CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-registerDevice-4", posttoserver: true)
                     CustomerGlu.bannersHeight = [String:Any]()
                     CustomerGlu.embedsHeight = [String:Any]()
                     completion(false)
                 }
-            case .failure(let error):
-                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-registerDevice-4", posttoserver: true)
-                CustomerGlu.bannersHeight = [String:Any]()
-                CustomerGlu.embedsHeight = [String:Any]()
-                completion(false)
+            }
+        } else{
+            completion(true)
+            if CustomerGlu.entryPointCount > 0 {
+                doLoadCampaignAndEntryPointCall()
             }
         }
         eventData = [:]
@@ -1061,12 +1121,84 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_USER_REGISTRATION_END, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
     }
     
-    @objc public func updateProfile(userdata: [String: AnyHashable], completion: @escaping (Bool) -> Void) {
+    
+    @objc public func updateUserAttributes(customAttributes: [String: AnyHashable]) {
+        if CustomerGlu.sdk_disable! == true || Reachability.shared.isConnectedToNetwork() != true || userDefaults.string(forKey: CGConstants.CUSTOMERGLU_TOKEN) == nil {
+            CustomerGlu.getInstance.printlog(cglog: "Fail to update Attributes", isException: false, methodName: "CustomerGlu-updateProfile-1", posttoserver: true)
+            CustomerGlu.bannersHeight = [String:Any]()
+            CustomerGlu.embedsHeight = [String:Any]()
+            return
+        }
+        
+        var userData = [String: Any]()
+        if let uuid = UIDevice.current.identifierForVendor?.uuidString {
+            if(true == CustomerGlu.isDebugingEnabled){
+                print(uuid)
+            }
+            userData[APIParameterKey.deviceId] = uuid
+        }
+        let user_id = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
+        print(user_id)
+        if user_id.count > 0 {
+            userData[APIParameterKey.userId] = user_id
+
+        }
+        //user_id.count will always be > 0
+        
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        let writekey = CustomerGlu.sdkWriteKey
+        userData[APIParameterKey.deviceType] = "ios"
+        userData[APIParameterKey.deviceName] = getDeviceName()
+        userData[APIParameterKey.appVersion] = appVersion
+        userData[APIParameterKey.writeKey] = writekey
+        userData[APIParameterKey.customAttributes] = customAttributes
+        if CustomerGlu.fcm_apn == "fcm" {
+            userData[APIParameterKey.apnsDeviceToken] = ""
+            userData[APIParameterKey.firebaseToken] = fcmToken
+        } else {
+            userData[APIParameterKey.firebaseToken] = ""
+            userData[APIParameterKey.apnsDeviceToken] = apnToken
+        }
+        
+        // Manage UserID & AnonymousId
+        let t_anonymousIdS = self.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID) as String? ?? ""
+        if (t_anonymousIdS.count > 0){
+            // Pass anonymousId and UserID Both
+            userData[APIParameterKey.anonymousId] = t_anonymousIdS
+        }else{
+            // Pass only UserID and removed anonymousId
+            userData.removeValue(forKey: APIParameterKey.anonymousId)
+        }
+        
+        APIManager.updateUserAttributes(queryParameters: userData as NSDictionary) { result in
+            switch result {
+            case .success(let response):
+                if response.success! {
+                    CustomerGlu.getInstance.printlog(cglog: "User Attributes Update Successfully", isException: false, methodName: "CustomerGlu-updateUserAttributes", posttoserver: false)
+                    
+                    if CustomerGlu.loadCampaignCount > 0 {
+                        self.doLoadCampaignAndEntryPointCall()
+                    }
+               
+                } else {
+                    CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-updateUserAttributes", posttoserver: true)
+                    CustomerGlu.bannersHeight = [String:Any]()
+                    CustomerGlu.embedsHeight = [String:Any]()
+                }
+            case .failure(let error):
+                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-updateUserAttributes", posttoserver: true)
+                
+            }
+        }
+    }
+
+     
+    
+    @objc public func updateProfile(userdata: [String: AnyHashable]) {
         if CustomerGlu.sdk_disable! == true || Reachability.shared.isConnectedToNetwork() != true || userDefaults.string(forKey: CGConstants.CUSTOMERGLU_TOKEN) == nil {
             CustomerGlu.getInstance.printlog(cglog: "Fail to call updateProfile", isException: false, methodName: "CustomerGlu-updateProfile-1", posttoserver: true)
             CustomerGlu.bannersHeight = [String:Any]()
             CustomerGlu.embedsHeight = [String:Any]()
-            completion(false)
             return
         }
         
@@ -1110,76 +1242,27 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             userData.removeValue(forKey: APIParameterKey.anonymousId)
         }
         
-        APIManager.userRegister(queryParameters: userData as NSDictionary) { result in
+        APIManager.updateUserAttributes(queryParameters: userData as NSDictionary) { result in
             switch result {
             case .success(let response):
                 if response.success! {
-                    self.encryptUserDefaultKey(str: response.data?.token ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
-                    self.encryptUserDefaultKey(str: response.data?.user?.userId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
-                    self.encryptUserDefaultKey(str: response.data?.user?.anonymousId ?? "", userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
+                    CustomerGlu.getInstance.printlog(cglog: "User Attributes Update Successfully", isException: false, methodName: "CustomerGlu-updateUserAttributes", posttoserver: false)
                     
-                    self.cgUserData = response.data?.user ?? CGUser()
-                    var data: Data?
-                    do {
-                        data = try JSONEncoder().encode(self.cgUserData)
-                    } catch(let error) {
-                        CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "updateProfile", posttoserver: true)
+                    if CustomerGlu.loadCampaignCount > 0 {
+                        self.doLoadCampaignAndEntryPointCall()
                     }
-                    
-                    guard let data = data, let jsonString = String(data: data, encoding: .utf8) else { return }
-                    self.encryptUserDefaultKey(str: jsonString, userdefaultKey: CGConstants.CUSTOMERGLU_USERDATA)
-                    
-                    self.userDefaults.synchronize()
-                    
-                    if CustomerGlu.isEntryPointEnabled {
-                        CustomerGlu.bannersHeight = nil
-                        CustomerGlu.embedsHeight = nil
-                        APIManager.getEntryPointdata(queryParameters: ["consumer": "MOBILE"]) { result in
-                            switch result {
-                            case .success(let responseGetEntry):
-                                DispatchQueue.main.async {
-                                    self.dismissFloatingButtons(is_remove: false)
-                                }
-                                CustomerGlu.entryPointdata.removeAll()
-                                CustomerGlu.entryPointdata = responseGetEntry.data
-                                
-                                // FLOATING Buttons
-                                let floatingButtons = CustomerGlu.entryPointdata.filter {
-                                    $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" || $0.mobile.container.type == "PIP"
-                                }
-                                
-                                self.entryPointInfoAddDelete(entryPoint: floatingButtons)
-                                self.addFloatingBtns()
-                                self.addPIPViews()
-                                self.postBannersCount()
-                                NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("EntryPointLoaded").rawValue), object: nil, userInfo: nil)
-                                completion(true)
-                                
-                            case .failure(let error):
-                                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-updateProfile-3", posttoserver: true)
-                                CustomerGlu.bannersHeight = [String:Any]()
-                                CustomerGlu.embedsHeight = [String:Any]()
-                                completion(true)
-                            }
-                        }
-                    } else {
-                        CustomerGlu.bannersHeight = [String:Any]()
-                        CustomerGlu.embedsHeight = [String:Any]()
-                        completion(true)
-                    }
+               
                 } else {
-                    CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-updateProfile-4", posttoserver: true)
+                    CustomerGlu.getInstance.printlog(cglog: "", isException: false, methodName: "CustomerGlu-updateUserAttributes", posttoserver: true)
                     CustomerGlu.bannersHeight = [String:Any]()
                     CustomerGlu.embedsHeight = [String:Any]()
-                    completion(false)
                 }
             case .failure(let error):
-                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-updateProfile-5", posttoserver: true)
-                CustomerGlu.bannersHeight = [String:Any]()
-                CustomerGlu.embedsHeight = [String:Any]()
-                completion(false)
+                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CustomerGlu-updateUserAttributes", posttoserver: true)
+                
             }
         }
+
     }
     
     
@@ -1222,7 +1305,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CustomerGlu.bannersHeight = nil
         CustomerGlu.embedsHeight = nil
         
-        let queryParameters: [AnyHashable: Any] = ["consumer": "MOBILE"]
+        let queryParameters: [AnyHashable: Any] =  ["consumer": "MOBILE","x-api-key": CustomerGlu.sdkWriteKey,"campaignIds":CustomerGlu.allCampaignsIdsString]
         
         APIManager.getEntryPointdata(queryParameters: queryParameters as NSDictionary) { [self] result in
             switch result {
@@ -1448,15 +1531,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_OPEN_NUDGE_CALLED, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
         if ApplicationManager.doValidateToken() == true {
             openNudgeWithValidToken(nudgeId: nudgeId, layout: layout, bg_opacity: bg_opacity, closeOnDeeplink: closeOnDeeplink,nudgeConfiguration: nudgeConfiguration)
-        } else {
-            let userData = [String: AnyHashable]()
-            CustomerGlu.getInstance.updateProfile(userdata: userData) { success in
-                if success {
-                    self.openNudgeWithValidToken(nudgeId: nudgeId, layout: layout, bg_opacity: bg_opacity, closeOnDeeplink: closeOnDeeplink,nudgeConfiguration: nudgeConfiguration)
-                } else {
-                    CustomerGlu.getInstance.printlog(cglog: "UpdateProfile API fail", isException: false, methodName: "openNudge-updateProfile", posttoserver: true)
-                }
-            }
         }
     }
     
@@ -1849,7 +1923,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     private func addPIPViewToUI(pipInfo: CGData)
     {
+        print("addPIPViewToUI Called")
         if activePIPView == nil, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
+            CustomerGlu.pipLoaded = true
             if let videoURL = pipInfo.mobile.content[0].url {
                 self.downloadPiPVideo(videoURL: videoURL, pipInfo: pipInfo)
             }
@@ -1910,6 +1986,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal func dismissFloatingButtons(is_remove: Bool) {
         for floatBtn in self.arrFloatingButton {
             floatBtn.dismissFloatingButton(is_remove: is_remove)
+            
         }
     }
     
@@ -2021,11 +2098,16 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func setCurrentClassName(className: String) {
+       // OtherUtils.shared.createAndWriteToFile(content:"setCurrentClassName "+className)
 
         if(popuptimer != nil){
             popuptimer?.invalidate()
             popuptimer = nil
         }
+        
+        activePIPView?.hidePiPButton(ishidden: true)
+        
+        
         
         if CustomerGlu.isEntryPointEnabled {
             if !configScreens.contains(className) {
@@ -2033,7 +2115,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
 
             }
             sendEntryPointsIdLists()
-            
+                        
             CustomerGlu.getInstance.activescreenname = className
             print("MyScreen " + CustomerGlu.getInstance.getActiveScreenName())
 
@@ -2041,7 +2123,44 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             screenNameLogicForPIPView(className: className)
             
             showPopup(className: className)
+          
+            
         }
+        
+    }
+    
+    @objc public func setCGCurrentClassName(className: String,timestamp: String ,completion: @escaping (String) -> Void) {
+        OtherUtils.shared.createAndWriteToFile(content:"setCurrentClassName "+className)
+        CustomerGlu.pipEpochTimestamp = timestamp
+        if(popuptimer != nil){
+            popuptimer?.invalidate()
+            popuptimer = nil
+        }
+
+        activePIPView?.hidePiPButton(ishidden: true)
+        
+        if CustomerGlu.isEntryPointEnabled {
+            if !configScreens.contains(className) {
+                configScreens.append(className)
+
+            }
+            sendEntryPointsIdLists()
+                        
+            CustomerGlu.getInstance.activescreenname = className
+            print("MyScreen " + CustomerGlu.getInstance.getActiveScreenName())
+
+            screenNameLogicForFloatingButton(className: className)
+            screenNameLogicForPIPView(className: className)
+            
+            showPopup(className: className)
+            
+        }
+        var finalTimeStamp = CustomerGlu.pipEpochTimestamp
+        CustomerGlu.pipEpochTimestamp = ""
+        print("finalTimeStamp " + finalTimeStamp)
+
+        completion(finalTimeStamp)
+        
     }
     private func screenNameLogicForFloatingButton(className:String)
     {
@@ -2070,8 +2189,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     {
         var isHidden = true;
         var isActive  = false
+        
         if let pipView = self.activePIPView {
-           // pipView.hidePIPView(ishidden: true)
+            pipView.hidePiPButton(ishidden: true)
             isActive = true
             if pipView.pipInfo.mobile.container.ios.allowedActitivityList.count > 0 && pipView.pipInfo.mobile.container.ios.disallowedActitivityList.count > 0 {
                 if  !(pipView.pipInfo.mobile.container.ios.disallowedActitivityList.contains(className)) {
@@ -2092,7 +2212,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
         }
         if isHidden {
-            self.hidePiPView()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                self.hidePiPView()
+            })
+            
 
         }
 
@@ -2159,9 +2282,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 let pip = CustomerGlu.entryPointdata.filter {
                     $0._id == pip._id
                 }
-                
-                DispatchQueue.main.async {
-                    self.addPIPViewToUI(pipInfo: pip[0])
+                if CustomerGlu.pipDismissed == false && CustomerGlu.pipLoaded == false {
+                    DispatchQueue.main.async {
+                        self.addPIPViewToUI(pipInfo: pip[0])
+                    }
                 }
             }
             
@@ -2774,6 +2898,7 @@ extension CustomerGlu: CGMqttClientDelegate {
             if checkMqttEnabledComponents(containsKey: CGConstants.MQTT_Enabled_Components_State_Sync), let enableMQTT =  self.appconfigdata?.enableMqtt, enableMQTT {
                 // SDK Config Updation call & SDK re-initialised.
                 sdkInitialized = false // so the SDK can be re-initialised
+               
                 initializeSdk()
             }
         }

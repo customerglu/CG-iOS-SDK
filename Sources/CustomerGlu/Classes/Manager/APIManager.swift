@@ -41,7 +41,10 @@ internal class MethodandPath: Codable {
         switch serviceType {
         case .userRegister:
             self.method = "POST"
-            self.path = "user/v1/user/sdk?token=true"
+            self.path = "user/v1/user/sdk/generateusertoken?token=true"
+        case .updateUserAttributes:
+            self.method = "POST"
+            self.path = "user/v1/user/sdk/updateuser?token=true"
         case .getWalletRewards:
             self.method = "GET"
             self.path = "reward/v1.1/user"
@@ -54,7 +57,7 @@ internal class MethodandPath: Codable {
             self.path = "api/v1/report"
         case .entryPointdata:
             self.method = "GET"
-            self.path = "entrypoints/v1/list"
+            self.path = "entrypoints/v2/list/"+CustomerGlu.sdkWriteKey
         case .entrypoints_config:
             self.method = "POST"
             self.path = "entrypoints/v1/config"
@@ -93,6 +96,7 @@ internal class MethodandPath: Codable {
 
 enum CGService {
     case userRegister
+    case updateUserAttributes
     case getWalletRewards
     case addToCart
     case crashReport
@@ -176,9 +180,17 @@ class APIManager {
         //    }
         
         
-        let strUrl = "https://" + requestData.baseurl
-        guard let url = URL(string: strUrl + requestData.methodandpath.path) else { return }
-        var urlRequest = URLRequest(url: url)
+//        let strUrl = "https://" + requestData.baseurl
+//        
+//        guard let url = URL(string: strUrl + requestData.methodandpath.path) else { return }
+//        
+//        var urlRequest = URLRequest(url: url)
+        
+        let strUrl = "https://" + requestData.baseurl + requestData.methodandpath.path
+        guard let cleanedUrlString = OtherUtils.shared.cleanURL(url:strUrl), let url = URL(string: cleanedUrlString) else { return }
+        print("cleanedUrlString "+cleanedUrlString)
+            var urlRequest = URLRequest(url: url)
+
         
         // HTTP Method
         urlRequest.httpMethod = requestData.methodandpath.method//method.rawValue
@@ -200,6 +212,7 @@ class APIManager {
             if(true == CustomerGlu.isDebugingEnabled){
                 print(requestData.parametersDict as Any)
             }
+            
             if requestData.methodandpath.method == "GET" {
                 var urlString = ""
                 for (i, (keys, values)) in requestData.parametersDict.enumerated() {
@@ -208,7 +221,7 @@ class APIManager {
                 // Append GET Parameters to URL
                 var absoluteStr = url.absoluteString
                 absoluteStr += urlString
-                absoluteStr = absoluteStr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+//                absoluteStr = absoluteStr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
                 urlRequest.url = URL(string: absoluteStr)
             } else {
                 urlRequest.httpBody = try? JSONSerialization.data(withJSONObject: requestData.parametersDict as Any, options: .fragmentsAllowed)
@@ -295,8 +308,12 @@ class APIManager {
     
     private static func serviceCall<T: Decodable>(for type: CGService, parametersDict: NSDictionary, dispatchGroup: DispatchGroup = DispatchGroup(), completion: @escaping (Result<T, CGNetworkError>) -> Void) {
         let methodandpath = MethodandPath(serviceType: type)
-        var requestData = CGRequestData(baseurl: methodandpath.baseurl, methodandpath: methodandpath, parametersDict: parametersDict, dispatchGroup: dispatchGroup, retryCount: CustomerGlu.getInstance.appconfigdata?.allowedRetryCount ?? 1) 
         
+       
+            var requestData = CGRequestData(baseurl: methodandpath.baseurl, methodandpath: methodandpath, parametersDict: parametersDict, dispatchGroup: dispatchGroup, retryCount: CustomerGlu.getInstance.appconfigdata?.allowedRetryCount ?? 1)
+        
+
+    
         // Call Login API with API Router
         let block: (_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void = { (status, data, error) in
             switch status {
@@ -348,6 +365,9 @@ class APIManager {
         
     static func userRegister(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
         serviceCall(for: .userRegister, parametersDict: queryParameters,completion: completion)
+    }
+    static func updateUserAttributes(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
+        serviceCall(for: .updateUserAttributes, parametersDict: queryParameters,completion: completion)
     }
     
     static func getWalletRewards(queryParameters: NSDictionary, completion: @escaping (Result<CGCampaignsModel, CGNetworkError>) -> Void) {
