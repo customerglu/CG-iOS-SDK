@@ -142,7 +142,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     public static var appName: String = ""
     public static var isPIPExpandedViewMuted: Bool = false
-
+    public static var pipDismissed = false
+    public static var pipLoaded = false
     
     private override init() {
         super.init()
@@ -1854,6 +1855,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func addPIPViewToUI(pipInfo: CGData)
     {
         if activePIPView == nil, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
+            CustomerGlu.pipLoaded = true
             if let videoURL = pipInfo.mobile.content[0].url {
                 self.downloadPiPVideo(videoURL: videoURL, pipInfo: pipInfo)
             }
@@ -2209,9 +2211,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 let pip = CustomerGlu.entryPointdata.filter {
                     $0._id == pip._id
                 }
-                
-                DispatchQueue.main.async {
-                    self.addPIPViewToUI(pipInfo: pip[0])
+                if CustomerGlu.pipDismissed == false && CustomerGlu.pipLoaded == false {
+                    DispatchQueue.main.async {
+                        self.addPIPViewToUI(pipInfo: pip[0])
+                    }
                 }
             }
             

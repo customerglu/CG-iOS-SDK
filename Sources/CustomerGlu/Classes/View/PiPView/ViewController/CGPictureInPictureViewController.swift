@@ -351,7 +351,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
      }
     
     @objc func didTapOnClose(){
-            
+        CustomerGlu.pipDismissed = true
             self.dismissPiPButton(shouldCallEvent: true)
         
     }
