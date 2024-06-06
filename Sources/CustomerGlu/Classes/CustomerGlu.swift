@@ -147,7 +147,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     public static var appName: String = ""
     public static var isPIPExpandedViewMuted: Bool = false
-
     
     private override init() {
         super.init()
@@ -2285,7 +2284,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
                 if CustomerGlu.pipDismissed == false && CustomerGlu.pipLoaded == false {
                     DispatchQueue.main.async {
-                        
                         self.addPIPViewToUI(pipInfo: pip[0])
                     }
                 }
