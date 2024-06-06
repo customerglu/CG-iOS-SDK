@@ -224,7 +224,8 @@ class CGPiPExpandedViewController : UIViewController,CGPiPMovieVideoCallbacks {
      
     
     @objc func didTapOnClose(_ buttton: UIButton){
-        
+        CustomerGlu.pipDismissed = true
+
         CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: self.pipInfo?._id ?? "", entry_point_name: pipInfo?.name ?? "",content_campaign_id: pipInfo?.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "true")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5 , execute: {
             self.closePiPExpandedView()
