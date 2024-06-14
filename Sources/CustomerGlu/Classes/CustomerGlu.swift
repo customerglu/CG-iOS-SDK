@@ -2014,7 +2014,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     
     @objc public func configureLightLoaderURL(locallottieLoaderURL: String){
-        
+        print("Lottie Url: " + locallottieLoaderURL)
+
         if(locallottieLoaderURL.count > 0 && URL(string: locallottieLoaderURL) != nil){
             CustomerGlu.lightLoaderURL = locallottieLoaderURL
             let url = URL(string: locallottieLoaderURL)
@@ -2027,7 +2028,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func configureDarkLoaderURL(locallottieLoaderURL: String){
-        
+        print("Lottie Url: " + locallottieLoaderURL)
         if(locallottieLoaderURL.count > 0 && URL(string: locallottieLoaderURL) != nil){
             CustomerGlu.darkLoaderURL = locallottieLoaderURL
             let url = URL(string: locallottieLoaderURL)
@@ -2073,7 +2074,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         if videoURL.count > 0 && URL(string: videoURL) != nil {
             CustomerGlu.PiPVideoURL = videoURL
             let url = URL(string: videoURL)
-            CGFileDownloader.loadFileAsync(url: url!) { [weak self] (path, error) in
+            CGFileDownloader.loadPIPFileAsync(url: url!) { [weak self] (path, error) in
                 DispatchQueue.main.async { [weak self] in
                     if (error == nil){
                         self?.updatePiPLocalPath(path: path ?? "")
