@@ -821,8 +821,13 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 spinner.removeFromSuperview()
                 
                 if path.count > 0 && URL(string: path) != nil && path.hasSuffix(".json") {
+//                    progressView = LottieAnimationView(url: URL(string: "https://assets.customerglu.com/sdk-assets/embed-loader-skeleton-light.json") ?? "", closure: {_ in } )
+                    print("Lottie Path: "+path)
                     progressView = LottieAnimationView(filePath: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: path_key))
-                    
+//                    let url = URL(string: "https://assets.customerglu.com/sdk-assets/embed-loader-skeleton-light.json")
+//                    progressView = LottieAnimationView(url: url!) { _ in
+//                               // Handle the completion of loading the Lottie animation here, if needed
+//                           }
                     let size = (UIScreen.main.bounds.width <= UIScreen.main.bounds.height) ? UIScreen.main.bounds.width : UIScreen.main.bounds.height
                     
                     progressView.frame = CGRect(x: x-(size/2), y: y-(size/2), width: size, height: size)
@@ -831,6 +836,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                     progressView.play()
                     self.view.addSubview(progressView)
                     self.view.bringSubviewToFront(progressView)
+                    print("Lottie frame: \(progressView.frame)")
+                    print("Lottie superview: \(String(describing: progressView.superview))")
                 } else {
                     spinner = SpinnerView(frame: CGRect(x: x-30, y: y-30, width: 60, height: 60))
                     self.view.addSubview(spinner)
