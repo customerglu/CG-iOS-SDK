@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by hitesh on 28/10/21.
-//
-
 import Foundation
 import UIKit
 import SwiftUI
@@ -28,16 +21,12 @@ private enum ContentType: String {
 
 // MARK: - MethodandPath
 internal class MethodandPath: Codable {
-    
-    // MARK: - Variables
     internal var method: String
     internal var path: String
     internal var baseurl: String
     
     init(serviceType: CGService) {
-        // Default value else change it in respective enum case.
         self.baseurl = BaseUrls.baseurl
-        
         switch serviceType {
         case .userRegister:
             self.method = "POST"
@@ -57,7 +46,7 @@ internal class MethodandPath: Codable {
             self.path = "api/v1/report"
         case .entryPointdata:
             self.method = "GET"
-            self.path = "entrypoints/v2/list/"+CustomerGlu.sdkWriteKey
+            self.path = "entrypoints/v2/list/\(CustomerGlu.sdkWriteKey)"
         case .entrypoints_config:
             self.method = "POST"
             self.path = "entrypoints/v1/config"
@@ -124,13 +113,22 @@ private struct BaseUrls {
 }
 
 // MARK: - CGRequestData
-private struct CGRequestData {
+private class CGRequestData {
     var baseurl: String
     var methodandpath: MethodandPath
     var parametersDict: NSDictionary
-    var dispatchGroup:DispatchGroup = DispatchGroup()
+    var dispatchGroup: DispatchGroup = DispatchGroup()
     var retryCount: Int = 1
     var completionBlock: ((_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void)?
+    
+    init(baseurl: String, methodandpath: MethodandPath, parametersDict: NSDictionary, dispatchGroup: DispatchGroup, retryCount: Int, completionBlock: ((_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void)?) {
+        self.baseurl = baseurl
+        self.methodandpath = methodandpath
+        self.parametersDict = parametersDict
+        self.dispatchGroup = dispatchGroup
+        self.retryCount = retryCount
+        self.completionBlock = completionBlock
+    }
 }
 
 // MARK: - CGAPIStatus
@@ -172,28 +170,17 @@ class APIManager {
     static let shared = APIManager()
     
     private static func performRequest(withData requestData: CGRequestData) {
-        
-        //Grouped compelete API-call work flow into a DispatchGroup so that it can maintanted the oprational queue for task completion
-        // Enter into DispatchGroup
-        //   if(MethodNameandPath.getWalletRewards.path == methodandpath.path){
-        requestData.dispatchGroup.enter()
-        //    }
-        
-        
-//        let strUrl = "https://" + requestData.baseurl
-//        
-//        guard let url = URL(string: strUrl + requestData.methodandpath.path) else { return }
-//        
-//        var urlRequest = URLRequest(url: url)
-        
         let strUrl = "https://" + requestData.baseurl + requestData.methodandpath.path
-        guard let cleanedUrlString = OtherUtils.shared.cleanURL(url:strUrl), let url = URL(string: cleanedUrlString) else { return }
-        print("cleanedUrlString "+cleanedUrlString)
-            var urlRequest = URLRequest(url: url)
-
+        guard let cleanedUrlString = OtherUtils.shared.cleanURL(url: strUrl), let url = URL(string: cleanedUrlString) else {
+            print("Failed to create URL from string: \(strUrl)")
+            return
+        }
+        print("URL: \(url)")
+        
+        var urlRequest = URLRequest(url: url)
         
         // HTTP Method
-        urlRequest.httpMethod = requestData.methodandpath.method//method.rawValue
+        urlRequest.httpMethod = requestData.methodandpath.method
         
         // Common Headers
         urlRequest.setValue(ContentType.json.rawValue, forHTTPHeaderField: HTTPHeaderField.contentType.rawValue)
@@ -203,119 +190,108 @@ class APIManager {
         urlRequest.setValue(CustomerGlu.isDebugingEnabled.description, forHTTPHeaderField: HTTPHeaderField.sandbox.rawValue)
         urlRequest.setValue(APIParameterKey.cgsdkversionvalue, forHTTPHeaderField: HTTPHeaderField.cgsdkversionkey.rawValue)
         
-        if UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) != nil {
-            urlRequest.setValue("\(APIParameterKey.bearer) " + CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN), forHTTPHeaderField: HTTPHeaderField.authorization.rawValue)
-            urlRequest.setValue("\(APIParameterKey.bearer) " + CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN), forHTTPHeaderField: HTTPHeaderField.xgluauth.rawValue)
+        if let token = UserDefaults.standard.object(forKey: CGConstants.CUSTOMERGLU_TOKEN) as? String {
+            let decryptedToken = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_TOKEN)
+            urlRequest.setValue("\(APIParameterKey.bearer) \(decryptedToken)", forHTTPHeaderField: HTTPHeaderField.authorization.rawValue)
+            urlRequest.setValue("\(APIParameterKey.bearer) \(decryptedToken)", forHTTPHeaderField: HTTPHeaderField.xgluauth.rawValue)
         }
         
-        if requestData.parametersDict.count > 0 { // Check Parameters & Move Accordingly
-            if(true == CustomerGlu.isDebugingEnabled){
-                print(requestData.parametersDict as Any)
+        if requestData.parametersDict.count > 0 {
+            if CustomerGlu.isDebugingEnabled {
+                print("Parameters: \(requestData.parametersDict)")
             }
             
             if requestData.methodandpath.method == "GET" {
                 var urlString = ""
-                for (i, (keys, values)) in requestData.parametersDict.enumerated() {
-                    urlString += i == 0 ? "?\(keys)=\(values)" : "&\(keys)=\(values)"
+                for (i, (key, value)) in requestData.parametersDict.enumerated() {
+                    urlString += i == 0 ? "?\(key)=\(value)" : "&\(key)=\(value)"
                 }
-                // Append GET Parameters to URL
                 var absoluteStr = url.absoluteString
                 absoluteStr += urlString
-//                absoluteStr = absoluteStr.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
                 urlRequest.url = URL(string: absoluteStr)
+                print("GET URL with Parameters: \(absoluteStr)")
             } else {
                 urlRequest.httpBody = try? JSONSerialization.data(withJSONObject: requestData.parametersDict as Any, options: .fragmentsAllowed)
-            }
-        }
-        
-        if(true == CustomerGlu.isDebugingEnabled) {
-            print(urlRequest)
-        }
-        
-        let task = shared.session.dataTask(with: urlRequest) { data, response, error in
-            
-            // Leave from dispachgroup
-            requestData.dispatchGroup.leave()
-            
-            
-            
-            var isRetry = false
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 401 {
-                    CustomerGlu.getInstance.clearGluData()
-                    return
-                } else if httpResponse.statusCode == 429 || httpResponse.statusCode == 502 || httpResponse.statusCode == 408 {
-                    isRetry = true
+                if let httpBody = urlRequest.httpBody {
+                    print("HTTP Body: \(String(data: httpBody, encoding: .utf8) ?? "")")
                 }
             }
-            guard let data = data, error == nil else { return }
+        }
+        
+        if CustomerGlu.isDebugingEnabled {
+            print("Request: \(urlRequest)")
+        }
+        
+        // Enter dispatch group
+        requestData.dispatchGroup.enter()
+        
+        let task = APIManager.shared.session.dataTask(with: urlRequest) { [weak requestData] data, response, error in
+            defer {
+                // Leave dispatch group
+                requestData?.dispatchGroup.leave()
+            }
+            
+            guard let requestData = requestData else { return }
+            
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+                requestData.completionBlock?(.failure, nil, error as? CGNetworkError)
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received")
+                requestData.completionBlock?(.failure, nil, CGNetworkError.other)
+                return
+            }
+            
             do {
                 let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
-                // Get JSON, Clean it and Convert to Object
-                guard let JSON = json else { return }
+                guard let JSON = json else {
+                    print("Failed to parse JSON")
+                    requestData.completionBlock?(.failure, nil, CGNetworkError.bindingFailed)
+                    return
+                }
                 JSON.printJson()
                 let cleanedJSON = cleanJSON(json: JSON, isReturn: true)
-                if isRetry {
-                    requestData.completionBlock?(.success, cleanedJSON, CGNetworkError.badURLRetry)
-                } else {
-                    requestData.completionBlock?(.success, cleanedJSON, nil)
-                }
-            } catch let error {
-                if(true == CustomerGlu.isDebugingEnabled){
-                    print(error)
-                }
-                
-                if isRetry {
-                    requestData.completionBlock?(.failure, nil, CGNetworkError.badURLRetry)
-                } else {
-                    requestData.completionBlock?(.failure, nil, error as? CGNetworkError)
-                }
+                requestData.completionBlock?(.success, cleanedJSON, nil)
+            } catch let parseError {
+                print("JSON Parsing Error: \(parseError)")
+                requestData.completionBlock?(.failure, nil, CGNetworkError.bindingFailed)
             }
         }
         task.resume()
-        
-        // wait untill dispatchGroup.leave() not called
         requestData.dispatchGroup.wait()
     }
     
     private static func blockOperationForService(withRequestData requestData: CGRequestData) {
-        // create a blockOperation for avoiding miltiple API call at same time
         let blockOperation = BlockOperation()
         
-        // Added Task into Queue
         blockOperation.addExecutionBlock {
             performRequest(withData: requestData)
         }
         
-        // Add dependency to finish previus task before starting new one
         if let lastOperation = ApplicationManager.operationQueue.operations.last {
             blockOperation.addDependency(lastOperation)
         }
         
-        //Added task into Queue
         ApplicationManager.operationQueue.addOperation(blockOperation)
     }
     
     private static func blockOperationForServiceWithDelay(andRequestData requestData: CGRequestData) {
-        // Delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: {
-            // Background thread
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
             DispatchQueue.global(qos: .userInitiated).async {
                 blockOperationForService(withRequestData: requestData)
             }
-        })
+        }
     }
     
     private static func serviceCall<T: Decodable>(for type: CGService, parametersDict: NSDictionary, dispatchGroup: DispatchGroup = DispatchGroup(), completion: @escaping (Result<T, CGNetworkError>) -> Void) {
         let methodandpath = MethodandPath(serviceType: type)
+        let requestData = CGRequestData(baseurl: methodandpath.baseurl, methodandpath: methodandpath, parametersDict: parametersDict, dispatchGroup: dispatchGroup, retryCount: CustomerGlu.getInstance.appconfigdata?.allowedRetryCount ?? 1, completionBlock: nil)
         
-       
-            var requestData = CGRequestData(baseurl: methodandpath.baseurl, methodandpath: methodandpath, parametersDict: parametersDict, dispatchGroup: dispatchGroup, retryCount: CustomerGlu.getInstance.appconfigdata?.allowedRetryCount ?? 1)
-        
-
-    
-        // Call Login API with API Router
-        let block: (_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void = { (status, data, error) in
+        let block: (_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void = { [weak requestData] (status, data, error) in
+            guard let requestData = requestData else { return }
             switch status {
             case .success:
                 if let data {
@@ -364,14 +340,15 @@ class APIManager {
     }
         
     static func userRegister(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
-        serviceCall(for: .userRegister, parametersDict: queryParameters,completion: completion)
+        serviceCall(for: .userRegister, parametersDict: queryParameters, completion: completion)
     }
+    
     static func updateUserAttributes(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
-        serviceCall(for: .updateUserAttributes, parametersDict: queryParameters,completion: completion)
+        serviceCall(for: .updateUserAttributes, parametersDict: queryParameters, completion: completion)
     }
     
     static func getWalletRewards(queryParameters: NSDictionary, completion: @escaping (Result<CGCampaignsModel, CGNetworkError>) -> Void) {
-        serviceCall(for: .getWalletRewards, parametersDict: queryParameters,completion: completion)
+        serviceCall(for: .getWalletRewards, parametersDict: queryParameters, completion: completion)
     }
     
     static func addToCart(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
@@ -428,49 +405,36 @@ class APIManager {
     
     // MARK: - Private Class Methods
     
-    // Recursive Method
     @discardableResult
     static private func cleanJSON(json: Dictionary<String, Any>, isReturn: Bool = false) -> Dictionary<String, Any> {
-        
-        // Create Local Object to Mutate
         var actualJson = json
         
-        // Iterate Over All Pairs
         for (key, value) in actualJson {
-            
-            if let dict = value as? Dictionary<String, Any> { // If Value is Dictionary then call itself with new value
+            if let dict = value as? Dictionary<String, Any> {
                 cleanJSON(json: dict)
             } else if let array = value as? [Dictionary<String, Any>] {
-                
-                // If Value is Array then call itself according to number of elements
                 for element in array {
                     cleanJSON(json: element)
                 }
             }
             
-            // If value if not null then move inside
             if !(value is NSNull) {
-                
-                // If value is "_null" String then remove it
                 if let text = value as? String, text == "_null" {
                     actualJson.removeValue(forKey: key)
                 }
             } else {
-                
-                // remove null value
                 actualJson.removeValue(forKey: key)
             }
         }
         
-        // If called with isReturn as true then only return actual object
         if isReturn {
             return actualJson
-        } else { // else return dummy object
+        } else {
             return Dictionary<String, Any>()
         }
     }
     
-    static private func dictToObject <T: Decodable>(dict: Dictionary<String, Any>, type: T.Type) -> T? {
+    static private func dictToObject<T: Decodable>(dict: Dictionary<String, Any>, type: T.Type) -> T? {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: dict, options: .prettyPrinted)
             let jsonDecoder = JSONDecoder()
@@ -481,8 +445,6 @@ class APIManager {
             return nil
         }
     }
-    
-    
 }
 
 // We create a partial mock by subclassing the original class
@@ -493,8 +455,6 @@ class URLSessionDataTaskMock: URLSessionDataTask {
         self.closure = closure
     }
     
-    // We override the 'resume' method and simply call our closure
-    // instead of actually resuming any task.
     override func resume() {
         closure()
     }
@@ -503,15 +463,10 @@ class URLSessionDataTaskMock: URLSessionDataTask {
 class URLSessionMock: URLSession {
     typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
     
-    // Properties that enable us to set exactly what data or error
-    // we want our mocked URLSession to return for any request.
     var data: Data?
     var error: Error?
     
-    override func dataTask(
-        with url: URLRequest,
-        completionHandler: @escaping CompletionHandler
-    ) -> URLSessionDataTask {
+    override func dataTask(with url: URLRequest, completionHandler: @escaping CompletionHandler) -> URLSessionDataTask {
         let data = self.data
         let error = self.error
         
