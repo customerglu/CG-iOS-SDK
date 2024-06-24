@@ -847,9 +847,17 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             
             if let allowProxy = self.appconfigdata?.allowProxy {
                 if allowProxy {
-                    self.checkSSLCertificateExpiration()
+                  //  self.checkSSLCertificateExpiration()
                 }
             }
+            
+            if let preloadWebView  = self.appconfigdata?.preloadWebView {
+                if preloadWebView {
+                    let viewController = CGPreloadWKWebViewHelper()
+                    viewController.loadServiceWorkerInBackground()
+                }
+            }
+           
             
             if(self.appconfigdata!.lightBackground != nil){
                 CustomerGlu.getInstance.configureLightBackgroundColor(color: UIColor(hex: self.appconfigdata!.lightBackground ?? CustomerGlu.lightBackground.hexString) ?? CustomerGlu.lightBackground)
@@ -2820,20 +2828,20 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     private func checkSSLCertificateExpiration() {
-        DispatchQueue.main.async {
-            if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
-                let viewController = CGPreloadWKWebViewHelper()
-                viewController.viewDidLoad()
-            }
-           
-        }
-        
-        guard let appconfigdata = appconfigdata, let enableSslPinning = appconfigdata.enableSslPinning, enableSslPinning else { return }
-        
-        guard !CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey).isEmpty else {
-            updateLocalCertificate()
-            return
-        }
+//        DispatchQueue.main.async {
+//            if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
+//                let viewController = CGPreloadWKWebViewHelper()
+//               // viewController.viewDidLoad()
+//            }
+//           
+//        }
+//        
+//        guard let appconfigdata = appconfigdata, let enableSslPinning = appconfigdata.enableSslPinning, enableSslPinning else { return }
+//        
+//        guard !CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey).isEmpty else {
+//            updateLocalCertificate()
+//            return
+//        }
     }
     
     public func updateLocalCertificate() {
