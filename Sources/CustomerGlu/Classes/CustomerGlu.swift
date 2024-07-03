@@ -847,9 +847,17 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             
             if let allowProxy = self.appconfigdata?.allowProxy {
                 if allowProxy {
-                    self.checkSSLCertificateExpiration()
+                  //  self.checkSSLCertificateExpiration()
                 }
             }
+            
+            if let preloadWebView  = self.appconfigdata?.preloadWebView {
+                if preloadWebView {
+                    let viewController = CGPreloadWKWebViewHelper()
+                    viewController.loadServiceWorkerInBackground()
+                }
+            }
+           
             
             if(self.appconfigdata!.lightBackground != nil){
                 CustomerGlu.getInstance.configureLightBackgroundColor(color: UIColor(hex: self.appconfigdata!.lightBackground ?? CustomerGlu.lightBackground.hexString) ?? CustomerGlu.lightBackground)
@@ -2273,27 +2281,33 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     internal func addPIPViews()
     {
-        let pipViews = popupDict.filter
-        {
-            $0.type == "PIP"
-        }
-        if pipViews.count != 0
-        {
-            for pip in pipViews {
-                let pip = CustomerGlu.entryPointdata.filter {
-                    $0._id == pip._id
-                }
-                if CustomerGlu.pipDismissed == false && CustomerGlu.pipLoaded == false {
-                    DispatchQueue.main.async {
-                        self.addPIPViewToUI(pipInfo: pip[0])
+        if CustomerGlu.isEntryPointEnabled {
+            let pipViews = popupDict.filter { $0.type == "PIP" }
+            print("Filtered PIP views: \(pipViews)")
+            
+            if !pipViews.isEmpty {
+                for pipView in pipViews {
+                    let matchingPips = CustomerGlu.entryPointdata.filter { $0._id == pipView._id }
+                    print("Matching PIP for id \(pipView._id): \(matchingPips)")
+                    
+                    if !matchingPips.isEmpty {
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
+                            print("Adding PIP view to UI for id: \(matchingPips[0]._id)")
+                            self.addPIPViewToUI(pipInfo: matchingPips[0])
+                        }
+                    } else {
+                        print("No matching PIP found for id: \(pipView._id)")
                     }
                 }
+            } else {
+                print("No PIP views to process.")
+                CGFileDownloader.deletePIPVideo()
             }
-            
-        }else{
-            CGFileDownloader.deletePIPVideo()
         }
+
     }
+
     
     internal func postBannersCount() {
         
@@ -2820,20 +2834,20 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     private func checkSSLCertificateExpiration() {
-        DispatchQueue.main.async {
-            if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
-                let viewController = CGPreloadWKWebViewHelper()
-                viewController.viewDidLoad()
-            }
-           
-        }
-        
-        guard let appconfigdata = appconfigdata, let enableSslPinning = appconfigdata.enableSslPinning, enableSslPinning else { return }
-        
-        guard !CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey).isEmpty else {
-            updateLocalCertificate()
-            return
-        }
+//        DispatchQueue.main.async {
+//            if let rootViewController = UIApplication.shared.keyWindow?.rootViewController {
+//                let viewController = CGPreloadWKWebViewHelper()
+//               // viewController.viewDidLoad()
+//            }
+//           
+//        }
+//        
+//        guard let appconfigdata = appconfigdata, let enableSslPinning = appconfigdata.enableSslPinning, enableSslPinning else { return }
+//        
+//        guard !CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey).isEmpty else {
+//            updateLocalCertificate()
+//            return
+//        }
     }
     
     public func updateLocalCertificate() {

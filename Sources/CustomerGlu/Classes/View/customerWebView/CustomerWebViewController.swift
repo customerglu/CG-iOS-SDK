@@ -153,37 +153,74 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
          //   self.loaderShow(withcoordinate: getframe().midX, y: getframe().midY)
             
             campaign_id = campaign_id.trimSpace()
-            
-            ApplicationManager.loadAllCampaignsApi(type: "", value: campaign_id, loadByparams: [:]) { success, campaignsModel in
-                if success {
-                    self.loaderHide()
-                    self.defaultwalleturl = String(campaignsModel?.defaultUrl ?? "")
-                    if self.campaign_id.count == 0 {
-                        DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
-                            self.setupWebViewCustomFrame(url: campaignsModel?.defaultUrl ?? "")
-                        }
-                    } else if self.campaign_id.contains("http://") || self.campaign_id.contains("https://") {
-                        DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
-                            self.setupWebViewCustomFrame(url: self.campaign_id)
-                        }
-                    } else {
-                        let campaigns: [CGCampaigns] = (campaignsModel?.campaigns)!
-                        let filteredArray = campaigns.filter{($0.campaignId.elementsEqual(self.campaign_id)) || ($0.banner != nil && $0.banner?.tag != nil && $0.banner?.tag != "" && ($0.banner!.tag!.elementsEqual(self.campaign_id)))}
-                        if filteredArray.count > 0 {
-                            DispatchQueue.main.async {
-                                self.setupWebViewCustomFrame(url: filteredArray[0].url)
-                            }
-                        } else {
+            print("WCampaign "+campaign_id)
+            if campaign_id.isEmpty || campaign_id == CGConstants.CGOPENWALLET
+            {
+                ApplicationManager.loadAllCampaignsApi(type: "", value: campaign_id, loadByparams: [:]) { success, campaignsModel in
+                    if success {
+                        self.loaderHide()
+                        self.defaultwalleturl = String(campaignsModel?.defaultUrl ?? "")
+                        if self.campaign_id.count == 0 {
                             DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
                                 self.setupWebViewCustomFrame(url: campaignsModel?.defaultUrl ?? "")
                             }
+                        } else if self.campaign_id.contains("http://") || self.campaign_id.contains("https://") {
+                            DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                                self.setupWebViewCustomFrame(url: self.campaign_id)
+                            }
+                        } else {
+                            let campaigns: [CGCampaigns] = (campaignsModel?.campaigns)!
+                            let filteredArray = campaigns.filter{($0.campaignId.elementsEqual(self.campaign_id)) || ($0.banner != nil && $0.banner?.tag != nil && $0.banner?.tag != "" && ($0.banner!.tag!.elementsEqual(self.campaign_id)))}
+                            if filteredArray.count > 0 {
+                                DispatchQueue.main.async {
+                                    self.setupWebViewCustomFrame(url: filteredArray[0].url)
+                                }
+                            } else {
+                                DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                                    self.setupWebViewCustomFrame(url: campaignsModel?.defaultUrl ?? "")
+                                }
+                            }
                         }
+                    } else {
+                        self.loaderHide()
+                        CustomerGlu.getInstance.printlog(cglog: "Fail to load loadAllCampaignsApi", isException: false, methodName: "CustomerWebViewController-viewDidLoad", posttoserver: true)
                     }
-                } else {
-                    self.loaderHide()
-                    CustomerGlu.getInstance.printlog(cglog: "Fail to load loadAllCampaignsApi", isException: false, methodName: "CustomerWebViewController-viewDidLoad", posttoserver: true)
                 }
+            }else{
+                ApplicationManager.loadSingleCampaignById(value: campaign_id) { success, campaignsModel in
+                    if success {
+                        self.loaderHide()
+                        self.defaultwalleturl = String(campaignsModel?.defaultUrl ?? "")
+                        if self.campaign_id.count == 0 {
+                            DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                                self.setupWebViewCustomFrame(url: campaignsModel?.defaultUrl ?? "")
+                            }
+                        } else if self.campaign_id.contains("http://") || self.campaign_id.contains("https://") {
+                            DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                                self.setupWebViewCustomFrame(url: self.campaign_id)
+                            }
+                        } else {
+                            let campaigns: [CGCampaigns] = (campaignsModel?.campaigns)!
+                            let filteredArray = campaigns.filter{($0.campaignId.elementsEqual(self.campaign_id)) || ($0.banner != nil && $0.banner?.tag != nil && $0.banner?.tag != "" && ($0.banner!.tag!.elementsEqual(self.campaign_id)))}
+                            if filteredArray.count > 0 {
+                                DispatchQueue.main.async {
+                                    self.setupWebViewCustomFrame(url: filteredArray[0].url)
+                                }
+                            } else {
+                                DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                                    self.setupWebViewCustomFrame(url: campaignsModel?.defaultUrl ?? "")
+                                }
+                            }
+                        }
+                    } else {
+                        self.loaderHide()
+                        CustomerGlu.getInstance.printlog(cglog: "Fail to load loadAllCampaignsApi", isException: false, methodName: "CustomerWebViewController-viewDidLoad", posttoserver: true)
+                    }
+                }
+                
+                
             }
+            
         } else {
             webView = WKWebView(frame: getframe(), configuration: config) //set your own frame
             loadwebView(url: urlStr, x: x, y: y)
