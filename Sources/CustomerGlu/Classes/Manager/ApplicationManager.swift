@@ -97,6 +97,30 @@ class ApplicationManager {
         }
     }
     
+    public static func loadSingleCampaignById(value: String, completion: @escaping (Bool, CGCampaignsModel?) -> Void) {
+        if CustomerGlu.sdk_disable! == true {
+            return
+        }
+        
+        var params = [String: AnyHashable]()
+        
+        params["campaignId"] = value as AnyHashable
+        APIManager.getSingleCampaign(queryParameters: params as NSDictionary) { result in
+            switch result {
+            case .success(let response):
+                // Save this - To open / not open wallet incase of failure / invalid campaignId in loadCampaignById
+                
+                completion(true, response)
+                
+            case .failure(let error):
+                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "ApplicationManager-loadAllCampaignsApi", posttoserver: true)
+                completion(false, nil)
+            }
+        }
+    }
+    
+    
+    
     public static func getLocalCertificateAsNSData() -> NSData? {
         let base64String = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.clientSSLCertificateAsStringKey)
         if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {

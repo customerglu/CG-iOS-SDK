@@ -37,6 +37,9 @@ internal class MethodandPath: Codable {
         case .getWalletRewards:
             self.method = "GET"
             self.path = "reward/v1.1/user"
+        case .getSingleCampaign:
+            self.method = "GET"
+            self.path = "reward/v1.1/user"
         case .addToCart:
             self.method = "POST"
             self.path = "server/v4"
@@ -87,6 +90,7 @@ enum CGService {
     case userRegister
     case updateUserAttributes
     case getWalletRewards
+    case getSingleCampaign
     case addToCart
     case crashReport
     case entryPointdata
@@ -170,7 +174,14 @@ class APIManager {
     static let shared = APIManager()
     
     private static func performRequest(withData requestData: CGRequestData) {
-        let strUrl = "https://" + requestData.baseurl + requestData.methodandpath.path
+        var strUrl = "https://" + requestData.baseurl + requestData.methodandpath.path
+
+        if requestData.parametersDict.count > 0 {
+            if let campaignId = requestData.parametersDict["campaignId"] as? String {
+                strUrl+="/"+campaignId
+            }
+        }
+        
         guard let cleanedUrlString = OtherUtils.shared.cleanURL(url: strUrl), let url = URL(string: cleanedUrlString) else {
             print("Failed to create URL from string: \(strUrl)")
             return
@@ -288,6 +299,12 @@ class APIManager {
     
     private static func serviceCall<T: Decodable>(for type: CGService, parametersDict: NSDictionary, dispatchGroup: DispatchGroup = DispatchGroup(), completion: @escaping (Result<T, CGNetworkError>) -> Void) {
         let methodandpath = MethodandPath(serviceType: type)
+        var url = methodandpath.baseurl
+        if (type == CGService.getSingleCampaign){
+            url = methodandpath.baseurl
+        }
+        print("My Url " + url)
+
         let requestData = CGRequestData(baseurl: methodandpath.baseurl, methodandpath: methodandpath, parametersDict: parametersDict, dispatchGroup: dispatchGroup, retryCount: CustomerGlu.getInstance.appconfigdata?.allowedRetryCount ?? 1, completionBlock: nil)
         
         let block: (_ status: CGAPIStatus, _ data: [String: Any]?, _ error: CGNetworkError?) -> Void = { [weak requestData] (status, data, error) in
@@ -349,6 +366,10 @@ class APIManager {
     
     static func getWalletRewards(queryParameters: NSDictionary, completion: @escaping (Result<CGCampaignsModel, CGNetworkError>) -> Void) {
         serviceCall(for: .getWalletRewards, parametersDict: queryParameters, completion: completion)
+    }
+    
+    static func getSingleCampaign(queryParameters: NSDictionary, completion: @escaping (Result<CGCampaignsModel, CGNetworkError>) -> Void) {
+        serviceCall(for: .getSingleCampaign, parametersDict: queryParameters, completion: completion)
     }
     
     static func addToCart(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {
