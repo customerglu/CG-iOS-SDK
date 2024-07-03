@@ -175,10 +175,12 @@ class APIManager {
     
     private static func performRequest(withData requestData: CGRequestData) {
         var strUrl = "https://" + requestData.baseurl + requestData.methodandpath.path
-
-        if requestData.parametersDict.count > 0 {
-            if let campaignId = requestData.parametersDict["campaignId"] as? String {
-                strUrl+="/"+campaignId
+        if requestData.methodandpath.path == "reward/v1.1/user"
+        {
+            if requestData.parametersDict.count > 0 {
+                if let campaignId = requestData.parametersDict["campaignId"] as? String {
+                    strUrl+="/"+campaignId
+                }
             }
         }
         
