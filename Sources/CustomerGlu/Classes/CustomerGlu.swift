@@ -2546,6 +2546,18 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
              }
          }
     
+    
+//    @objc public func showTooltip(view: UIView) {
+//         let tooltip = TooltipView(text: "This is a tooltip")
+//         tooltip.frame = CGRect(x: view.frame.midX - 75, y: view.frame.minY - 60, width: 150, height: 60)
+//         view.addSubview(tooltip)
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+//                tooltip.removeFromSuperview()
+//            }
+//     }
+    
+    
     internal func postAnalyticsEventForEntryPoints(event_name:String, entry_point_id:String, entry_point_name:String, entry_point_container:String, content_campaign_id:String = "", action_type: String = "OPEN", open_container:String, action_c_campaign_id:String) {
         if (false == CustomerGlu.analyticsEvent) {
             return

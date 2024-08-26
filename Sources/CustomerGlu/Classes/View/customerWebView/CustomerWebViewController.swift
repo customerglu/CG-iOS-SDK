@@ -313,7 +313,12 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 darkUrl = url + "&darkMode=" + (CustomerGlu.getInstance.checkIsDarkMode() ? "true" : "false")
             }
             
-            webView.load(URLRequest(url: CustomerGlu.getInstance.validateURL(url: URL(string: darkUrl)!)))
+          //  webView.load(URLRequest(url: CustomerGlu.getInstance.validateURL(url: URL(string: darkUrl)!)))
+            
+            var finalUrl = replaceURL(originalURL: darkUrl)
+            print("Web final url "+finalUrl)
+            webView.load(URLRequest(url: URL(string: finalUrl )!))
+
             webView.isHidden = true
             
             coverview.frame = webView.frame
@@ -329,6 +334,11 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         } else {
             self.closePage(animated: false,dismissaction: CGDismissAction.UI_BUTTON)
         }
+    }
+    
+    func replaceURL(originalURL: String) -> String {
+        let newURL = originalURL.replacingOccurrences(of: "https://constellation.customerglu.com/", with: "http://192.168.29.184:8080/")
+        return newURL
     }
     
     @objc private  func timeoutforpageload(sender: Timer) {
