@@ -9,10 +9,10 @@ import Foundation
 import UIKit
 
 class ApplicationManager {
-    public static var baseUrl = "api-us.customerglu.com/"
+    public static var baseUrl = "api-in.customerglu.com/"
     public static var devbaseUrl = "dev-api.customerglu.com/"
-    public static var streamUrl = "stream-us.customerglu.com/"
-    public static var eventUrl = "events-us.customerglu.com/"
+    public static var streamUrl = "stream-in.customerglu.com/"
+    public static var eventUrl = "events-in.customerglu.com/"
     public static var analyticsUrl = "analytics.customerglu.com/"
     public static var diagnosticUrl = "diagnostics.customerglu.com/"
     public static var accessToken: String?
