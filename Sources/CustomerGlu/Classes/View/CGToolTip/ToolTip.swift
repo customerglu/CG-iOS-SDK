@@ -47,7 +47,7 @@ public class CGTooltipView: UIView {
         super.init(frame: .zero)
         tooltipHeadingLabel.text = heading
         tooltipLabel.text = text
-        stepLabel.text = "3/3"
+        stepLabel.text = ""
         setupView()
     }
     

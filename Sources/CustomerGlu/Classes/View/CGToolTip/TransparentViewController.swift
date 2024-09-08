@@ -50,7 +50,7 @@ class TransparentViewController: UIViewController {
         addNotch()
         addHighlighter()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
-            tooltipController = FloatingTooltipController(tooltipText: "This is a tooltipdas sdfasads nvjgh",position: "ABSOLUTE",xAxis: self.buttonXPosition,yAxis: self.buttonYPosition - 16,isNotchShown: false)
+            tooltipController = FloatingTooltipController(tooltipText: "Shop Now and get Exciting Rewards",position: "ABSOLUTE",xAxis: self.buttonXPosition,yAxis: self.buttonYPosition - 16,isNotchShown: false)
             tooltipController?.showTooltip()
         }
         // Configure the button
