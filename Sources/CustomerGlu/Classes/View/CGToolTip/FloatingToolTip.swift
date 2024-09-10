@@ -38,7 +38,7 @@ public class FloatingTooltipController: UIViewController {
         window.rootViewController = self
         
         // Initialize the CGTooltipView
-        let tooltipView = CGTooltipView(heading: "Win Exciting Rewards!",text: tooltipText,isNotchShown: self.isNotchvisible)
+        let tooltipView = CGTooltipView(heading: "Save for later",text: tooltipText,isNotchShown: self.isNotchvisible)
         self.tooltipView = tooltipView
         window.tooltipView = tooltipView
         

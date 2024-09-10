@@ -27,7 +27,7 @@ public class CGTooltipView: UIView {
     
     private let actionButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Ok", for: .normal)
+        button.setTitle("Okay", for: .normal)
         button.setTitleColor(.black, for: .normal)
         button.backgroundColor = UIColor(hex: "#F0C419") // Yellow background
         button.layer.cornerRadius = 4

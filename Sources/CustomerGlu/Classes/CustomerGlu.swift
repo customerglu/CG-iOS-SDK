@@ -1827,10 +1827,21 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 guard let topController = UIViewController.topViewController() else {
                     return
-                } 
-                let transparentVC = TransparentViewController(opacity: 0.7, buttonX: xAxis, buttonY: yAxis,centerX:centerX,
-                                                              maxXAxis:maxXAxis,maxyAxis:maxyAxis,anchorviewHeight: anchorviewHeight,anchorviewWidth:anchorviewWidth)
-                topController.present(transparentVC, animated: true, completion: nil)
+                }
+                let transparentVC = TransparentViewController(opacity: 0.7, buttonX: xAxis, buttonY: yAxis, centerX: centerX,
+                                                              maxXAxis: maxXAxis, maxyAxis: maxyAxis, anchorviewHeight: anchorviewHeight, anchorviewWidth: anchorviewWidth)
+
+                // Set the presentation style for fade animation
+                transparentVC.modalPresentationStyle = .overFullScreen
+                transparentVC.view.alpha = 0.0 // Initially set the opacity to 0
+
+                // Present the view controller without animation initially
+                topController.present(transparentVC, animated: false, completion: {
+                    // Animate the opacity to create a fade-in effect
+                    UIView.animate(withDuration: 0.3) {
+                        transparentVC.view.alpha = 1.0 // Fade to full opacity
+                    }
+                })
             }
         }
     }
