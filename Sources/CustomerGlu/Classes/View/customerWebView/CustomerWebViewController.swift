@@ -313,10 +313,28 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                 darkUrl = url + "&darkMode=" + (CustomerGlu.getInstance.checkIsDarkMode() ? "true" : "false")
             }
             
-            webView.load(URLRequest(url: CustomerGlu.getInstance.validateURL(url: URL(string: darkUrl)!)))
+          //  webView.load(URLRequest(url: CustomerGlu.getInstance.validateURL(url: URL(string: darkUrl)!)))
+            
+        //    var finalUrl = replaceURL(originalURL: darkUrl)
+            print("Web final url "+darkUrl)
+            if (isbottomdefault == true) {
+                webView.load(URLRequest(url: URL(string: darkUrl + "&isEmbedded=true")!))
+
+            }else{
+                webView.load(URLRequest(url: URL(string: darkUrl )!))
+            }
             webView.isHidden = true
             
             coverview.frame = webView.frame
+            
+            // Adding corner radius to coverview
+            
+            if isbottomdefault || ismiddle
+            {
+                coverview.layer.cornerRadius = 20 // Set your desired corner radius here
+                coverview.layer.masksToBounds = true
+            }
+            
             coverview.isHidden = !webView.isHidden
             coverview.backgroundColor = webView.backgroundColor
             
@@ -329,6 +347,11 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         } else {
             self.closePage(animated: false,dismissaction: CGDismissAction.UI_BUTTON)
         }
+    }
+    
+    func replaceURL(originalURL: String) -> String {
+        let newURL = originalURL.replacingOccurrences(of: "https://constellation.customerglu.com/", with: "http://192.168.29.184:8080/")
+        return newURL
     }
     
     @objc private  func timeoutforpageload(sender: Timer) {
@@ -502,6 +525,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             // DIAGNOSTICS
             var diagnosticsEventData: [String: Any] = ["eventName": bodyStruct?.eventName ?? "",
                                             "Name": WebViewsKey.callback]
+            
+            print("EventName "+(bodyStruct?.eventName ?? ""))
 
             if bodyStruct?.eventName == WebViewsKey.close {
                 diagnosticsEventData["notificationHandler"] = notificationHandler
@@ -549,6 +574,24 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                     }
                 }
             }
+            
+            if bodyStruct?.eventName == WebViewsKey.updateheight {
+                print("update Height")
+                if (isbottomdefault == true) {
+                    print("update Height bottomsheet")
+
+                let dict = OtherUtils.shared.convertToDictionary(text: (message.body as? String)!)
+                if(dict != nil && dict!.count>0 && dict?["data"] != nil){
+                    let dictheight = dict?["data"] as! [String: Any]
+                    if(dictheight.count > 0 && dictheight["height"] != nil){
+                      var  finalHeight = (dictheight["height"])! as! Double
+                        changeHeight(height: finalHeight)
+                    }
+                }
+                                }
+            }
+            
+            
             
             if bodyStruct?.eventName == WebViewsKey.analytics {
                 
@@ -648,6 +691,20 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             
             // DIAGNOSTICS
             CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_WEBVIEW_RECEIVE_MESSAGE_FROM_WEBVIEW, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta: diagnosticsEventData)
+        }
+    }
+    
+    func changeHeight(height: Double) {
+        // Update the UI on the main thread
+        DispatchQueue.main.async {
+            UIView.animate(withDuration: 0.3, animations: {
+                // Adjust the frame of the web view and cover view for smooth transition
+                var newFrame = self.webView.frame
+                newFrame.size.height = CGFloat(height + 20)
+                newFrame.origin.y = self.view.frame.height - CGFloat(height)
+                self.webView.frame = newFrame
+                self.coverview.frame = newFrame
+            })
         }
     }
     

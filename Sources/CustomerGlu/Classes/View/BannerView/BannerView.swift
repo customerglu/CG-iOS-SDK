@@ -24,6 +24,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
     private var progressView = LottieAnimationView()
     let throttleInterval: TimeInterval = 2.0
     var lastTapTime: TimeInterval = 0.0
+    @IBOutlet weak var bannerButton: UIButton!
     @IBInspectable var bannerId: String? {
         didSet {
             backgroundColor = UIColor.clear
@@ -36,6 +37,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 object: nil)
         }
     }
+
     
     public override func awakeFromNib() {
         super.awakeFromNib()
@@ -43,6 +45,17 @@ public class BannerView: UIView, UIScrollViewDelegate {
             CustomerGlu.getInstance.addBannerId(bannerId: bannerId)
         }
     }
+//    @objc private func showTooltip(sender: UIView) {
+//         let tooltip = TooltipView(text: "This is a tooltip")
+//         tooltip.frame = CGRect(x: sender.frame.midX - 75, y: sender.frame.minY - 60, width: 150, height: 60)
+//         self.view.addSubview(tooltip)
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+//                tooltip.removeFromSuperview()
+//            }
+//     }
+
+   
     
     @objc private func entryPointLoaded(notification: NSNotification) {
         self.reloadBannerView()
@@ -184,6 +197,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
         let screenWidth = self.frame.size.width
         let screenHeight = UIScreen.main.bounds.height
         finalHeight = (Int(screenHeight) * height)/100
+        
         if let bannerId = self.bannerId, !bannerId.isEmpty{
             CustomerGlu.getInstance.addBannerId(bannerId: bannerId)
         }
@@ -247,6 +261,13 @@ public class BannerView: UIView, UIScrollViewDelegate {
         self.imgScrollView.showsVerticalScrollIndicator = false
         self.imgScrollView.showsHorizontalScrollIndicator = false
         self.imgScrollView.contentSize = CGSize(width: screenWidth * CGFloat(arrContent.count), height: self.imgScrollView.frame.size.height)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            // Call your method here
+         //   self.showTooltip(sender: self.view)
+        }
+  
+        
         
         // Timer in viewdidload()
         if isAutoScrollEnabled {

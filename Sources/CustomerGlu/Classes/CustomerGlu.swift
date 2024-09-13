@@ -143,6 +143,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal  var isPiPViewLoadedEventPushed = false
     public static var pipDismissed = false
     public static var pipLoaded = false
+    public static var toolTipLoaded = false
     weak var diagonsticHelper: CGEventsDiagnosticsHelper? = CGEventsDiagnosticsHelper.shared
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
     public static var appName: String = ""
@@ -1819,6 +1820,84 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+    @objc public func showAnchorToolTip(xAxis:CGFloat,yAxis:CGFloat,centerX:CGFloat,maxXAxis:CGFloat,maxyAxis:CGFloat,anchorviewHeight: CGFloat,anchorviewWidth:CGFloat)
+    {
+        if !CustomerGlu.toolTipLoaded {
+            CustomerGlu.toolTipLoaded = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                guard let topController = UIViewController.topViewController() else {
+                    return
+                }
+                let transparentVC = TransparentViewController(opacity: 0.7, buttonX: xAxis, buttonY: yAxis, centerX: centerX,
+                                                              maxXAxis: maxXAxis, maxyAxis: maxyAxis, anchorviewHeight: anchorviewHeight, anchorviewWidth: anchorviewWidth)
+
+                // Set the presentation style for fade animation
+                transparentVC.modalPresentationStyle = .overFullScreen
+                transparentVC.view.alpha = 0.0 // Initially set the opacity to 0
+
+                // Present the view controller without animation initially
+                topController.present(transparentVC, animated: false, completion: {
+                    // Animate the opacity to create a fade-in effect
+                    UIView.animate(withDuration: 0.3) {
+                        transparentVC.view.alpha = 1.0 // Fade to full opacity
+                    }
+                })
+            }
+        }
+    }
+    
+    
+    @objc public func showCGToolTip(_ anchorView: UIView)
+    {
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                 if self.isViewFullyVisibleOnScreen(anchorView) {
+                     print("Button is fully visible on screen.")
+                     
+                     if let buttonFrame = self.getAnchorViewFrameOnScreen(anchorView) {
+                                  print("Button frame on screen: \(buttonFrame)")
+                         
+                         let xAxis = buttonFrame.origin.x
+                         let yAxis = buttonFrame.origin.y
+                         let centerX = buttonFrame.midX
+                         let maxXAxis = buttonFrame.maxX
+                         let maxyAxis = buttonFrame.maxY
+                         let anchorViewHeight = buttonFrame.height
+                         let anchorViewWidth = buttonFrame.width
+                                  // Show tooltip if necessary
+                         self.showAnchorToolTip(xAxis: xAxis, yAxis: yAxis, centerX: centerX, maxXAxis: maxXAxis, maxyAxis: maxyAxis, anchorviewHeight: anchorViewHeight, anchorviewWidth: anchorViewWidth)
+                     }
+                     // Show tooltip if necessary
+                     
+                   
+                 } else {
+                     print("Button is not fully visible on screen.")
+                 }
+             }
+    }
+    
+    
+    
+
+    func isViewFullyVisibleOnScreen(_ view: UIView) -> Bool {
+           guard let window = view.window else {
+               return false
+           }
+           let viewFrameInWindow = view.convert(view.bounds, to: window)
+           let screenBounds = UIScreen.main.bounds
+           return screenBounds.contains(viewFrameInWindow)
+       }
+
+
+    func getAnchorViewFrameOnScreen(_ anchorView: UIView) -> CGRect? {
+            guard let window = anchorView.window else {
+                return nil
+            }
+            let anchorFrameOnScreen = anchorView.convert(anchorView.bounds, to: window)
+            return anchorFrameOnScreen
+        }
+       
+    
     @objc public func loadCampaignsByType(type: String, auto_close_webview : Bool = CustomerGlu.auto_close_webview! ) {
         if CustomerGlu.sdk_disable! == true || Reachability.shared.isConnectedToNetwork() != true || userDefaults.string(forKey: CGConstants.CUSTOMERGLU_TOKEN) == nil {
             CustomerGlu.getInstance.printlog(cglog: "Fail to call loadCampaignsByType", isException: false, methodName: "CustomerGlu-loadCampaignsByType", posttoserver: true)
@@ -2131,11 +2210,20 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             screenNameLogicForFloatingButton(className: className)
             screenNameLogicForPIPView(className: className)
             
+            
+//
+            
             showPopup(className: className)
           
-            
+         //   showFloatingToolTip()
         }
         
+    }
+    
+    @objc public func showFloatingToolTip()
+    {
+        let floatingTooltip = FloatingTooltipController(tooltipText: "fdsdf", position: "PERCENTAGE")
+        floatingTooltip.showTooltip()
     }
     
     @objc public func setCGCurrentClassName(className: String,timestamp: String ,completion: @escaping (String) -> Void) {
@@ -2545,6 +2633,18 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                  }
              }
          }
+    
+    
+//    @objc public func showTooltip(view: UIView) {
+//         let tooltip = TooltipView(text: "This is a tooltip")
+//         tooltip.frame = CGRect(x: view.frame.midX - 75, y: view.frame.minY - 60, width: 150, height: 60)
+//         view.addSubview(tooltip)
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+//                tooltip.removeFromSuperview()
+//            }
+//     }
+    
     
     internal func postAnalyticsEventForEntryPoints(event_name:String, entry_point_id:String, entry_point_name:String, entry_point_container:String, content_campaign_id:String = "", action_type: String = "OPEN", open_container:String, action_c_campaign_id:String) {
         if (false == CustomerGlu.analyticsEvent) {

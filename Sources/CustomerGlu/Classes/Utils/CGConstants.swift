@@ -278,6 +278,10 @@ struct CGDismissAction {
     static let DEFAULT = "DEFAULT"
 }
 
+public enum TooltipPosition {
+    case top, bottom
+}
+
 struct CGSafeAreaConstants {
     static let SAFE_AREA_PADDING = CGFloat(33.0)
 }

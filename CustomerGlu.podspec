@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'CustomerGlu'
-  s.version          = '3.0.3'
+  s.version          = '3.0.4'
   s.summary          = 'CustomerGlu'
   s.description      = <<-DESC
 A new CustomerGlu.
@@ -25,11 +25,12 @@ A new CustomerGlu.
     LICENSE
   }
   s.author           = { 'CustomerGlu' => 'code@customerglu.net' }
-  s.source           = { :git => 'https://github.com/customerglu/CG-iOS-SDK.git', :tag => 'v3.0.3'}
+  s.source           = { :git => 'https://github.com/customerglu/CG-iOS-SDK.git', :tag => 'v3.0.4'}
   s.source_files = 'Sources/CustomerGlu/Classes/**/*.*'
   s.exclude_files = 'Tests/**/*.*'
   s.resources = 'Sources/CustomerGlu/Resources/**/*.*'
   s.platform = :ios, '9.0'
+  
 
   # Flutter.framework does not contain a i386 slice.
   # s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
