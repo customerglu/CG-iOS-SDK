@@ -318,7 +318,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         //    var finalUrl = replaceURL(originalURL: darkUrl)
             print("Web final url "+darkUrl)
             if (isbottomdefault == true) {
-                webView.load(URLRequest(url: URL(string: darkUrl + "&isEmbedded=true")!))
+                webView.load(URLRequest(url: URL(string: darkUrl)!))
 
             }else{
                 webView.load(URLRequest(url: URL(string: darkUrl )!))
