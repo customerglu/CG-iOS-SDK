@@ -13,7 +13,15 @@ import Security
 
 public class CustomerWebViewController: UIViewController, WKNavigationDelegate, WKScriptMessageHandler {
     
-    public static let storyboardVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
+    public static let shared: CustomerWebViewController = {
+         // Instantiate the view controller from the storyboard only once
+         let instance = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
+         // Additional configuration if needed
+         return instance
+     }()
+     
+  
+//    public static let storyboardVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
     
     @IBOutlet weak var topSafeArea: UIView!
     @IBOutlet weak var bottomSafeArea: UIView!
@@ -31,6 +39,8 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     var isbottomsheet = false
     var isbottomdefault = false
     var iscampignId = false
+    public var isWebViewLoaded = false
+
     var documentInteractionController: UIDocumentInteractionController!
     public var alpha = 0.0
     var campaign_id = ""
@@ -49,6 +59,17 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     var spinner = SpinnerView()
     var progressView = LottieAnimationView()
     let window = UIApplication.shared.keyWindow
+    
+    
+    // Prevent external initialization by making the initializer private
+    private override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+   
     
     public func configureSafeAreaForDevices() {
         
@@ -76,6 +97,29 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     public override var shouldAutorotate: Bool{
         return false
     }
+    
+    deinit {
+          // Clean up observers and delegates
+        NotificationCenter.default.removeObserver(self)
+         webView.removeObserver(self, forKeyPath: "estimatedProgress")
+
+    //      Clean up WKWebView
+         webView.navigationDelegate = nil
+         webView.uiDelegate = nil
+         webView.stopLoading()
+        if #available(iOS 14.0, *) {
+            webView.configuration.userContentController.removeAllScriptMessageHandlers()
+        } else {
+            // Fallback on earlier versions
+        }
+
+         // Invalidate timers
+         if let defaulttimer = defaulttimer {
+             defaulttimer.invalidate()
+             self.defaulttimer = nil
+         }
+      }
+    
     
     func getframe()->CGRect{
         var rect = CGRect.zero
@@ -106,77 +150,105 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             }
         }
     }
+    
+    
     public override func viewDidLoad() {
         super.viewDidLoad()
-       
+        isWebViewLoaded = true
+        
+        
+        setUpWebview()
+        
+ 
+    }
+    
+    private func setUpWebview() {
+        
+        // Adding observer for device rotation
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(rotated),
                                                name: UIDevice.orientationDidChangeNotification,
                                                object: nil)
+        
         navigationController?.setNavigationBarHidden(true, animated: false)
         
-        if(self.nudgeConfiguration != nil){
+        if self.nudgeConfiguration != nil {
             self.alpha = nudgeConfiguration!.opacity
             self.auto_close_webview = nudgeConfiguration!.closeOnDeepLink
             
-            if(nudgeConfiguration!.layout == CGConstants.MIDDLE_NOTIFICATIONS || nudgeConfiguration!.layout == CGConstants.MIDDLE_NOTIFICATIONS_POPUP){
+            // Handling layout configurations
+            if nudgeConfiguration!.layout == CGConstants.MIDDLE_NOTIFICATIONS || nudgeConfiguration!.layout == CGConstants.MIDDLE_NOTIFICATIONS_POPUP {
                 self.ismiddle = true
-            }else if(nudgeConfiguration!.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION || nudgeConfiguration!.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP){
+                self.isbottomdefault = false
+                self.isbottomsheet = false
+            } else if nudgeConfiguration!.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION || nudgeConfiguration!.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP {
                 self.isbottomdefault = true
-            }else if(nudgeConfiguration!.layout == CGConstants.BOTTOM_SHEET_NOTIFICATION){
+                self.ismiddle = false
+                self.isbottomsheet = false
+            } else if nudgeConfiguration!.layout == CGConstants.BOTTOM_SHEET_NOTIFICATION {
                 self.isbottomsheet = true
+                self.ismiddle = false
+                self.isbottomdefault = false
+            } else {
+                self.ismiddle = false
+                self.isbottomdefault = false
+                self.isbottomsheet = false
             }
-            
         }
         
-        contentController.add(self, name: WebViewsKey.callback) //name is the key you want the app to listen to.\
+        contentController.add(self, name: WebViewsKey.callback) //name is the key you want the app to listen to.
         config.userContentController = contentController
         config.allowsInlineMediaPlayback = true
         
         topHeight.constant = CGFloat(0.0)
         bottomHeight.constant = CGFloat(0.0)
+        
+        // Safely creating transparent black color
         let black = UIColor.black
-        let blackTrans = UIColor.withAlphaComponent(black)(CGFloat(alpha))
+        let blackTrans = black.withAlphaComponent(CGFloat(alpha))
         self.view.backgroundColor = blackTrans
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
         self.view.addGestureRecognizer(tap)
+        
+        self.configureSafeAreaForDevices()
         
         let x = self.view.frame.midX - 30
         let y = self.view.frame.midY - 30
         
-        self.configureSafeAreaForDevices()
-        
         if notificationHandler {
             setupWebViewCustomFrame(url: urlStr)
         } else if iscampignId {
-    
-         //   self.loaderShow(withcoordinate: getframe().midX, y: getframe().midY)
-            
             campaign_id = campaign_id.trimSpace()
-            print("WCampaign "+campaign_id)
-            if campaign_id.isEmpty || campaign_id == CGConstants.CGOPENWALLET
-            {
-                ApplicationManager.loadAllCampaignsApi(type: "", value: campaign_id, loadByparams: [:]) { success, campaignsModel in
+            print("WCampaign \(campaign_id)")
+            
+            if campaign_id.isEmpty || campaign_id == CGConstants.CGOPENWALLET {
+                ApplicationManager.loadAllCampaignsApi(type: "", value: campaign_id, loadByparams: [:]) { [weak self] success, campaignsModel in
+                    guard let self = self else { return }
                     if success {
                         self.loaderHide()
                         self.defaultwalleturl = String(campaignsModel?.defaultUrl ?? "")
                         if self.campaign_id.count == 0 {
-                            DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
                                 self.setupWebViewCustomFrame(url: campaignsModel?.defaultUrl ?? "")
                             }
                         } else if self.campaign_id.contains("http://") || self.campaign_id.contains("https://") {
-                            DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
                                 self.setupWebViewCustomFrame(url: self.campaign_id)
                             }
                         } else {
-                            let campaigns: [CGCampaigns] = (campaignsModel?.campaigns)!
-                            let filteredArray = campaigns.filter{($0.campaignId.elementsEqual(self.campaign_id)) || ($0.banner != nil && $0.banner?.tag != nil && $0.banner?.tag != "" && ($0.banner!.tag!.elementsEqual(self.campaign_id)))}
+                            let campaigns: [CGCampaigns] = campaignsModel?.campaigns ?? []
+                            let filteredArray = campaigns.filter { $0.campaignId.elementsEqual(self.campaign_id) || ($0.banner?.tag?.elementsEqual(self.campaign_id) ?? false) }
                             if filteredArray.count > 0 {
-                                DispatchQueue.main.async {
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
                                     self.setupWebViewCustomFrame(url: filteredArray[0].url)
                                 }
                             } else {
-                                DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
                                     self.setupWebViewCustomFrame(url: campaignsModel?.defaultUrl ?? "")
                                 }
                             }
@@ -186,47 +258,53 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
                         CustomerGlu.getInstance.printlog(cglog: "Fail to load loadAllCampaignsApi", isException: false, methodName: "CustomerWebViewController-viewDidLoad", posttoserver: true)
                     }
                 }
-            }else{
-                ApplicationManager.loadSingleCampaignById(value: campaign_id) { success, campaignsModel in
+            } else {
+                ApplicationManager.loadSingleCampaignById(value: campaign_id) { [weak self] success, campaignsModel in
+                    guard let self = self else { return }
                     if success {
                         self.loaderHide()
                         self.defaultwalleturl = String(campaignsModel?.defaultUrl ?? "")
                         if self.campaign_id.count == 0 {
-                            DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
                                 self.setupWebViewCustomFrame(url: campaignsModel?.defaultUrl ?? "")
                             }
                         } else if self.campaign_id.contains("http://") || self.campaign_id.contains("https://") {
-                            DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                            DispatchQueue.main.async { [weak self] in
+                                guard let self = self else { return }
                                 self.setupWebViewCustomFrame(url: self.campaign_id)
                             }
                         } else {
-                            let campaigns: [CGCampaigns] = (campaignsModel?.campaigns)!
-                            let filteredArray = campaigns.filter{($0.campaignId.elementsEqual(self.campaign_id)) || ($0.banner != nil && $0.banner?.tag != nil && $0.banner?.tag != "" && ($0.banner!.tag!.elementsEqual(self.campaign_id)))}
+                            let campaigns: [CGCampaigns] = campaignsModel?.campaigns ?? []
+                            let filteredArray = campaigns.filter { $0.campaignId.elementsEqual(self.campaign_id) || ($0.banner?.tag?.elementsEqual(self.campaign_id) ?? false) }
                             if filteredArray.count > 0 {
-                                DispatchQueue.main.async {
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
                                     self.setupWebViewCustomFrame(url: filteredArray[0].url)
                                 }
                             } else {
-                                DispatchQueue.main.async { [self] in // Make sure you're on the main thread here
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
                                     self.setupWebViewCustomFrame(url: campaignsModel?.defaultUrl ?? "")
                                 }
                             }
                         }
                     } else {
                         self.loaderHide()
-                        CustomerGlu.getInstance.printlog(cglog: "Fail to load loadAllCampaignsApi", isException: false, methodName: "CustomerWebViewController-viewDidLoad", posttoserver: true)
+                        CustomerGlu.getInstance.printlog(cglog: "Fail to load loadSingleCampaignById", isException: false, methodName: "CustomerWebViewController-viewDidLoad", posttoserver: true)
                     }
                 }
-                
-                
             }
             
         } else {
-            webView = WKWebView(frame: getframe(), configuration: config) //set your own frame
+            webView = WKWebView(frame: getframe(), configuration: config) // Set your own frame
             loadwebView(url: urlStr, x: x, y: y)
         }
+        
         webView.scrollView.contentInsetAdjustmentBehavior = .never
     }
+
+
     
     private func setupWebViewCustomFrame(url: String) {
         
@@ -234,26 +312,28 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         var y = self.view.frame.midY - 30
         
         if ismiddle {
-            webView = WKWebView(frame: getframe(), configuration: config) //set your own frame
+            webView = WKWebView(frame: getframe(), configuration: config)
             webView.layer.cornerRadius = 20
             webView.clipsToBounds = true
             y = webView.frame.midY - 30
         } else if isbottomdefault {
-            webView = WKWebView(frame: getframe(), configuration: config) //set your own frame
+            webView = WKWebView(frame: getframe(), configuration: config)
             webView.layer.cornerRadius = 20
             webView.clipsToBounds = true
             y = webView.frame.midY - 30
         } else if isbottomsheet {
-            webView = WKWebView(frame: getframe(), configuration: config) //set your own frame
+            webView = WKWebView(frame: getframe(), configuration: config)
             y = self.view.frame.midY - 30
         } else {
             topHeight.constant = CGFloat(CustomerGlu.topSafeAreaHeight)
             bottomHeight.constant = CGFloat(CustomerGlu.bottomSafeAreaHeight)
-            webView = WKWebView(frame: getframe(), configuration: config) //set your own frame
+            webView = WKWebView(frame: getframe(), configuration: config)
             y = self.view.frame.midY - 30
         }
+        
         loadwebView(url: url, x: x, y: y)
     }
+
     private func getconfiguredheight()->CGFloat {
         var finalheight = (self.view.frame.height) * (70/100)
         
@@ -276,6 +356,11 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
         if (!(ismiddle || isbottomdefault || isbottomsheet)){
             self.view.backgroundColor = CustomerGlu.getInstance.checkIsDarkMode() ? CustomerGlu.darkBackground: CustomerGlu.lightBackground
         }
+        
+        if (!isWebViewLoaded)
+        {
+            setUpWebview()
+        }
     }
     
     public override func viewDidDisappear(_ animated: Bool) {
@@ -292,46 +377,58 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             self.canopencgwebview = false
             self.openCGWebView()
         }
+        // Clean up the web view
+        isWebViewLoaded = false
+        webView.navigationDelegate = nil
+        webView.uiDelegate = nil
+        webView.stopLoading()
+        webView.removeFromSuperview()
+        if #available(iOS 14.0, *) {
+            webView.configuration.userContentController.removeAllScriptMessageHandlers()
+        } else {
+            // Fallback on earlier versions
+        }
+
+        // Invalidate and release any timers
+        if let defaulttimer = defaulttimer {
+            defaulttimer.invalidate()
+            self.defaulttimer = nil
+        }
+        self.nudgeConfiguration = CGNudgeConfiguration()
+        
     }
     
     func loadwebView(url: String, x: CGFloat, y: CGFloat) {
         
-        
-        
         webView.navigationDelegate = self
-        if url != "" || !url.isEmpty {
+        
+        if !url.isEmpty {
             self.loadedurl = url
-            if ((campaign_id != CGConstants.CGOPENWALLET) && (loadedurl.count > 0 && loadedurl == defaultwalleturl)){
+            
+            if campaign_id != CGConstants.CGOPENWALLET, loadedurl == defaultwalleturl {
                 var eventInfo = [String: Any]()
                 eventInfo["campaignId"] = campaign_id
                 eventInfo[APIParameterKey.messagekey] = "Invalid campaignId, opening Wallet"
-                NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CG_INVALID_CAMPAIGN_ID").rawValue), object: nil, userInfo: eventInfo)
+                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "CG_INVALID_CAMPAIGN_ID"), object: nil, userInfo: eventInfo)
             }
-            webView.backgroundColor = CustomerGlu.getInstance.checkIsDarkMode() ? CustomerGlu.darkBackground: CustomerGlu.lightBackground
-            var darkUrl = url // .replacingOccurrences(of: "dev-constellation.customerglu.com", with: "87f2-2406-7400-54-4114-8cd9-776e-b643-2f25.ngrok-free.app")
+            
+            webView.backgroundColor = CustomerGlu.getInstance.checkIsDarkMode() ? CustomerGlu.darkBackground : CustomerGlu.lightBackground
+            
+            var darkUrl = url
             if let nudgeConfiguration = nudgeConfiguration, !nudgeConfiguration.isHyperLink {
                 darkUrl = url + "&darkMode=" + (CustomerGlu.getInstance.checkIsDarkMode() ? "true" : "false")
             }
             
-          //  webView.load(URLRequest(url: CustomerGlu.getInstance.validateURL(url: URL(string: darkUrl)!)))
+            print("Web final url: \(darkUrl)")
             
-        //    var finalUrl = replaceURL(originalURL: darkUrl)
-            print("Web final url "+darkUrl)
-            if (isbottomdefault == true) {
-                webView.load(URLRequest(url: URL(string: darkUrl)!))
-
-            }else{
-                webView.load(URLRequest(url: URL(string: darkUrl )!))
-            }
+            webView.load(URLRequest(url: URL(string: darkUrl)!))
             webView.isHidden = true
             
             coverview.frame = webView.frame
             
             // Adding corner radius to coverview
-            
-            if isbottomdefault || ismiddle
-            {
-                coverview.layer.cornerRadius = 20 // Set your desired corner radius here
+            if isbottomdefault || ismiddle {
+                coverview.layer.cornerRadius = 20
                 coverview.layer.masksToBounds = true
             }
             
@@ -341,13 +438,15 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             self.view.addSubview(webView)
             self.view.addSubview(coverview)
             
+            // Using weak reference for timer to avoid retain cycles
             self.loaderShow(withcoordinate: getframe().midX, y: getframe().midY)
             
             defaulttimer = Timer.scheduledTimer(timeInterval: 8, target: self, selector: #selector(timeoutforpageload(sender:)), userInfo: nil, repeats: false)
         } else {
-            self.closePage(animated: false,dismissaction: CGDismissAction.UI_BUTTON)
+            self.closePage(animated: false, dismissaction: CGDismissAction.UI_BUTTON)
         }
     }
+
     
     func replaceURL(originalURL: String) -> String {
         let newURL = originalURL.replacingOccurrences(of: "https://constellation.customerglu.com/", with: "http://192.168.29.184:8080/")

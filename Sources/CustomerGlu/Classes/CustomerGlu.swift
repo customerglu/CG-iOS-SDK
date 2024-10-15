@@ -149,6 +149,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var appName: String = ""
     public static var isPIPExpandedViewMuted: Bool = false
     
+    
     private override init() {
         super.init()
         migrateUserDefaultKey()
@@ -537,7 +538,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func presentToCustomerWebViewController(nudge_url: String, page_type: String, backgroundAlpha: Double, auto_close_webview : Bool, nudgeConfiguration : CGNudgeConfiguration? = nil) {
         
-        let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
+
+        
+       let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
         customerWebViewVC.urlStr = nudge_url
         customerWebViewVC.auto_close_webview = auto_close_webview
         customerWebViewVC.notificationHandler = true
@@ -1774,49 +1777,85 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         eventData["nudgeConfiguration"] = nudgeConfiguration
         eventData["campaign_id"] = campaign_id
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_LOAD_CAMPAIGN_BY_ID_CALLED, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
-        DispatchQueue.main.async {
-            let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
+//        DispatchQueue.main.async { [weak self] in
+//            
+//           let customerWebViewVC = CustomerWebViewController.shared
+//
+////            let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
+//            guard let topController = UIViewController.topViewController() else {
+//                return
+//            }
+//            customerWebViewVC.auto_close_webview = nudgeConfiguration != nil ? nudgeConfiguration?.closeOnDeepLink : auto_close_webview
+//            customerWebViewVC.modalPresentationStyle = .overCurrentContext//.fullScreen
+//            customerWebViewVC.iscampignId = true
+//            customerWebViewVC.campaign_id = campaign_id
+//            customerWebViewVC.nudgeConfiguration = nudgeConfiguration
+//            
+//            if(nudgeConfiguration != nil){
+//                if(nudgeConfiguration!.layout == CGConstants.MIDDLE_NOTIFICATIONS || nudgeConfiguration!.layout == CGConstants.MIDDLE_NOTIFICATIONS_POPUP){
+//                    customerWebViewVC.ismiddle = true
+//                    customerWebViewVC.modalPresentationStyle = .overCurrentContext
+//                }else if(nudgeConfiguration!.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION || nudgeConfiguration!.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP){
+//                    
+//                    customerWebViewVC.isbottomdefault = true
+//                    customerWebViewVC.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
+//                    customerWebViewVC.navigationController?.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
+//                    
+//                }else if(nudgeConfiguration!.layout == CGConstants.BOTTOM_SHEET_NOTIFICATION){
+//                    customerWebViewVC.isbottomsheet = true
+//#if compiler(>=5.5)
+//                    if #available(iOS 15.0, *) {
+//                        if let sheet = customerWebViewVC.sheetPresentationController {
+//                            sheet.detents = [ .medium(), .large() ]
+//                        }else{
+//                            customerWebViewVC.modalPresentationStyle = .pageSheet
+//                        }
+//                    } else {
+//                        customerWebViewVC.modalPresentationStyle = .pageSheet
+//                    }
+//#else
+//                    customerWebViewVC.modalPresentationStyle = .pageSheet
+//#endif
+//                }else{
+//                    customerWebViewVC.modalPresentationStyle = .overCurrentContext//.fullScreen
+//                }
+//            }
+//            self?.hideFloatingButtons()
+//            self?.hidePiPView()
+//            topController.present(customerWebViewVC, animated: false, completion: nil)
+//        }
+        
+        DispatchQueue.main.async { [weak self] in
+            
+            
             guard let topController = UIViewController.topViewController() else {
                 return
             }
-            customerWebViewVC.auto_close_webview = nudgeConfiguration != nil ? nudgeConfiguration?.closeOnDeepLink : auto_close_webview
-            customerWebViewVC.modalPresentationStyle = .overCurrentContext//.fullScreen
-            customerWebViewVC.iscampignId = true
-            customerWebViewVC.campaign_id = campaign_id
-            customerWebViewVC.nudgeConfiguration = nudgeConfiguration
-            
-            if(nudgeConfiguration != nil){
-                if(nudgeConfiguration!.layout == CGConstants.MIDDLE_NOTIFICATIONS || nudgeConfiguration!.layout == CGConstants.MIDDLE_NOTIFICATIONS_POPUP){
-                    customerWebViewVC.ismiddle = true
-                    customerWebViewVC.modalPresentationStyle = .overCurrentContext
-                }else if(nudgeConfiguration!.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION || nudgeConfiguration!.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP){
-                    
-                    customerWebViewVC.isbottomdefault = true
-                    customerWebViewVC.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-                    customerWebViewVC.navigationController?.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-                    
-                }else if(nudgeConfiguration!.layout == CGConstants.BOTTOM_SHEET_NOTIFICATION){
-                    customerWebViewVC.isbottomsheet = true
-#if compiler(>=5.5)
-                    if #available(iOS 15.0, *) {
-                        if let sheet = customerWebViewVC.sheetPresentationController {
-                            sheet.detents = [ .medium(), .large() ]
-                        }else{
-                            customerWebViewVC.modalPresentationStyle = .pageSheet
-                        }
+            if topController is CustomerWebViewController {
+                print("CustomerWebViewController is already presented.")
+                // Dismiss the current CustomerWebViewController
+                topController.dismiss(animated: false) {
+                    print("CustomerWebViewController dismissed.")
+                    // Re-fetch the new top controller after dismissing
+                    if let newTopController = UIViewController.topViewController() {
+                        // Now present the new instance of CustomerWebViewController
+                        self?.presentCustomerWebViewController(from: newTopController, campaign_id: campaign_id, nudgeConfiguration: nudgeConfiguration)
                     } else {
-                        customerWebViewVC.modalPresentationStyle = .pageSheet
+                        print("Failed to get new top controller after dismissing.")
                     }
-#else
-                    customerWebViewVC.modalPresentationStyle = .pageSheet
-#endif
-                }else{
-                    customerWebViewVC.modalPresentationStyle = .overCurrentContext//.fullScreen
                 }
+            } else {
+                // If not presented already, present the new CustomerWebViewController
+                self?.presentCustomerWebViewController(from: topController, campaign_id: campaign_id, nudgeConfiguration: nudgeConfiguration)
             }
-            self.hideFloatingButtons()
-            self.hidePiPView()
-            topController.present(customerWebViewVC, animated: false, completion: nil)
+            // Dismiss any currently presented view controller before presenting the new one
+//            if let presentedVC = topController.presentedViewController {
+//                presentedVC.dismiss(animated: false) {
+//                    self?.presentCustomerWebViewController(from: topController, campaign_id: campaign_id, nudgeConfiguration: nudgeConfiguration)
+//                }
+//            } else {
+//                self?.presentCustomerWebViewController(from: topController, campaign_id: campaign_id, nudgeConfiguration: nudgeConfiguration)
+//            }
         }
     }
     
@@ -2569,25 +2608,59 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
     }
     
-    internal func openCampaignById(campaign_id: String, nudgeConfiguration : CGNudgeConfiguration) {
-        
-        let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
-        customerWebViewVC.iscampignId = true
-        customerWebViewVC.alpha = nudgeConfiguration.opacity
-        customerWebViewVC.campaign_id = campaign_id
-        customerWebViewVC.auto_close_webview = nudgeConfiguration.closeOnDeepLink
-        customerWebViewVC.nudgeConfiguration = nudgeConfiguration
-        guard let topController = UIViewController.topViewController() else {
-            return
+    internal func openCampaignById(campaign_id: String, nudgeConfiguration: CGNudgeConfiguration) {
+        DispatchQueue.main.async { [weak self] in
+
+            let customerWebViewVC = CustomerWebViewController.shared
+            
+            guard let topController = UIViewController.topViewController() else {
+                return
+            }
+            
+            // Check if top controller is already CustomerWebViewController
+            if topController is CustomerWebViewController {
+                print("CustomerWebViewController is already presented.")
+                // Dismiss the current CustomerWebViewController
+                topController.dismiss(animated: false) {
+                    print("CustomerWebViewController dismissed.")
+                    // Re-fetch the new top controller after dismissing
+                    if let newTopController = UIViewController.topViewController() {
+                        // Now present the new instance of CustomerWebViewController
+                        self?.presentCustomerWebViewController(from: newTopController, campaign_id: campaign_id, nudgeConfiguration: nudgeConfiguration)
+                    } else {
+                        print("Failed to get new top controller after dismissing.")
+                    }
+                }
+            } else {
+                // If not presented already, present the new CustomerWebViewController
+                self?.presentCustomerWebViewController(from: topController, campaign_id: campaign_id, nudgeConfiguration: nudgeConfiguration)
+            }
         }
-        
-        if (nudgeConfiguration.layout == CGConstants.BOTTOM_SHEET_NOTIFICATION) {
-            customerWebViewVC.isbottomsheet = true
+    }
+
+private func presentCustomerWebViewController(from topController: UIViewController, campaign_id: String, nudgeConfiguration: CGNudgeConfiguration?) {
+    let customerWebViewVC = CustomerWebViewController.shared
+    customerWebViewVC.auto_close_webview = nudgeConfiguration != nil ? nudgeConfiguration?.closeOnDeepLink : CustomerGlu.auto_close_webview
+    customerWebViewVC.modalPresentationStyle = .overCurrentContext
+    customerWebViewVC.iscampignId = true
+    customerWebViewVC.campaign_id = campaign_id
+    customerWebViewVC.nudgeConfiguration = nudgeConfiguration
+    
+    if let nudgeConfig = nudgeConfiguration {
+        switch nudgeConfig.layout {
+        case CGConstants.MIDDLE_NOTIFICATIONS, CGConstants.MIDDLE_NOTIFICATIONS_POPUP:
+            customerWebViewVC.ismiddle = true
+            customerWebViewVC.modalPresentationStyle = .overCurrentContext
+        case CGConstants.BOTTOM_DEFAULT_NOTIFICATION, CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP:
+            customerWebViewVC.isbottomdefault = true
+            customerWebViewVC.modalPresentationStyle = .overCurrentContext
+            customerWebViewVC.navigationController?.modalPresentationStyle = .overCurrentContext
+        case CGConstants.BOTTOM_SHEET_NOTIFICATION:
 #if compiler(>=5.5)
             if #available(iOS 15.0, *) {
                 if let sheet = customerWebViewVC.sheetPresentationController {
                     sheet.detents = [ .medium(), .large() ]
-                }else{
+                } else {
                     customerWebViewVC.modalPresentationStyle = .pageSheet
                 }
             } else {
@@ -2596,21 +2669,15 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
 #else
             customerWebViewVC.modalPresentationStyle = .pageSheet
 #endif
-        } else if ((nudgeConfiguration.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION) || (nudgeConfiguration.layout == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP)) {
-            customerWebViewVC.isbottomdefault = true
-            customerWebViewVC.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-            customerWebViewVC.navigationController?.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-        } else if ((nudgeConfiguration.layout == CGConstants.MIDDLE_NOTIFICATIONS) || (nudgeConfiguration.layout == CGConstants.MIDDLE_NOTIFICATIONS_POPUP)) {
-            customerWebViewVC.ismiddle = true
+        default:
             customerWebViewVC.modalPresentationStyle = .overCurrentContext
-        } else {
-            customerWebViewVC.modalPresentationStyle = .overCurrentContext//.fullScreen
-        }
-        topController.present(customerWebViewVC, animated: true) {
-            CustomerGlu.getInstance.hideFloatingButtons()
-            self.hidePiPView()
         }
     }
+    
+    self.hideFloatingButtons()
+    self.hidePiPView()
+    topController.present(customerWebViewVC, animated: false, completion: nil)
+}
     
     internal func postAnalyticsEventForPIP(event_name:String, entry_point_id:String, entry_point_name:String,content_campaign_id:String = "",entry_point_is_expanded:String)
          {
