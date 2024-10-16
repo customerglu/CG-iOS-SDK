@@ -421,12 +421,12 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             
             print("Web final url: \(darkUrl)")
             if (isbottomdefault == true) {
+
                 webView.load(URLRequest(url: URL(string: darkUrl + "&isEmbedded=true")!))
             }
             else{
                 webView.load(URLRequest(url: URL(string: darkUrl )!))
-            }
-            
+            } 
             webView.isHidden = true
             
             coverview.frame = webView.frame
