@@ -24,9 +24,25 @@ internal class MethodandPath: Codable {
     internal var method: String
     internal var path: String
     internal var baseurl: String
+    internal var eventbaseurl: String = ""
+    internal var streambaseurl: String = ""
     
     init(serviceType: CGService) {
-        self.baseurl = BaseUrls.baseurl
+        if CustomerGlu.env == "me"{
+            self.baseurl = ME_BaseUrls.baseurl
+            self.eventbaseurl = ME_BaseUrls.eventUrl
+            self.streambaseurl = ME_BaseUrls.streamurl
+        }
+        else if CustomerGlu.env == "us"{
+            self.baseurl = US_BaseUrls.baseurl
+            self.eventbaseurl = US_BaseUrls.eventUrl
+            self.streambaseurl = US_BaseUrls.streamurl
+        }
+        else{
+            self.baseurl = BaseUrls.baseurl
+            self.eventbaseurl = BaseUrls.eventUrl
+            self.streambaseurl = BaseUrls.streamurl
+        }
         switch serviceType {
         case .userRegister:
             self.method = "POST"
@@ -43,7 +59,7 @@ internal class MethodandPath: Codable {
         case .addToCart:
             self.method = "POST"
             self.path = "server/v4"
-            self.baseurl = BaseUrls.eventUrl
+            self.baseurl = self.eventbaseurl
         case .crashReport:
             self.method = "PUT"
             self.path = "api/v1/report"
@@ -56,7 +72,7 @@ internal class MethodandPath: Codable {
         case .send_analytics_event:
             self.method = "POST"
             self.path = "v4/sdk"
-            self.baseurl = BaseUrls.streamurl
+            self.baseurl = self.streambaseurl
         case .appconfig:
             self.method = "GET"
             self.path = "client/v1/sdk/config"
@@ -114,6 +130,24 @@ private struct BaseUrls {
     static let eventUrl = ApplicationManager.eventUrl
     static let diagnosticUrl = ApplicationManager.diagnosticUrl
     static let analyticsUrl = ApplicationManager.analyticsUrl
+}
+
+private struct ME_BaseUrls {
+    static let baseurl = ApplicationManager.mebaseUrl
+    static let devbaseurl = ApplicationManager.medevbaseUrl
+    static let streamurl = ApplicationManager.mestreamUrl
+    static let eventUrl = ApplicationManager.meeventUrl
+    static let diagnosticUrl = ApplicationManager.mediagnosticUrl
+    static let analyticsUrl = ApplicationManager.meanalyticsUrl
+}
+
+private struct US_BaseUrls {
+    static let baseurl = ApplicationManager.usbaseUrl
+    static let devbaseurl = ApplicationManager.usdevbaseUrl
+    static let streamurl = ApplicationManager.usstreamUrl
+    static let eventUrl = ApplicationManager.useventUrl
+    static let diagnosticUrl = ApplicationManager.usdiagnosticUrl
+    static let analyticsUrl = ApplicationManager.usanalyticsUrl
 }
 
 // MARK: - CGRequestData

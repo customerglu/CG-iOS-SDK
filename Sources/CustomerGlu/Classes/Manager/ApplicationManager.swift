@@ -9,12 +9,28 @@ import Foundation
 import UIKit
 
 class ApplicationManager {
+    
     public static var baseUrl = "api.customerglu.com/"
     public static var devbaseUrl = "dev-api.customerglu.com/"
     public static var streamUrl = "stream.customerglu.com/"
     public static var eventUrl = "events.customerglu.com/"
     public static var analyticsUrl = "analytics.customerglu.com/"
     public static var diagnosticUrl = "diagnostics.customerglu.com/"
+    
+    public static var mebaseUrl = "api-me.customerglu.com/"
+    public static var medevbaseUrl = "dev-api-me.customerglu.com/"
+    public static var mestreamUrl = "stream-me.customerglu.com/"
+    public static var meeventUrl = "events-me.customerglu.com/"
+    public static var meanalyticsUrl = "analytics-me.customerglu.com/"
+    public static var mediagnosticUrl = "diagnostics-me.customerglu.com/"
+    
+    public static var usbaseUrl = "api-us.customerglu.com/"
+    public static var usdevbaseUrl = "dev-api-us.customerglu.com/"
+    public static var usstreamUrl = "stream-us.customerglu.com/"
+    public static var useventUrl = "events-us.customerglu.com/"
+    public static var usanalyticsUrl = "analytics-us.customerglu.com/"
+    public static var usdiagnosticUrl = "diagnostics-us.customerglu.com/"
+    
     public static var accessToken: String?
     public static var operationQueue = OperationQueue()
     public static var appSessionId = UUID().uuidString
