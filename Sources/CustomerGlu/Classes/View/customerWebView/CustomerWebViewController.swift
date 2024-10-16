@@ -420,8 +420,13 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
             }
             
             print("Web final url: \(darkUrl)")
+            if (isbottomdefault == true) {
+                webView.load(URLRequest(url: URL(string: darkUrl + "&isEmbedded=true")!))
+            }
+            else{
+                webView.load(URLRequest(url: URL(string: darkUrl )!))
+            }
             
-            webView.load(URLRequest(url: URL(string: darkUrl)!))
             webView.isHidden = true
             
             coverview.frame = webView.frame
@@ -794,18 +799,28 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
     
     func changeHeight(height: Double) {
+        // Calculate the screen height limit (screen height - 100)
+        let maxAllowedHeight = self.view.frame.height - 100
+        var adjustedHeight = height
+        
+        // If the provided height exceeds the limit, set it to the max allowed height
+        if height > Double(maxAllowedHeight) {
+            adjustedHeight = Double(maxAllowedHeight)
+        }
+        
         // Update the UI on the main thread
         DispatchQueue.main.async {
             UIView.animate(withDuration: 0.3, animations: {
                 // Adjust the frame of the web view and cover view for smooth transition
                 var newFrame = self.webView.frame
-                newFrame.size.height = CGFloat(height + 20)
-                newFrame.origin.y = self.view.frame.height - CGFloat(height)
+                newFrame.size.height = CGFloat(adjustedHeight + 20)
+                newFrame.origin.y = self.view.frame.height - CGFloat(adjustedHeight)
                 self.webView.frame = newFrame
                 self.coverview.frame = newFrame
             })
         }
     }
+
     
     private func openCGWebView(){
         if(opencgwebview_nudgeConfiguration != nil){
