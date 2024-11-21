@@ -56,7 +56,16 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
             }
             
             if bodyStruct?.eventName == WebViewsKey.share {
-                let share = try? JSONDecoder().decode(CGEventShareModel.self, from: bodyData)
+                var share: CGEventShareModel?
+                
+                do {
+                    share = try JSONDecoder().decode(CGEventShareModel.self, from: bodyData)
+                }catch(let error) {
+                    if CustomerGlu.isDebugingEnabled {
+                        print("** Error while creating share sheet intent. \(error.localizedDescription)**")
+                    }
+                }
+                
                 let text = share?.data?.text
                 let channelName = share?.data?.channelName
                 if let imageurl = share?.data?.image {
