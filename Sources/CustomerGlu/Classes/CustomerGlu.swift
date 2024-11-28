@@ -958,7 +958,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             userData[APIParameterKey.firebaseToken] = ""
             userData[APIParameterKey.apnsDeviceToken] = apnToken
         }
-        
+        userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_TOKEN)
+        userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_USERID)
+        userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
         // Manage UserID & AnonymousId
         let t_userid = userData[APIParameterKey.userId] as? String ?? ""
         let t_anonymousIdP = userData[APIParameterKey.anonymousId] as? String ?? ""
