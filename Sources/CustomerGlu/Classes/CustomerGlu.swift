@@ -135,7 +135,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var horizontalPadding = 0
     public static var floatingHorizontalPadding = 10
     public static var loadCampaignCount = 0
-    public static var entryPointCount = 0
+    public static var entryPointCount = 1
     private var allowOpenWallet: Bool = true
     private var loadCampaignResponse: CGCampaignsModel?
     private var pipVideoLocalPath: String = ""
@@ -220,8 +220,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func enableEntryPoints(enabled: Bool) {
         CustomerGlu.isEntryPointEnabled = enabled
-        if CustomerGlu.isEntryPointEnabled && CustomerGlu.entryPointCount > 0{
-        //    getEntryPointData()
+        if CustomerGlu.isEntryPointEnabled {
+            getEntryPointData()
         }
     }
     
@@ -958,9 +958,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             userData[APIParameterKey.firebaseToken] = ""
             userData[APIParameterKey.apnsDeviceToken] = apnToken
         }
-        userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_TOKEN)
-        userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_USERID)
-        userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_ANONYMOUSID)
+       
         // Manage UserID & AnonymousId
         let t_userid = userData[APIParameterKey.userId] as? String ?? ""
         let t_anonymousIdP = userData[APIParameterKey.anonymousId] as? String ?? ""
@@ -1127,10 +1125,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
             }
         } else{
-            completion(true)
             if CustomerGlu.entryPointCount > 0 {
                 doLoadCampaignAndEntryPointCall()
             }
+            completion(true)
+
         }
         eventData = [:]
         eventData["registerObject"] = userdata
