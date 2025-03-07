@@ -10,7 +10,7 @@ import Foundation
 import WebKit
 import Lottie
 
-//EmbedView
+@objc(CGEmbedView)
 public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     
     public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -150,7 +150,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
         }
     }
     
-    public init(frame: CGRect, embedId: String) {
+    @objc public init(frame: CGRect, embedId: String) {
         //CODE
         super.init(frame: frame)
         code = true
@@ -161,7 +161,7 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
         }
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    @objc required init?(coder aDecoder: NSCoder) {
         // XIB
         super.init(coder: aDecoder)
         code = false

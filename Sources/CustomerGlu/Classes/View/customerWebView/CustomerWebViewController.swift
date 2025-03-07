@@ -11,6 +11,7 @@ import WebKit
 import Lottie
 import Security
 
+@objc(CustomerWebViewController)
 public class CustomerWebViewController: UIViewController, WKNavigationDelegate, WKScriptMessageHandler {
     
     public static let shared: CustomerWebViewController = {
@@ -71,7 +72,7 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     }
    
     
-    public func configureSafeAreaForDevices() {
+    @objc public func configureSafeAreaForDevices() {
         
         let topPadding = (window?.safeAreaInsets.top)!
         let bottomPadding = (window?.safeAreaInsets.bottom)!

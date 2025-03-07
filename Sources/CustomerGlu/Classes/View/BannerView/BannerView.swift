@@ -10,6 +10,7 @@ import Foundation
 import WebKit
 import Lottie
 
+@objc(BannerView)
 public class BannerView: UIView, UIScrollViewDelegate {
     
     var view = UIView()
@@ -70,7 +71,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
         }
     }
     
-    public init(frame: CGRect, bannerId: String) {
+    @objc public init(frame: CGRect, bannerId: String) {
         //CODE
         super.init(frame: frame)
         code = true
@@ -81,7 +82,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
         }
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    @objc required init?(coder aDecoder: NSCoder) {
         // XIB
         super.init(coder: aDecoder)
         code = false
@@ -142,7 +143,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
         addSubview(view)
     }
     
-    public func reloadBannerView() {
+    @objc public func reloadBannerView() {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [self] in
             
@@ -310,12 +311,12 @@ public class BannerView: UIView, UIScrollViewDelegate {
         pageControl.currentPage = Int(pageNumber)
     }
     
-    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    @objc public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let pageNumber = round(scrollView.contentOffset.x / scrollView.frame.size.width)
         pageControl.currentPage = Int(pageNumber)
     }
     
-    @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
+    @objc public func handleTap(_ sender: UITapGestureRecognizer? = nil) {
         let currentTime = Date().timeIntervalSince1970
              
              // Check if the time elapsed since the last tap is greater than the throttle interval
