@@ -237,8 +237,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 }
                 imageView.contentMode = .scaleToFill
                 self.imgScrollView.addSubview(imageView)
-                let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
-                imageView.addGestureRecognizer(tap)
+                // Removed individual tap gesture from imageView
             } else {
                 let containerView =  UIView()
                 containerView.tag = i
@@ -249,12 +248,10 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 webView.isUserInteractionEnabled = false
                 webView.tag = i
                 let urlStr = dict.url
-                //                webView.load(URLRequest(url: URL(string: urlStr!)!))
                 webView.load(URLRequest(url: CustomerGlu.getInstance.validateURL(url: URL(string: urlStr!)!)))
                 containerView.addSubview(webView)
                 self.imgScrollView.addSubview(containerView)
-                let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
-                containerView.addGestureRecognizer(tap)
+                // Removed individual tap gesture from containerView
             }
         }
         self.imgScrollView.isPagingEnabled = true
@@ -263,12 +260,10 @@ public class BannerView: UIView, UIScrollViewDelegate {
         self.imgScrollView.showsHorizontalScrollIndicator = false
         self.imgScrollView.contentSize = CGSize(width: screenWidth * CGFloat(arrContent.count), height: self.imgScrollView.frame.size.height)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            // Call your method here
-         //   self.showTooltip(sender: self.view)
-        }
-  
-        
+        // Add tap gesture to the BannerView itself
+        let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
+        self.view.addGestureRecognizer(tap)
+        self.view.isUserInteractionEnabled = true
         
         // Timer in viewdidload()
         if isAutoScrollEnabled {
@@ -289,7 +284,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
         invalidateIntrinsicContentSize()
         self.layoutIfNeeded()
     }
-    
+
     public override func layoutSubviews() {
         reloadBannerView()
     }
@@ -330,6 +325,8 @@ public class BannerView: UIView, UIScrollViewDelegate {
              }
       
     }
+    
+    
     
     @objc func performButtonAction(_ sender: UITapGestureRecognizer? = nil) {
         let dict = arrContent[sender?.view?.tag ?? 0]
