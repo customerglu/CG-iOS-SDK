@@ -420,6 +420,25 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
+//    public func cgUserNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+//            if CustomerGlu.sdk_disable! == true {
+//                return
+//            }
+//            let userInfo = notification.request.content.userInfo
+//            
+//            // Change this to your preferred presentation option
+//            if CustomerGlu.getInstance.notificationFromCustomerGlu(remoteMessage: userInfo as? [String: AnyHashable] ?? [NotificationsKey.customerglu: "d"]) {
+//                if userInfo[NotificationsKey.glu_message_type] as? String == "push" {
+//                    
+//                    if UIApplication.shared.applicationState == .active {
+//                        self.postAnalyticsEventForNotification(userInfo: userInfo as! [String:AnyHashable])
+//                        completionHandler([[.alert, .badge, .sound]])
+//                    }
+//                }
+//            }
+//        }
+        
+    
     
     @objc public func setCrashLoggingEnabled(isCrashLoggingEnabled: Bool){
         CustomerGlu.isCrashLogsEnabled = isCrashLoggingEnabled
