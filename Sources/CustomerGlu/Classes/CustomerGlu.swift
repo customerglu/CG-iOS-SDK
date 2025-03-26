@@ -1985,7 +1985,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    @objc public func sendEventData(eventName: String, eventProperties: [String: Any]?) {
+    @objc public func sendEventData(eventName: String, eventProperties: [String: Any]?,updateUser: Bool = false) {
         if CustomerGlu.sdk_disable! == true || Reachability.shared.isConnectedToNetwork() != true || userDefaults.string(forKey: CGConstants.CUSTOMERGLU_TOKEN) == nil {
             CustomerGlu.getInstance.printlog(cglog: "Fail to call sendEventData", isException: false, methodName: "CustomerGlu-sendEventData-1", posttoserver: true)
             return
@@ -2002,6 +2002,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_SEND_EVENT_START, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
         ApplicationManager.sendEventData(eventName: eventName, eventProperties: eventProperties) { success, addCartModel in
             if success {
+                if updateUser {
+                    self.doLoadCampaignAndEntryPointCall()
+                }
                 if(true == CustomerGlu.isDebugingEnabled){
                     print(addCartModel as Any)
                 }
