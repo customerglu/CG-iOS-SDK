@@ -102,7 +102,6 @@ public class CustomerWebViewController: UIViewController, WKNavigationDelegate, 
     deinit {
           // Clean up observers and delegates
         NotificationCenter.default.removeObserver(self)
-         webView.removeObserver(self, forKeyPath: "estimatedProgress")
 
     //      Clean up WKWebView
          webView.navigationDelegate = nil

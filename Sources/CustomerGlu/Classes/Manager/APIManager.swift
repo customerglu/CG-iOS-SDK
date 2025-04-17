@@ -50,6 +50,9 @@ internal class MethodandPath: Codable {
         case .updateUserAttributes:
             self.method = "POST"
             self.path = "user/v1/user/sdk/updateuser?token=true"
+        case .ackSSENudge:
+            self.method = "POST"
+            self.path = "ack-nudge"
         case .getWalletRewards:
             self.method = "GET"
             self.path = "reward/v1.1/user"
@@ -105,6 +108,7 @@ internal class MethodandPath: Codable {
 enum CGService {
     case userRegister
     case updateUserAttributes
+    case ackSSENudge
     case getWalletRewards
     case getSingleCampaign
     case addToCart
@@ -208,7 +212,9 @@ class APIManager {
     static let shared = APIManager()
     
     private static func performRequest(withData requestData: CGRequestData) {
+        
         var strUrl = "https://" + requestData.baseurl + requestData.methodandpath.path
+        
         if requestData.methodandpath.path == "reward/v1.1/user"
         {
             if requestData.parametersDict.count > 0 {
@@ -398,6 +404,10 @@ class APIManager {
     
     static func updateUserAttributes(queryParameters: NSDictionary, completion: @escaping (Result<CGRegistrationModel, CGNetworkError>) -> Void) {
         serviceCall(for: .updateUserAttributes, parametersDict: queryParameters, completion: completion)
+    }
+    
+    static func ackSSENudge(queryParameters: NSDictionary, completion: @escaping (Result<SSEAckModel, CGNetworkError>) -> Void) {
+        serviceCall(for: .ackSSENudge, parametersDict: queryParameters, completion: completion)
     }
     
     static func getWalletRewards(queryParameters: NSDictionary, completion: @escaping (Result<CGCampaignsModel, CGNetworkError>) -> Void) {

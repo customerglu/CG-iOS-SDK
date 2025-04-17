@@ -110,6 +110,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal var popupDict = [PopUpModel]()
     internal var entryPointPopUpModel = EntryPointPopUpModel()
     internal var popupDisplayScreens = [String]()
+    internal var displayedSSENudgeId = [String]()
     private var configScreens = [String]()
     private var popuptimer : Timer?
     private var delaySeconds: Double = 0
@@ -675,11 +676,16 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         dismissFloatingButtons(is_remove: true)
         
         self.arrFloatingButton.removeAll()
+        
+        SSEClient.shared.isConnected = false;
+        SSEClient.shared.stopSSE();
+        SSEClient.shared.shouldReconnect = true;
         popupDict.removeAll()
         
         CustomerGlu.entryPointdata.removeAll()
         entryPointPopUpModel = EntryPointPopUpModel()
         self.popupDisplayScreens.removeAll()
+        self.displayedSSENudgeId.removeAll()
         
         userDefaults.removeObject(forKey: CGConstants.CUSTOMERGLU_IS_ANONYMOUS_USER)
         userDefaults.removeObject(forKey: CGConstants.CG_PIP_VID_SYNC_DATA)
@@ -706,11 +712,31 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             CGMqttClientHelper.shared.disconnectMQTT()
         }
     }
-    
+    @objc public func disconnectSSEOnBackground() {
+        print("[SSEClient] App went to background. Disconnecting SSE.")
+        SSEClient.shared.stopSSE()
+    }
+
+    // Call when app enters foreground
+    @objc public func startSSEOnForeground() {
+        print("[SSEClient] App came to foreground. Attempting to start SSE.")
+        SSEClient.shared.shouldReconnect = true
+        initSSE();
+    }
     // MARK: - API Calls Methods
     
     @objc public func initializeSdk(myenv:String = "in") {
         CustomerGlu.env = myenv
+        dismissFloatingButtons(is_remove: true)
+        
+        self.arrFloatingButton.removeAll()
+        popupDict.removeAll()
+        SSEClient.shared.isConnected = false;
+        SSEClient.shared.shouldReconnect = true;
+        CustomerGlu.entryPointdata.removeAll()
+        entryPointPopUpModel = EntryPointPopUpModel()
+        self.popupDisplayScreens.removeAll()
+        self.displayedSSENudgeId.removeAll()
         if !sdkInitialized {
             let iOSVersion = UIDevice.current.systemVersion
             let deviceName = UIDevice.current.name
@@ -790,6 +816,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             if self.appconfigdata?.isDiagnosticsEnabled != nil {
                 CustomerGlu.getInstance.setDiagnosticsEnabled(isDiagnosticsEnabled: (self.appconfigdata?.isDiagnosticsEnabled ?? CustomerGlu.isDiagnosticsEnabled)!)
             }
+            
+            self.initSSE()
             
             if self.appconfigdata?.isMetricsEnabled != nil {
                 CustomerGlu.getInstance.setMetricsLoggingEnabled(isMetricsLoggingEnabled: (self.appconfigdata?.isMetricsEnabled ?? CustomerGlu.isMetricsEnabled)!)
@@ -1058,6 +1086,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                             }
                             self.initializeMqtt()
                         }
+                        self.initSSE()
                         CustomerGlu.oldCampaignIds = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString)
                         if CustomerGlu.entryPointCount > 0 {
                             ApplicationManager.openWalletApi { success, response in
@@ -1137,6 +1166,230 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         eventData["registerObject"] = userdata
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_USER_REGISTRATION_END, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
     }
+    
+    func initSSE() {
+        let userId = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
+        let clientId = CustomerGlu.getInstance.cgUserData.client ?? ""
+
+        if userId.count == 0 || clientId.count == 0 {
+            print("Missing userId or clientId")
+            return
+
+        }
+        let urlString:String;
+        if CustomerGlu.env == "me"{
+             urlString = "https://api-me.customerglu.com/sse?userId=\(userId)&clientId=\(clientId)"
+
+        }
+        else if CustomerGlu.env == "us"{
+             urlString = "https://api-us.customerglu.com/sse?userId=\(userId)&clientId=\(clientId)"
+
+        }
+        else{
+             urlString = "https://api.customerglu.com/sse?userId=\(userId)&clientId=\(clientId)"
+        }
+
+        SSEClient.shared.startSSE(urlString: urlString) { message in
+            DispatchQueue.main.async { [self] in
+                do {
+                    guard let data = message.data(using: .utf8),
+                          let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                          let dataObj = json["data"] as? [String: Any],
+                          let nudgeId = dataObj["nudgeId"] as? String else {
+                        print("Invalid SSE message format")
+                        return
+                    }
+                    print("SSE Data: \(json)")
+
+                    print("Nudge ID: \(nudgeId)")
+                    if !displayedSSENudgeId.contains(nudgeId) {
+                        displayedSSENudgeId.append(nudgeId)
+                        self.showInAppNudge(dataObj)
+                    }
+                    self.ackSSENudge(nudgeId: nudgeId)
+              
+                } catch {
+                    print("Error parsing SSE message: \(error)")
+                }
+            }
+        }
+    }
+    
+    private func showInAppNudge(_ data: [String: Any]) {
+        do {
+            var absoluteHeight = "0"
+            var relativeHeight = "70"
+            var notificationType = ""
+            var url = ""
+            var title = ""
+            var body = ""
+            var nudgeId = ""
+            var campaignId = ""
+            var opacity = "0.5"
+            var messageType = ""
+
+            // Extract values safely
+            if let clickAction = data["clickAction"] as? String {
+                url = clickAction
+            }
+            
+            if let nudgeType = data["notificationType"] as? String {
+                messageType = nudgeType
+            }
+
+            
+
+            if let pageType = data["pageType"] as? String {
+                notificationType = pageType
+            }
+
+            if let absHeight = data["absoluteHeight"] as? String {
+                absoluteHeight = absHeight
+            }
+
+            if let relHeight = data["relativeHeight"] as? String {
+                relativeHeight = relHeight
+            }
+
+            if let campaign = data["campaignId"] as? String {
+                campaignId = campaign
+            }
+
+            if let nudge = data["nudgeId"] as? String {
+                nudgeId = nudge
+            }
+
+            if let nudgeOpacity = data["opacity"] as? String {
+                opacity = nudgeOpacity
+            }
+
+            if let nudgeTitle = data["title"] as? String {
+                title = nudgeTitle
+            }
+
+            if let nudgeBody = data["body"] as? String {
+                body = nudgeBody
+            }
+            
+            if messageType == "REFRESH_SDK"{
+                doLoadCampaignAndEntryPointCall()
+            }else{
+                
+                /// 📊 Prepare nudge analytics data
+                let nudgeData: [String: AnyHashable] = [
+                    APIParameterKey.nudge_id: nudgeId,
+                    APIParameterKey.campaign_id: campaignId,
+                    APIParameterKey.title: title,
+                    APIParameterKey.body: body,
+                    NotificationsKey.nudge_url: url,
+                    NotificationsKey.page_type: notificationType,
+                    NotificationsKey.glu_message_type: "in-app"
+                ]
+                
+                /// 🔥 Send analytics event
+                self.postAnalyticsEventForNotification(userInfo: nudgeData)
+                
+                /// 🧩 Configure nudge UI
+                let nudgeConfiguration = CGNudgeConfiguration()
+                if !notificationType.isEmpty {
+                    nudgeConfiguration.layout = notificationType
+                }
+                if !absoluteHeight.isEmpty {
+                    nudgeConfiguration.absoluteHeight = Double(absoluteHeight) ?? 0.0
+                }
+                if !relativeHeight.isEmpty {
+                    nudgeConfiguration.relativeHeight = Double(relativeHeight) ?? 0.0
+                }
+                
+                /// 🕐 Show with delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) { [self] in
+                    let alpha = Double(opacity) ?? 0.5
+                    
+                    switch notificationType {
+                    case CGConstants.BOTTOM_SHEET_NOTIFICATION:
+                        presentToCustomerWebViewController(
+                            nudge_url: url,
+                            page_type: CGConstants.BOTTOM_SHEET_NOTIFICATION,
+                            backgroundAlpha: alpha,
+                            auto_close_webview: true,
+                            nudgeConfiguration: nudgeConfiguration
+                        )
+                    case CGConstants.BOTTOM_DEFAULT_NOTIFICATION, CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP:
+                        presentToCustomerWebViewController(
+                            nudge_url: url,
+                            page_type: CGConstants.BOTTOM_DEFAULT_NOTIFICATION,
+                            backgroundAlpha: alpha,
+                            auto_close_webview: true,
+                            nudgeConfiguration: nudgeConfiguration
+                        )
+                    case CGConstants.MIDDLE_NOTIFICATIONS, CGConstants.MIDDLE_NOTIFICATIONS_POPUP:
+                        presentToCustomerWebViewController(
+                            nudge_url: url,
+                            page_type: CGConstants.MIDDLE_NOTIFICATIONS,
+                            backgroundAlpha: alpha,
+                            auto_close_webview: true,
+                            nudgeConfiguration: nudgeConfiguration
+                        )
+                    default:
+                        presentToCustomerWebViewController(
+                            nudge_url: url,
+                            page_type: CGConstants.FULL_SCREEN_NOTIFICATION,
+                            backgroundAlpha: alpha,
+                            auto_close_webview: true,
+                            nudgeConfiguration: nudgeConfiguration
+                        )
+                    }
+                }
+            }
+        } catch {
+            CustomerGlu.getInstance.printlog(
+                cglog: "Exception in showInAppNudge: \(error.localizedDescription)",
+                isException: true,
+                methodName: "showInAppNudge",
+                posttoserver: true
+            )
+        }
+    }
+    
+    func ackSSENudge(nudgeId:String){
+        
+        guard !nudgeId.isEmpty else { return }
+
+        
+        let userId = decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_USERID)
+        let clientId = CustomerGlu.getInstance.cgUserData.client ?? ""
+        
+        if userId.count == 0 || clientId.count == 0 {
+            print("Missing userId or clientId")
+            return
+
+        }
+        
+        let requestBody: [String: Any] = [
+              APIParameterKey.userId: userId,
+              APIParameterKey.clientId: clientId,
+              APIParameterKey.nudgeId: nudgeId
+          ]
+          
+   
+          
+          APIManager.ackSSENudge(queryParameters: requestBody as NSDictionary) { result in
+              switch result {
+              case .success(let response):
+                  if response.status == "success" {
+                      CustomerGlu.getInstance.printlog(cglog: "SSE Nudge Acknowledged", isException: false, methodName: "ackSSENudge", posttoserver: false)
+                  } else {
+                      CustomerGlu.getInstance.printlog(cglog: "Failed to ack SSE Nudge - API returned success=false", isException: false, methodName: "ackSSENudge", posttoserver: true)
+                  }
+              case .failure(let error):
+                  CustomerGlu.getInstance.printlog(cglog: "SSE Acknowledgement Fail - \(error.localizedDescription)", isException: false, methodName: "ackSSENudge", posttoserver: true)
+              }
+          }
+      }
+        
+        
+    
+
     
     
     @objc public func updateUserAttributes(customAttributes: [String: AnyHashable]) {
@@ -1341,6 +1594,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                 }
                 
                 entryPointInfoAddDelete(entryPoint: floatingButtons)
+                if !hasPipEntryPoint(entryPoints: CustomerGlu.entryPointdata)
+                {
+                    dismissPiPView()
+
+                }
                 addFloatingBtns()
                 addPIPViews()
                 postBannersCount()
@@ -1365,6 +1623,16 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             }
         }
         CGEventsDiagnosticsHelper.shared.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_GET_ENTRY_POINT_START, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData)
+    }
+    
+    func hasPipEntryPoint(entryPoints: [CGData]) -> Bool {
+        for entry in entryPoints {
+            if let type = entry.mobile?.container?.type,
+               type.uppercased() == "PIP" {
+                return true
+            }
+        }
+        return false
     }
     
     private func entryPointInfoAddDelete(entryPoint: [CGData]) {

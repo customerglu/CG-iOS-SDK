@@ -49,6 +49,7 @@ public class CGMobileData: Codable {
     public var testUserIds: [String]? = CustomerGlu.testUsers
     public var secretKey: String? = ""
     public var enableSentry: Bool? = false
+    public var enableSse: Bool? = false
     public var forceUserRegistration: Bool? = false
     public var allowUserRegistration: Bool? = false
     public var enableDarkMode: Bool? = CustomerGlu.enableDarkMode
@@ -80,7 +81,7 @@ public class CGMobileData: Codable {
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+        self.enableSse = try container.decodeIfPresent(Bool.self, forKey: .enableSse) ?? false
         self.disableSdk = try container.decodeIfPresent(Bool.self, forKey: .disableSdk) ?? CustomerGlu.sdk_disable
         self.enableAnalytics = try container.decodeIfPresent(Bool.self, forKey: .enableAnalytics) ?? CustomerGlu.analyticsEvent
         self.enableEntryPoints = try container.decodeIfPresent(Bool.self, forKey: .enableEntryPoints) ?? CustomerGlu.isEntryPointEnabled
