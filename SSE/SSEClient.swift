@@ -1,6 +1,6 @@
 import Foundation
 
-@objc(CustomerGlu)
+@objc(SSEClient)
 final class SSEClient: NSObject, URLSessionDataDelegate {
     
     static let shared = SSEClient()
