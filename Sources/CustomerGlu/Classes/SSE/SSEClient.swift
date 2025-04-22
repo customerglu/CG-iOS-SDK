@@ -93,8 +93,8 @@ final class SSEClient: NSObject, URLSessionDataDelegate {
 
             DispatchQueue.main.async {
                 self.disconnectTimer?.invalidate()
-                self.disconnectTimer = Timer.scheduledTimer(withTimeInterval: 600, repeats: false) { [weak self] _ in
-                    print("[SSEClient] Auto-disconnect triggered after 1 minute")
+                self.disconnectTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval((60 * CustomerGlu.sseTimeout)), repeats: false) { [weak self] _ in
+                    print("[SSEClient] Auto-disconnect triggered")
                     self?.stopSSE()
                 }
             }

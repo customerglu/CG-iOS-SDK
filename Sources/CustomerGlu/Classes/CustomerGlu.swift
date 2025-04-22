@@ -105,7 +105,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal var activescreenname = ""
     public static var bannersHeight: [String: Any]? = nil
     public static var embedsHeight: [String: Any]? = nil
-    
+    public static var sseTimeout: Int = 10;
     internal var appconfigdata: CGMobileData? = nil
     internal var popupDict = [PopUpModel]()
     internal var entryPointPopUpModel = EntryPointPopUpModel()
@@ -723,6 +723,13 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         SSEClient.shared.shouldReconnect = true
         initSSE();
     }
+    
+    @objc public func setSSETimeout(timeout:Int) {
+        CustomerGlu.sseTimeout = timeout;
+        
+    }
+    
+    
     // MARK: - API Calls Methods
     
     @objc public func initializeSdk(myenv:String = "in") {
