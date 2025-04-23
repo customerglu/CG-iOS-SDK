@@ -34,7 +34,7 @@ final class SSEClient: NSObject, URLSessionDataDelegate {
         }
 
         print("[SSEClient] Starting SSE connection")
-
+        CustomerGlu.sseInit = true
         self.onMessageReceived = onMessage
         eventBuffer = ""
 

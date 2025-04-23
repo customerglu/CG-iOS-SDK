@@ -144,6 +144,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal  var isPiPViewLoadedEventPushed = false
     public static var pipDismissed = false
     public static var pipLoaded = false
+    public static var sseInit = false
     public static var toolTipLoaded = false
     weak var diagonsticHelper: CGEventsDiagnosticsHelper? = CGEventsDiagnosticsHelper.shared
     internal static var sdkWriteKey: String = Bundle.main.object(forInfoDictionaryKey: "CUSTOMERGLU_WRITE_KEY") as? String ?? ""
@@ -680,6 +681,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         SSEClient.shared.isConnected = false;
         SSEClient.shared.stopSSE();
         SSEClient.shared.shouldReconnect = true;
+        CustomerGlu.sseInit = false;
         popupDict.removeAll()
         
         CustomerGlu.entryPointdata.removeAll()
@@ -823,8 +825,11 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             if self.appconfigdata?.isDiagnosticsEnabled != nil {
                 CustomerGlu.getInstance.setDiagnosticsEnabled(isDiagnosticsEnabled: (self.appconfigdata?.isDiagnosticsEnabled ?? CustomerGlu.isDiagnosticsEnabled)!)
             }
-            
-            self.initSSE()
+            if self.appconfigdata?.enableSse != nil && self.appconfigdata?.enableSse == true {
+                
+                self.initSSE()
+
+            }
             
             if self.appconfigdata?.isMetricsEnabled != nil {
                 CustomerGlu.getInstance.setMetricsLoggingEnabled(isMetricsLoggingEnabled: (self.appconfigdata?.isMetricsEnabled ?? CustomerGlu.isMetricsEnabled)!)
@@ -909,6 +914,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             if(self.appconfigdata!.darkBackground != nil){
                 CustomerGlu.getInstance.configureDarkBackgroundColor(color: UIColor(hex: self.appconfigdata!.darkBackground ?? CustomerGlu.darkBackground.hexString) ?? CustomerGlu.darkBackground)
             }
+            
+            
             
             if(self.appconfigdata!.loaderColor != nil){
                 CustomerGlu.getInstance.configureLoaderColour(color: [UIColor(hex: self.appconfigdata!.loaderColor ?? CustomerGlu.arrColor[0].hexString) ?? CustomerGlu.arrColor[0]])
@@ -1093,7 +1100,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                             }
                             self.initializeMqtt()
                         }
-                        self.initSSE()
+                        if self.appconfigdata?.enableSse != nil && self.appconfigdata?.enableSse == true && !CustomerGlu.sseInit{
+                            self.initSSE()
+                        }
                         CustomerGlu.oldCampaignIds = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString)
                         if CustomerGlu.entryPointCount > 0 {
                             ApplicationManager.openWalletApi { success, response in
