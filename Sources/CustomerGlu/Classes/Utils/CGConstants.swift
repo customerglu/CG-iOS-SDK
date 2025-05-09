@@ -74,6 +74,129 @@ struct CGConstants {
     static let CGGetProgramResponse = "CGGetProgramResponse"
     static let CGGetRewardResponse = "CGGetRewardResponse"
     static let allCampaignsIdsAsString = "allCampaignsIdsAsString"
+    static let ad_pop_up_response = "{\n" +
+   "    \"_id\": \"66bc8c5035d9121437800b1a\",\n" +
+   "    \"name\": \"default title\",\n" +
+   "    \"client\": \"84acf2ac-b2e0-4927-8653-cba2b83816c2\",\n" +
+   "    \"consumer\": \"MOBILE\",\n" +
+   "    \"status\": \"ACTIVE\",\n" +
+   "    \"visible\": true,\n" +
+   "    \"triggerType\": \"STATIC\",\n" +
+   "    \"availability\": \"FOREVER\",\n" +
+   "    \"mobile\": {\n" +
+   "        \"container\": {\n" +
+   "            \"android\": {\n" +
+   "                \"allowedActitivityList\": [\n" +
+   "                    \"HomeScreen\"\n" +
+   "                ],\n" +
+   "                \"disallowedActitivityList\": []\n" +
+   "            },\n" +
+   "            \"ios\": {\n" +
+   "                \"allowedActitivityList\": [\n" +
+   "                    \"HomeScreen\"\n" +
+   "                ],\n" +
+   "                \"disallowedActitivityList\": []\n" +
+   "            },\n" +
+   "            \"type\": \"FLOATING\",\n" +
+   "            \"bannerId\": \"bannerId\",\n" +
+   "            \"height\": \"310\",\n" +
+   "            \"width\": \"20\",\n" +
+   "            \"position\": \"BOTTOM-RIGHT\",\n" +
+   "            \"vertical_padding\": \"10\",\n" +
+   "            \"horizontal_padding\": \"5\"\n" +
+   "        },\n" +
+   "        \"content\": [\n" +
+   "            {\n" +
+   "                \"removeOnCompletion\": false,\n" +
+   "                \"type\": \"VIDEO\",\n" +
+   "                \"url\": \"https://assets.customerglu.com/35deace8-c04f-43c3-a00b-9c06eaae7acb/cb9eaff9-0ecf-43b2-9bd1-dbdb3b71f4c7.mp4\",\n" +
+   "                \"closeIcon\": \"https://assets.customerglu.com/84acf2ac-b2e0-4927-8653-cba2b83816c2/ic_close.png\",\n" +
+   "                \"backgroundColor\": \"#000000\",\n" +
+   "                \"backgroundImage\": \"https://assets.customerglu.com/84acf2ac-b2e0-4927-8653-cba2b83816c2/Group_16-removebg-preview.png\",\n" +
+   "                \"campaignId\": \"62ad1c12-6be5-435a-85cc-fda72dfcac8e\",\n" +
+   "                \"openLayout\": \"FULL-DEFAULT\",\n" +
+   "                \"absoluteHeight\": 100,\n" +
+   "                \"relativeHeight\": 60,\n" +
+   "                \"closeOnDeepLink\": true,\n" +
+   "                \"action\": {\n" +
+   "                    \"isHandledBySDK\": false,\n" +
+   "                    \"type\": \"OPEN_CAMPAIGN\",\n" +
+   "                    \"url\": \"https://your-url.com\",\n" +
+   "                    \"button\": {\n" +
+   "                        \"showButton\": false,\n" +
+   "                        \"buttonColor\": \"FFFFF\",\n" +
+   "                        \"buttonText\": \"\",\n" +
+   "                        \"buttonTextColor\": \"\"\n" +
+   "                    }\n" +
+   "                },\n" +
+   "                \"primaryCta\": {\n" +
+   "                    \"isHandledBySDK\": false,\n" +
+   "                    \"type\": \"OPEN_CAMPAIGN\",\n" +
+   "                    \"url\": \"https://your-url.com\",\n" +
+   "                    \"button\": {\n" +
+   "                        \"showButton\": true,\n" +
+   "                        \"buttonColor\": \"#D17842\",\n" +
+   "                        \"buttonText\": \"Shop Now 😊 \",\n" +
+   "                        \"buttonTextColor\": \"#000000\",\n" +
+   "                        \"borderRadius\": \"20\",\n" +
+   "                        \"height\": \"60\",\n" +
+   "                        \"width\": \"100\",\n" +
+   "                        \"textSize\": \"16\",\n" +
+   "                        \"marginHorizontal\": \"16\",\n" +
+   "                        \"marginVertical\": \"16\"\n" +
+   "                    }\n" +
+   "                },\n" +
+   "                \"secondaryCta\": {\n" +
+   "                    \"isHandledBySDK\": false,\n" +
+   "                    \"type\": \"OPEN_CAMPAIGN\",\n" +
+   "                    \"url\": \"https://your-url.com\",\n" +
+   "                    \"button\": {\n" +
+   "                        \"showButton\": true,\n" +
+   "                        \"buttonColor\": \"#D17842\",\n" +
+   "                        \"buttonText\": \"Close\",\n" +
+   "                        \"buttonTextColor\": \"#000000\",\n" +
+   "                        \"borderRadius\": \"20\",\n" +
+   "                        \"height\": \"60\",\n" +
+   "                        \"width\": \"100\",\n" +
+   "                        \"textSize\": \"16\",\n" +
+   "                        \"marginHorizontal\": \"16\",\n" +
+   "                        \"marginVertical\": \"16\"\n" +
+   "                    }\n" +
+   "                    \n" +
+   "                },\n" +
+   "                \"_id\": \"66bc8c5035d9121437800b1c\"\n" +
+   "            }\n" +
+   "        ],\n" +
+   "        \"conditions\": {\n" +
+   "            \"delay\": 0,\n" +
+   "            \"autoScroll\": true,\n" +
+   "            \"autoScrollSpeed\": 5,\n" +
+   "            \"draggable\": true,\n" +
+   "            \"backgroundOpacity\": 0.5,\n" +
+   "            \"priority\": 1,\n" +
+   "            \"showCount\": {\n" +
+   "                \"count\": 1000,\n" +
+   "                \"dailyRefresh\": false\n" +
+   "            },\n" +
+   "            \"pip\": {\n" +
+   "                \"muteOnDefaultPIP\": true,\n" +
+   "                \"muteOnDefaultExpanded\": false,\n" +
+   "                \"loopVideoPIP\": true,\n" +
+   "                \"loopVideoExpanded\": false,\n" +
+   "                \"darkPlayer\": false,\n" +
+   "                \"removeOnDismissExpanded\": true,\n" +
+   "                \"removeOnDismissPIP\": false,\n" +
+   "                \"openExpandedView\": true\n" +
+   "            },\n" +
+   "            \"backendValidations\": \"NOT_REQUIRED\"\n" +
+   "        },\n" +
+   "        \"_id\": \"66bc8c5035d9121437800b1b\"\n" +
+   "    },\n" +
+   "    \"createdAt\": \"2024-08-14T10:52:00.501Z\",\n" +
+   "    \"updatedAt\": \"2024-08-14T10:52:00.501Z\",\n" +
+   "    \"__v\": 0\n" +
+   "}"
+
 }
 
 struct CGDiagnosticConstants{
@@ -286,3 +409,4 @@ public enum TooltipPosition {
 struct CGSafeAreaConstants {
     static let SAFE_AREA_PADDING = CGFloat(33.0)
 }
+

@@ -86,6 +86,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         if (self.window != nil && self.pipMediaPlayer != nil) {
             
             self.window.dismiss()
+            self.pipMediaPlayer.cleanUp()
             self.pipMediaPlayer.pause()
             self.pipMediaPlayer.unRegisterLooper()
             CustomerGlu.getInstance.activePIPView = nil
@@ -107,6 +108,8 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
         })
     }
     
+ 
+
     
     override func viewDidLoad() {
         let view = UIView()

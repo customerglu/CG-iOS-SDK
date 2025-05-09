@@ -38,6 +38,8 @@ public class CGVideoPlayer: UIView {
         get { playerLayer.player }
         set {
             playerLayer.player = newValue
+            playerLayer.videoGravity = .resizeAspect
+
         }
     }
     
@@ -56,7 +58,8 @@ public class CGVideoPlayer: UIView {
     private var shouldVideoLoop = false
     var delegate: CGVideoplayerListener?
     var videoListeners: CGPiPMovieVideoCallbacks?
-    
+    private var timeObserverToken: Any?
+
     // One of the value from here containing the actual playable media in avassets
     // Read more: https://developer.apple.com/documentation/avfoundation/avasset?language=objc
     private let assetValueKey = "playable"
@@ -310,7 +313,7 @@ public class CGVideoPlayer: UIView {
     }
  
     @objc func checkVideoTime(){
-        player?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 1), queue: DispatchQueue.main) { [weak self] time in
+        timeObserverToken = player?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 1), queue: DispatchQueue.main) { [weak self] time in
             guard let self = self else { return }
             
             let duration = CMTimeGetSeconds(self.player?.currentItem?.duration ?? CMTime.zero)
@@ -356,8 +359,21 @@ public class CGVideoPlayer: UIView {
     }
 
     
-    public func unRegisterLooper(){
+    public func unRegisterLooper() {
+        if let token = timeObserverToken {
+               player?.removeTimeObserver(token)
+               timeObserverToken = nil
+           }
         NotificationCenter.default.removeObserver(self)
+    }
+    
+    public func cleanUp() {
+        unRegisterLooper()
+        delegate = nil
+        videoListeners = nil
+        player?.pause()
+        player?.replaceCurrentItem(with: nil)
+        player = nil
     }
     
     

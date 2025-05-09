@@ -2793,7 +2793,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         
         //POPUPS
         let popups = popupDict.filter {
-            $0.type == "POPUP"
+            $0.type == "POPUP" || $0.type == "AD_POPUP"
         }
         
         let sortedPopup = popups.sorted{$0.priority! > $1.priority!}
@@ -2970,6 +2970,32 @@ private func presentCustomerWebViewController(from topController: UIViewControll
     self.hidePiPView()
     topController.present(customerWebViewVC, animated: false, completion: nil)
 }
+    
+    
+    @objc public func showAdBanner(){
+        DispatchQueue.main.async { [weak self] in
+
+            
+            guard let topController = UIViewController.topViewController() else {
+                return
+            }
+            
+            // Check if top controller is already CustomerWebViewController
+          
+                // If not presented already, present the new CustomerWebViewController
+            self?.presentAdPopup(from: topController, entryPointId: "d")
+            
+        }
+
+    }
+    
+     private func presentAdPopup(from topController: UIViewController, entryPointId: String) {
+        let adPopupVC = AdPopupViewController(
+            entryPointId: entryPointId
+        )
+        adPopupVC.modalPresentationStyle = .overCurrentContext
+        topController.present(adPopupVC, animated: false, completion: nil)
+    }
     
     internal func postAnalyticsEventForPIP(event_name:String, entry_point_id:String, entry_point_name:String,content_campaign_id:String = "",entry_point_is_expanded:String)
          {

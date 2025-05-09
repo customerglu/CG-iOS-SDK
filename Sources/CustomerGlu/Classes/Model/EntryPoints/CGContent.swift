@@ -5,93 +5,84 @@
 
 import Foundation
 
-public struct CGContent: Codable{
+public struct CGContent: Codable {
     
-    var _id : String!
-    var campaignId : String!
-    var openLayout : String!
-    var type : String!
-    var url : String!
-    var darkUrl: String!
-    var lightUrl: String!
+    var _id: String!
+    var campaignId: String!
+    var openLayout: String!
+    var type: String!
+    var url: String!
+    var darkUrl: String?
+    var lightUrl: String?
     
-    var relativeHeight : Double? = 0.0
-    var absoluteHeight : Double? = 0.0
-    var closeOnDeepLink : Bool? = CustomerGlu.auto_close_webview!
+    var relativeHeight: Double? = 0.0
+    var absoluteHeight: Double? = 0.0
+    var closeOnDeepLink: Bool? = CustomerGlu.auto_close_webview!
+    
     var action: CGAction!
+    var primaryCta: CGAction?
+    var secondaryCta: CGAction?
     
-    /**
-     * Instantiate the instance using the passed dictionary values to set the properties values
-     */
-    init(fromDictionary dictionary: [String:Any]){
+    var closeIcon: String?
+    var backgroundColor: String?
+    var backgroundImage: String?
+
+    init(fromDictionary dictionary: [String: Any]) {
         _id = dictionary["_id"] as? String
         campaignId = dictionary["campaignId"] as? String
         openLayout = dictionary["openLayout"] as? String
         type = dictionary["type"] as? String
         url = dictionary["url"] as? String
-        if(dictionary["relativeHeight"] != nil){
-            relativeHeight = dictionary["relativeHeight"] as? Double
+        relativeHeight = dictionary["relativeHeight"] as? Double ?? 0.0
+        absoluteHeight = dictionary["absoluteHeight"] as? Double ?? 0.0
+        closeOnDeepLink = dictionary["closeOnDeepLink"] as? Bool ?? CustomerGlu.auto_close_webview
+        darkUrl = dictionary["darkUrl"] as? String
+        lightUrl = dictionary["lightUrl"] as? String
+
+        if let actionDict = dictionary["action"] as? [String: Any] {
+            action = CGAction(fromDictionary: actionDict)
         }
-        if(dictionary["absoluteHeight"] != nil){
-            absoluteHeight = dictionary["absoluteHeight"] as? Double
+
+        if let primaryDict = dictionary["primaryCta"] as? [String: Any] {
+            primaryCta = CGAction(fromDictionary: primaryDict)
         }
-        if(dictionary["closeOnDeepLink"] != nil){
-            closeOnDeepLink = dictionary["closeOnDeepLink"] as? Bool
+
+        if let secondaryDict = dictionary["secondaryCta"] as? [String: Any] {
+            secondaryCta = CGAction(fromDictionary: secondaryDict)
         }
-        if dictionary["darkUrl"] != nil {
-            darkUrl = dictionary["darkUrl"] as? String
-        }
-        
-        if dictionary["lightUrl"] != nil {
-            lightUrl = dictionary["lightUrl"] as? String
-        }
-        if dictionary["action"] != nil {
-            action = CGAction(fromDictionary: (dictionary["action"] as? [String: Any])!)
-        }
-                
+
+        closeIcon = dictionary["closeIcon"] as? String
+        backgroundColor = dictionary["backgroundColor"] as? String
+        backgroundImage = dictionary["backgroundImage"] as? String
     }
-    
-    /**
-     * Returns all the available property values in the form of [String:Any] object where the key is the approperiate json key and the value is the value of the corresponding property
-     */
-    func toDictionary() -> [String:Any]
-    {
-        var dictionary = [String:Any]()
-        if _id != nil{
-            dictionary["_id"] = _id
+
+    func toDictionary() -> [String: Any] {
+        var dictionary = [String: Any]()
+        dictionary["_id"] = _id
+        dictionary["campaignId"] = campaignId
+        dictionary["openLayout"] = openLayout
+        dictionary["type"] = type
+        dictionary["url"] = url
+        dictionary["relativeHeight"] = relativeHeight
+        dictionary["absoluteHeight"] = absoluteHeight
+        dictionary["closeOnDeepLink"] = closeOnDeepLink
+        dictionary["darkUrl"] = darkUrl
+        dictionary["lightUrl"] = lightUrl
+
+        if let action = action {
+            dictionary["action"] = action.toDictionary()
         }
-        if campaignId != nil{
-            dictionary["campaignId"] = campaignId
+        if let primaryCta = primaryCta {
+            dictionary["primaryCta"] = primaryCta.toDictionary()
         }
-        if openLayout != nil{
-            dictionary["openLayout"] = openLayout
+        if let secondaryCta = secondaryCta {
+            dictionary["secondaryCta"] = secondaryCta.toDictionary()
         }
-        if type != nil{
-            dictionary["type"] = type
-        }
-        if url != nil{
-            dictionary["url"] = url
-        }
-        
-        if relativeHeight != nil{
-            dictionary["relativeHeight"] = relativeHeight
-        }
-        if absoluteHeight != nil{
-            dictionary["absoluteHeight"] = absoluteHeight
-        }
-        if closeOnDeepLink != nil{
-            dictionary["closeOnDeepLink"] = closeOnDeepLink
-        }
-        if lightUrl != nil {
-            dictionary["lightUrl"] = lightUrl
-        }
-        if darkUrl != nil {
-            dictionary["darkUrl"] = darkUrl
-        }
-        if action != nil {
-            dictionary["action"] = action
-        }
+
+        dictionary["closeIcon"] = closeIcon
+        dictionary["backgroundColor"] = backgroundColor
+        dictionary["backgroundImage"] = backgroundImage
+
         return dictionary
     }
-    
 }
