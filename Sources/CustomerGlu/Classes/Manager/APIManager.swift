@@ -72,6 +72,12 @@ internal class MethodandPath: Codable {
         case .entrypoints_config:
             self.method = "POST"
             self.path = "entrypoints/v1/config"
+        case .entrypointVisibilityStatus:
+            self.method = "POST"
+            self.path = "entrypoints/v1/user/state"
+        case .getEntryPointVisibilityStatus:
+            self.method = "GET"
+            self.path = "entrypoints/v1/user/state"
         case .send_analytics_event:
             self.method = "POST"
             self.path = "v4/sdk"
@@ -115,6 +121,8 @@ enum CGService {
     case crashReport
     case entryPointdata
     case entrypoints_config
+    case entrypointVisibilityStatus
+    case getEntryPointVisibilityStatus
     case send_analytics_event
     case appconfig
     case cgdeeplink
@@ -430,8 +438,18 @@ class APIManager {
         serviceCall(for: .entryPointdata, parametersDict: queryParameters, completion: completion)
     }
     
+ 
     static func entrypoints_config(queryParameters: NSDictionary, completion: @escaping (Result<EntryConfig, CGNetworkError>) -> Void) {
         serviceCall(for: .entrypoints_config, parametersDict: queryParameters, completion: completion)
+    }
+    
+    static func getEntryPointVisibilityStatus(queryParameters: NSDictionary, completion: @escaping (Result<EntryPointVisibilityModel, CGNetworkError>) -> Void) {
+        serviceCall(for: .getEntryPointVisibilityStatus, parametersDict: queryParameters, completion: completion)
+    }
+    
+    
+    static func updateEntryPointVisibilityStatus(queryParameters: NSDictionary, completion: @escaping (Result<EntryPointVisibilityModel, CGNetworkError>) -> Void) {
+        serviceCall(for: .entrypointVisibilityStatus, parametersDict: queryParameters, completion: completion)
     }
     
     static func sendAnalyticsEvent(queryParameters: NSDictionary, completion: @escaping (Result<CGAddCartModel, CGNetworkError>) -> Void) {

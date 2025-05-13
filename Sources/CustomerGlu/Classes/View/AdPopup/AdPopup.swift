@@ -1,15 +1,16 @@
+// Updated AdPopupViewController.swift with proper safe area handling for FULL-DEFAULT
+
 import UIKit
 import Lottie
 
 class AdPopupViewController: UIViewController {
-    
+
     private var entryPointId: String
     private var campaignId: String?
-    private var cardHeight: CGFloat?
-    private var cardBottomMargins: Int = -32
     private var entryPointsData: CGData?
     private var dismissactionglobal = CGDismissAction.UI_BUTTON
-    
+    private var cardHeight: CGFloat?
+    private var cardBottomMargins: Int = -32
     private let mainView = UIView()
     private let cardView = UIView()
     private let cardBackgroundImageView = UIImageView()
@@ -20,7 +21,6 @@ class AdPopupViewController: UIViewController {
     private var videoPlayer = CGVideoPlayer()
     let topSafeAreaView = UIView()
     let bottomSafeAreaView = UIView()
-
 
     init(entryPointId: String) {
         self.entryPointId = entryPointId
@@ -43,12 +43,21 @@ class AdPopupViewController: UIViewController {
         postAnalyticsEvent(type: "WEBVIEW_LOAD")
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        videoPlayer.cleanUp()
-        if isBeingDismissed {
-            postAnalyticsEvent(type: "WEBVIEW_DISMISS")
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+       
+        let topInset = view.safeAreaInsets.top
+        let bottomInset = view.safeAreaInsets.bottom
+
+        if isFullLayout() {
+            topSafeAreaView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: topInset)
+            bottomSafeAreaView.frame = CGRect(x: 0, y: view.bounds.height - bottomInset, width: view.bounds.width, height: bottomInset)
+        } else {
+            bottomSafeAreaView.frame = CGRect(x: 0, y: view.bounds.height - bottomInset, width: view.bounds.width, height: bottomInset)
         }
+
+        
     }
 
     private func setupEntryPoint() {
@@ -59,54 +68,45 @@ class AdPopupViewController: UIViewController {
         }
     }
 
-//    private func setupViews() {
-//        if let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
-//            view.frame = window.bounds
-//        }
-//
-//        view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-//
-//        cardView.layer.cornerRadius = 16
-//        cardView.clipsToBounds = true
-//        cardView.backgroundColor = .white
-//
-//        cardBackgroundImageView.contentMode = .scaleAspectFill
-//        cardBackgroundImageView.clipsToBounds = true
-//
-//        imageView.contentMode = .scaleAspectFit
-//        imageView.backgroundColor = .clear
-//
-//        closeIconView.contentMode = .scaleAspectFit
-//        closeIconView.tintColor = .gray
-//        closeIconView.isUserInteractionEnabled = true
-//        closeIconView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleDismiss)))
-//
-//        view.addSubview(mainView)
-//        view.addSubview(topSafeAreaView)
-//        view.addSubview(bottomSafeAreaView)
-//        mainView.addSubview(cardView)
-//        cardView.addSubview(cardBackgroundImageView)
-//        cardView.addSubview(imageView)
-//        cardView.addSubview(primaryCTAButton)
-//        cardView.addSubview(secondaryCTAButton)
-//        cardView.addSubview(closeIconView)
-//        cardView.addSubview(videoPlayer)
-//        self.cardView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.ignoreTap)))
-//
-//    }
-    
+    private func isFullLayout() -> Bool {
+        return entryPointsData?.mobile.content?.first?.openLayout == "FULL-DEFAULT"
+    }
+
     private func setupViews() {
         if let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
             view.frame = window.bounds
         }
 
-        // Setup top/bottom safe area overlays
-//        topSafeAreaView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-//        bottomSafeAreaView.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-
         view.addSubview(mainView)
-        view.addSubview(topSafeAreaView)
-        view.addSubview(bottomSafeAreaView)
+        let isDark = CustomerGlu.getInstance.isDarkModeEnabled()
+
+        if isFullLayout() {
+            // Add and style top safe area
+            view.addSubview(topSafeAreaView)
+            view.addSubview(bottomSafeAreaView)
+
+            topSafeAreaView.backgroundColor = isDark ? CustomerGlu.topSafeAreaColorDark : CustomerGlu.topSafeAreaColorLight
+            bottomSafeAreaView.backgroundColor = isDark ? CustomerGlu.bottomSafeAreaColorDark : CustomerGlu.bottomSafeAreaColorLight
+
+            // Apply safe area heights immediately
+            let topInset = view.safeAreaInsets.top
+            let bottomInset = view.safeAreaInsets.bottom
+            topSafeAreaView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: topInset)
+            bottomSafeAreaView.frame = CGRect(x: 0, y: view.bounds.height - bottomInset, width: view.bounds.width, height: bottomInset)
+            print("🟠 setupViews — topInset: \(topInset), bottomInset: \(bottomInset)")
+               print("🟠 setupViews — topSafeAreaView.frame: \(topSafeAreaView.frame)")
+               print("🟠 setupViews — bottomSafeAreaView.frame: \(bottomSafeAreaView.frame)")
+           } else {
+               view.addSubview(bottomSafeAreaView)
+
+               bottomSafeAreaView.backgroundColor = isDark ? CustomerGlu.bottomSafeAreaColorDark : CustomerGlu.bottomSafeAreaColorLight
+
+               let bottomInset = view.safeAreaInsets.bottom
+               bottomSafeAreaView.frame = CGRect(x: 0, y: view.bounds.height - bottomInset, width: view.bounds.width, height: bottomInset)
+
+               print("🟠 setupViews — bottomInset: \(bottomInset)")
+               print("🟠 setupViews — bottomSafeAreaView.frame: \(bottomSafeAreaView.frame)")
+           }
 
         mainView.addSubview(cardView)
         cardView.addSubview(cardBackgroundImageView)
@@ -115,8 +115,11 @@ class AdPopupViewController: UIViewController {
         cardView.addSubview(secondaryCTAButton)
         cardView.addSubview(closeIconView)
         cardView.addSubview(videoPlayer)
-
-        cardView.layer.cornerRadius = 16
+        
+        if !isFullLayout() {
+            cardView.layer.cornerRadius = 16
+            cardView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        }
         cardView.clipsToBounds = true
         cardView.backgroundColor = .white
 
@@ -126,296 +129,75 @@ class AdPopupViewController: UIViewController {
         closeIconView.contentMode = .scaleAspectFit
         closeIconView.tintColor = .gray
         closeIconView.isUserInteractionEnabled = true
+        cardView.bringSubviewToFront(closeIconView)
         closeIconView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleDismiss)))
-     
-    
     }
 
-//    private func setupLayout() {
-//        [mainView, cardView, cardBackgroundImageView, imageView, primaryCTAButton, secondaryCTAButton,videoPlayer, closeIconView].forEach {
-//            $0.translatesAutoresizingMaskIntoConstraints = false
-//        }
-//        topSafeAreaView.translatesAutoresizingMaskIntoConstraints = false
-//        bottomSafeAreaView.translatesAutoresizingMaskIntoConstraints = false
-//        let screenHeight = UIScreen.main.bounds.height
-//        
-//            
-//        if entryPointsData?.mobile.content?.first?.openLayout == "FULL-DEFAULT" {
-//            cardHeight = screenHeight
-//            cardBottomMargins = 0
-//
-//        }else{
-//             cardHeight = CGFloat(Double(entryPointsData?.mobile.container.height ?? "400") ?? screenHeight * 0.6)
-//        }
-//        NSLayoutConstraint.activate([
-//            mainView.topAnchor.constraint(equalTo: view.topAnchor),
-//            mainView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-//            mainView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            mainView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            
-//            topSafeAreaView.topAnchor.constraint(equalTo: view.topAnchor),
-//            topSafeAreaView.leftAnchor.constraint(equalTo: view.leftAnchor),
-//            topSafeAreaView.rightAnchor.constraint(equalTo: view.rightAnchor),
-//            topSafeAreaView.heightAnchor.constraint(equalToConstant: UIApplication.shared.windows.first?.safeAreaInsets.top ?? 20),
-//            
-//            bottomSafeAreaView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-//            bottomSafeAreaView.leftAnchor.constraint(equalTo: view.leftAnchor),
-//            bottomSafeAreaView.rightAnchor.constraint(equalTo: view.rightAnchor),
-//            bottomSafeAreaView.heightAnchor.constraint(equalToConstant: UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0),
-//
-//            cardView.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
-//            cardView.trailingAnchor.constraint(equalTo: mainView.trailingAnchor),
-//            
-//            cardView.bottomAnchor.constraint(equalTo: mainView.bottomAnchor, constant: CGFloat(cardBottomMargins)),
-//            cardView.heightAnchor.constraint(equalToConstant: cardHeight ?? screenHeight),
-//
-//            cardBackgroundImageView.topAnchor.constraint(equalTo: cardView.topAnchor),
-//            cardBackgroundImageView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor),
-//            cardBackgroundImageView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
-//            cardBackgroundImageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
-//
-//            
-//            imageView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 30),
-//            imageView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
-//            imageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
-//
-//            videoPlayer.topAnchor.constraint(equalTo: cardView.topAnchor),
-//                videoPlayer.bottomAnchor.constraint(equalTo: cardView.bottomAnchor),
-//                videoPlayer.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
-//                videoPlayer.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
-//            
-//            primaryCTAButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 16),
-//            primaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
-//            primaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
-//       //     primaryCTAButton.heightAnchor.constraint(equalToConstant: 40),
-//
-//            secondaryCTAButton.topAnchor.constraint(equalTo: primaryCTAButton.bottomAnchor, constant: 12),
-//            secondaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
-//            secondaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
-//            secondaryCTAButton.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -20),
-//        //    secondaryCTAButton.heightAnchor.constraint(equalToConstant: 40),
-//
-//            closeIconView.widthAnchor.constraint(equalToConstant: 32),
-//            closeIconView.heightAnchor.constraint(equalToConstant: 32),
-//            closeIconView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
-//            closeIconView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16)
-//        ])
-//    }
-    
     private func setupLayout() {
         [mainView, cardView, cardBackgroundImageView, imageView, primaryCTAButton, secondaryCTAButton, videoPlayer, closeIconView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
 
         let guide = view.safeAreaLayoutGuide
-        let isFullLayout = entryPointsData?.mobile.content?.first?.openLayout == "FULL-DEFAULT"
-
-        NSLayoutConstraint.activate([
-            // Main view fills the entire screen
-            mainView.topAnchor.constraint(equalTo: view.topAnchor),
-            mainView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            mainView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            mainView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-
-            // Card view respects safe area top and bottom if FULL-DEFAULT
-            cardView.topAnchor.constraint(equalTo: guide.topAnchor),
-            cardView.bottomAnchor.constraint(equalTo: guide.bottomAnchor),
-            cardView.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
-            cardView.trailingAnchor.constraint(equalTo: mainView.trailingAnchor),
-
-            // Background image fills card
-            cardBackgroundImageView.topAnchor.constraint(equalTo: cardView.topAnchor),
-            cardBackgroundImageView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor),
-            cardBackgroundImageView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
-            cardBackgroundImageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
-
-            // Image view placement
-            imageView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 30),
-            imageView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
-            imageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
-
-            // Video player fills card
-            videoPlayer.topAnchor.constraint(equalTo: cardView.topAnchor),
-            videoPlayer.bottomAnchor.constraint(equalTo: cardView.bottomAnchor),
-            videoPlayer.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
-            videoPlayer.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
-
-            // Primary CTA
-            primaryCTAButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 16),
-            primaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
-            primaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
-
-            // Secondary CTA
-            secondaryCTAButton.topAnchor.constraint(equalTo: primaryCTAButton.bottomAnchor, constant: 12),
-            secondaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
-            secondaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
-            secondaryCTAButton.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -20), // key fix
-
-            // Close icon
-            closeIconView.widthAnchor.constraint(equalToConstant: 32),
-            closeIconView.heightAnchor.constraint(equalToConstant: 32),
-            closeIconView.topAnchor.constraint(equalTo: guide.topAnchor, constant: 16), // respect top safe area
-            closeIconView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
-            
-            
-        ])
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        let topInset = view.safeAreaInsets.top
-        let bottomInset = view.safeAreaInsets.bottom
-
-        print("✅ Top Safe Area Height: \(topInset)")
-        print("✅ Bottom Safe Area Height: \(bottomInset)")
-        
-        
-        let topHeight = topSafeAreaView.frame.height
-        let bottomHeight = bottomSafeAreaView.frame.height
-
-        print("✅ TopSafeAreaView height: \(topHeight)")
-        print("✅ BottomSafeAreaView height: \(bottomHeight)")
-        
-        let isDark = CustomerGlu.getInstance.isDarkModeEnabled()
-         topSafeAreaView.backgroundColor = isDark ? CustomerGlu.topSafeAreaColorDark : CustomerGlu.topSafeAreaColorLight
-         bottomSafeAreaView.backgroundColor = isDark ? CustomerGlu.bottomSafeAreaColorDark : CustomerGlu.bottomSafeAreaColorLight
-    }
-
-
-    private func applyData() {
-        guard let content = entryPointsData?.mobile?.content.first else { return }
-
-        
-        campaignId = content.campaignId
-        
-        if let opacity = entryPointsData?.mobile?.conditions.backgroundOpacity {
-            
-            let black = UIColor.black
-            let blackTrans = black.withAlphaComponent(CGFloat(opacity))
-            self.view.backgroundColor = blackTrans
-        }else{
-            let black = UIColor.black
-            let blackTrans = black.withAlphaComponent(CGFloat(0.5))
-            self.view.backgroundColor = blackTrans
-        }
-
-
-        if let bgColorHex = content.backgroundColor {
-            cardView.backgroundColor = UIColor(hex: bgColorHex)
-        }
-
-        if let bgImage = content.backgroundImage {
-            loadImage(from: bgImage, into: cardBackgroundImageView)
-        }
-
-        if let type = content.type?.uppercased() {
-            if type == "LOTTIE" {
-                cardBackgroundImageView.isHidden = true
-                print("Lottie starts download")
-                CGFileDownloader.loadFileAsync(url: URL(string: content.url)!) { [weak self] path, error in
-                    DispatchQueue.main.async {
-                        if(error == nil){
-                            print("Lottie starts downloaded")
-                            
-                            guard let self = self, error == nil, let path = path else { return }
-                            
-                        //   let decryptedPath = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: path)
-                            let animationView = LottieAnimationView(filePath: path)
-                                  animationView.translatesAutoresizingMaskIntoConstraints = false
-                                  animationView.contentMode = .scaleAspectFit
-                                  animationView.loopMode = .loop
-                            print("Lottie file path: \(path)")
-                         //   print("Lottie dfile path: \(decryptedPath)")
-                            print("File exists: \(FileManager.default.fileExists(atPath: path))")
-                            animationView.isHidden = false
-                            animationView.play()
-                            self.cardView.addSubview(animationView)
-                            self.cardView.sendSubviewToBack(animationView)
-                         
-
-
-                            // Add constraints
-                            NSLayoutConstraint.activate([
-                                animationView.topAnchor.constraint(equalTo: self.cardView.topAnchor),
-                                animationView.bottomAnchor.constraint(equalTo: self.cardView.bottomAnchor),
-                                animationView.leadingAnchor.constraint(equalTo: self.cardView.leadingAnchor),
-                                animationView.trailingAnchor.constraint(equalTo: self.cardView.trailingAnchor)
-                            ])
-                        }
-                    }
+        let screenHeight = UIScreen.main.bounds.height
+        let isFull = isFullLayout()
+                if isFull {
+                    cardHeight = screenHeight
+                    cardBottomMargins = 0
+                } else {
+                    cardHeight = CGFloat(Double(entryPointsData?.mobile.container.height ?? "400") ?? screenHeight * 0.6)
                 }
-            } else if type == "VIDEO" {
-                cardBackgroundImageView.isHidden = true
-                videoPlayer.isHidden = false
-                self.cardView.sendSubviewToBack(videoPlayer)
-
-                print("Video starts downloading")
-
-                if let videoUrl = URL(string: content.url) {
-                    videoPlayer.play(
-                        with: videoUrl,
-                        behaviour: .autoPlayOnLoad,
-                        screenTimeBehaviour: .preventFromIdle
-                    )
-                        videoPlayer.setVideoShouldLoop(with: entryPointsData?.mobile.conditions.pip?.loopVideoPIP ?? true)
-                    if let muteOnDefaultPIP = entryPointsData?.mobile?.conditions?.pip?.muteOnDefaultPIP, muteOnDefaultPIP {
-                        videoPlayer.mute()
-                    }
-                    
+                var constraints: [NSLayoutConstraint] = [
+                    mainView.topAnchor.constraint(equalTo: view.topAnchor),
+                    mainView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                    mainView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                    mainView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        
+                    cardView.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
+                    cardView.trailingAnchor.constraint(equalTo: mainView.trailingAnchor),
+        
+                    cardBackgroundImageView.topAnchor.constraint(equalTo: cardView.topAnchor),
+                    cardBackgroundImageView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor),
+                    cardBackgroundImageView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
+                    cardBackgroundImageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
+        
+                    imageView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 30),
+                    imageView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
+                    imageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
+        
+                    videoPlayer.topAnchor.constraint(equalTo: cardView.topAnchor),
+                    videoPlayer.bottomAnchor.constraint(equalTo: cardView.bottomAnchor),
+                    videoPlayer.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
+                    videoPlayer.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
+        
+                    primaryCTAButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 16),
+                    primaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
+                    primaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
+        
+                    secondaryCTAButton.topAnchor.constraint(equalTo: primaryCTAButton.bottomAnchor, constant: 12),
+                    secondaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 20),
+                    secondaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -20),
+                    secondaryCTAButton.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -20),
+        
+                    closeIconView.widthAnchor.constraint(equalToConstant: 32),
+                    closeIconView.heightAnchor.constraint(equalToConstant: 32),
+                    closeIconView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
+                    closeIconView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16)
+                ]
+        
+                if isFull {
+                    constraints.append(contentsOf: [
+                        cardView.topAnchor.constraint(equalTo: guide.topAnchor),
+                        cardView.bottomAnchor.constraint(equalTo: guide.bottomAnchor)
+                    ])
+                } else {
+                    constraints.append(contentsOf: [
+                        cardView.bottomAnchor.constraint(equalTo: mainView.bottomAnchor, constant: CGFloat(cardBottomMargins)),
+                        cardView.heightAnchor.constraint(equalToConstant: cardHeight ?? screenHeight)
+                    ])
                 }
-           
-            } else {
-            }
-        }
-        if let imageUrl = content.url {
-      //      loadImage(from: imageUrl, into: imageView)
-        }
-
-        if let closeIcon = content.closeIcon {
-            loadImage(from: closeIcon, into: closeIconView)
-        }
-
-        if let btn = content.primaryCta?.button, btn.showButton ?? false {
-            
-            primaryCTAButton.setTitle(btn.buttonText, for: .normal)
-            primaryCTAButton.setTitleColor(UIColor(hex: btn.buttonTextColor ?? "#FFFFFF"), for: .normal)
-            primaryCTAButton.backgroundColor = UIColor(hex: btn.buttonColor ?? "#0000FF")
-            primaryCTAButton.titleLabel?.font = .systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
-            primaryCTAButton.layer.cornerRadius = CGFloat(Double(btn.borderRadius ?? "0") ?? 0)
-            if let heightStr = btn.height, let height = Double(heightStr) {
-                primaryCTAButton.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
-               }
-        } else {
-            primaryCTAButton.isHidden = true
-        }
-
-        if let btn = content.secondaryCta?.button, btn.showButton ?? false  {
-            secondaryCTAButton.setTitle(btn.buttonText, for: .normal)
-            secondaryCTAButton.setTitleColor(UIColor(hex: btn.buttonTextColor ?? "#FFFFFF"), for: .normal)
-            secondaryCTAButton.backgroundColor = UIColor(hex: btn.buttonColor ?? "#0000FF")
-            secondaryCTAButton.titleLabel?.font = .systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
-            secondaryCTAButton.layer.cornerRadius = CGFloat(Double(btn.borderRadius ?? "0") ?? 0)
-            if let heightStr = btn.height, let height = Double(heightStr) {
-                secondaryCTAButton.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
-               }
-        } else {
-            secondaryCTAButton.isHidden = true
-        }
-    }
-
-    private func loadImage(from urlString: String, into imageView: UIImageView) {
-        guard let url = URL(string: urlString) else { return }
-        DispatchQueue.global().async {
-            if let data = try? Data(contentsOf: url), let img = UIImage(data: data) {
-                DispatchQueue.main.async {
-                    imageView.image = img
-                }
-            }
-        }
-    }
-    @objc private func ignoreTap() {
-        // Intentionally empty to consume the tap and prevent dismissal
+        
+                NSLayoutConstraint.activate(constraints)
     }
 
     private func registerDismissTap() {
@@ -438,5 +220,137 @@ class AdPopupViewController: UIViewController {
             "webview_url": ""
         ]
         // CustomerGlu.getInstance.trackEvent(name: type, data: data)
+    }
+
+    private func applyData() {
+        guard let content = entryPointsData?.mobile?.content.first else { return }
+
+               
+               campaignId = content.campaignId
+               
+               if let opacity = entryPointsData?.mobile?.conditions.backgroundOpacity {
+                   
+                   let black = UIColor.black
+                   let blackTrans = black.withAlphaComponent(CGFloat(opacity))
+                   self.view.backgroundColor = blackTrans
+               }else{
+                   let black = UIColor.black
+                   let blackTrans = black.withAlphaComponent(CGFloat(0.5))
+                   self.view.backgroundColor = blackTrans
+               }
+
+
+               if let bgColorHex = content.backgroundColor {
+                   cardView.backgroundColor = UIColor(hex: bgColorHex)
+               }
+
+               if let bgImage = content.backgroundImage {
+                   loadImage(from: bgImage, into: cardBackgroundImageView)
+               }
+
+               if let type = content.type?.uppercased() {
+                   if type == "LOTTIE" {
+                       cardBackgroundImageView.isHidden = true
+                       print("Lottie starts download")
+                       CGFileDownloader.loadFileAsync(url: URL(string: content.url)!) { [weak self] path, error in
+                           DispatchQueue.main.async {
+                               if(error == nil){
+                                   print("Lottie starts downloaded")
+                                   
+                                   guard let self = self, error == nil, let path = path else { return }
+                                   
+                               //   let decryptedPath = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: path)
+                                   let animationView = LottieAnimationView(filePath: path)
+                                         animationView.translatesAutoresizingMaskIntoConstraints = false
+                                         animationView.contentMode = .scaleAspectFit
+                                         animationView.loopMode = .loop
+                                   print("Lottie file path: \(path)")
+                                //   print("Lottie dfile path: \(decryptedPath)")
+                                   print("File exists: \(FileManager.default.fileExists(atPath: path))")
+                                   animationView.isHidden = false
+                                   animationView.play()
+                                   self.cardView.addSubview(animationView)
+                                   self.cardView.sendSubviewToBack(animationView)
+                                
+
+
+                                   // Add constraints
+                                   NSLayoutConstraint.activate([
+                                       animationView.topAnchor.constraint(equalTo: self.cardView.topAnchor),
+                                       animationView.bottomAnchor.constraint(equalTo: self.cardView.bottomAnchor),
+                                       animationView.leadingAnchor.constraint(equalTo: self.cardView.leadingAnchor),
+                                       animationView.trailingAnchor.constraint(equalTo: self.cardView.trailingAnchor)
+                                   ])
+                               }
+                           }
+                       }
+                   } else if type == "VIDEO" {
+                       cardBackgroundImageView.isHidden = true
+                       videoPlayer.isHidden = false
+                       self.cardView.sendSubviewToBack(videoPlayer)
+
+                       print("Video starts downloading")
+
+                       if let videoUrl = URL(string: content.url) {
+                           videoPlayer.play(
+                               with: videoUrl,
+                               behaviour: .autoPlayOnLoad,
+                               screenTimeBehaviour: .preventFromIdle
+                           )
+                               videoPlayer.setVideoShouldLoop(with: entryPointsData?.mobile.conditions.pip?.loopVideoPIP ?? true)
+                           if let muteOnDefaultPIP = entryPointsData?.mobile?.conditions?.pip?.muteOnDefaultPIP, muteOnDefaultPIP {
+                               videoPlayer.mute()
+                           }
+                           
+                       }
+                  
+                   } else {
+                   }
+               }
+               if let imageUrl = content.url {
+             //      loadImage(from: imageUrl, into: imageView)
+               }
+
+               if let closeIcon = content.closeIcon {
+                   loadImage(from: closeIcon, into: closeIconView)
+               }
+
+               if let btn = content.primaryCta?.button, btn.showButton ?? false {
+                   
+                   primaryCTAButton.setTitle(btn.buttonText, for: .normal)
+                   primaryCTAButton.setTitleColor(UIColor(hex: btn.buttonTextColor ?? "#FFFFFF"), for: .normal)
+                   primaryCTAButton.backgroundColor = UIColor(hex: btn.buttonColor ?? "#0000FF")
+                   primaryCTAButton.titleLabel?.font = .systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
+                   primaryCTAButton.layer.cornerRadius = CGFloat(Double(btn.borderRadius ?? "0") ?? 0)
+                   if let heightStr = btn.height, let height = Double(heightStr) {
+                       primaryCTAButton.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
+                      }
+               } else {
+                   primaryCTAButton.isHidden = true
+               }
+
+               if let btn = content.secondaryCta?.button, btn.showButton ?? false  {
+                   secondaryCTAButton.setTitle(btn.buttonText, for: .normal)
+                   secondaryCTAButton.setTitleColor(UIColor(hex: btn.buttonTextColor ?? "#FFFFFF"), for: .normal)
+                   secondaryCTAButton.backgroundColor = UIColor(hex: btn.buttonColor ?? "#0000FF")
+                   secondaryCTAButton.titleLabel?.font = .systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
+                   secondaryCTAButton.layer.cornerRadius = CGFloat(Double(btn.borderRadius ?? "0") ?? 0)
+                   if let heightStr = btn.height, let height = Double(heightStr) {
+                       secondaryCTAButton.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
+                      }
+               } else {
+                   secondaryCTAButton.isHidden = true
+               }
+    }
+
+    private func loadImage(from urlString: String, into imageView: UIImageView) {
+        guard let url = URL(string: urlString) else { return }
+        DispatchQueue.global().async {
+            if let data = try? Data(contentsOf: url), let img = UIImage(data: data) {
+                DispatchQueue.main.async {
+                    imageView.image = img
+                }
+            }
+        }
     }
 }

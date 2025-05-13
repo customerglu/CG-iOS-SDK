@@ -97,7 +97,7 @@ struct CGConstants {
    "                ],\n" +
    "                \"disallowedActitivityList\": []\n" +
    "            },\n" +
-   "            \"type\": \"FLOATING\",\n" +
+   "            \"type\": \"AD_POPUP\",\n" +
    "            \"bannerId\": \"bannerId\",\n" +
    "            \"height\": \"310\",\n" +
    "            \"width\": \"20\",\n" +

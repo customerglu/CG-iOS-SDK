@@ -355,6 +355,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
     
     @objc func didTapOnClose(){
         CustomerGlu.pipDismissed = true
+        
         self.dismissPiPButton(shouldCallEvent: true)
         
     }
@@ -392,6 +393,7 @@ class CGPictureInPictureViewController : UIViewController, CGVideoplayerListener
                 
             if shouldCallEvent {
                 DispatchQueue.global(qos: .utility).async {
+                    
                     CustomerGlu.getInstance.postAnalyticsEventForPIP(event_name: CGConstants.PIP_ENTRY_POINT_DISMISS, entry_point_id: self.pipInfo._id ?? "", entry_point_name: self.pipInfo.name ?? "",content_campaign_id: self.pipInfo.mobile.content[0].campaignId ?? "",entry_point_is_expanded: "false")
                 }
             }

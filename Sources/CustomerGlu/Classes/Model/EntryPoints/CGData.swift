@@ -17,6 +17,7 @@ public struct CGData: Codable{
     var updatedAt : String!
     var visible : Bool!
     var name : String!
+    var visibility : EntryPointVisibility?
     
     /**
      * Instantiate the instance using the passed dictionary values to set the properties values
@@ -34,6 +35,9 @@ public struct CGData: Codable{
         updatedAt = dictionary["updatedAt"] as? String
         visible = dictionary["visible"] as? Bool
         name = dictionary["name"] as? String
+        if let visibilityData = dictionary["visibility"] as? [String: Any] {
+            visibility = EntryPointVisibility(fromDictionary: visibilityData)
+        }
     }
     
     /**
@@ -71,6 +75,9 @@ public struct CGData: Codable{
         }
         if name != nil{
             dictionary["name"] = name
+        }
+        if let visibility = visibility {
+            dictionary["visibility"] = visibility.toDictionary()
         }
         return dictionary
     }
