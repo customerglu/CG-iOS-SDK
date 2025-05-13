@@ -138,6 +138,8 @@ class OtherUtils {
         return cleanedURL
     }
     
+
+    
     func createAndWriteToFile(content:String) {
 //        let macFilePath = "/Users/himanshutrehan/Desktop/sdkTestReport.txt"  // Update this path accordingly
 //

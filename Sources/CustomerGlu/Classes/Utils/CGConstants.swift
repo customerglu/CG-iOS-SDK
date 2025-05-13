@@ -108,11 +108,11 @@ struct CGConstants {
    "        \"content\": [\n" +
    "            {\n" +
    "                \"removeOnCompletion\": false,\n" +
-   "                \"type\": \"VIDEO\",\n" +
-   "                \"url\": \"https://assets.customerglu.com/35deace8-c04f-43c3-a00b-9c06eaae7acb/cb9eaff9-0ecf-43b2-9bd1-dbdb3b71f4c7.mp4\",\n" +
-   "                \"closeIcon\": \"https://assets.customerglu.com/84acf2ac-b2e0-4927-8653-cba2b83816c2/ic_close.png\",\n" +
+   "                \"type\": \"IMAGE\",\n" +
+   "                \"url\": \"\",\n" +
+   "                \"closeIcon\": \"https://www.svgrepo.com/show/525281/close-circle.svg\",\n" +
    "                \"backgroundColor\": \"#000000\",\n" +
-   "                \"backgroundImage\": \"https://assets.customerglu.com/84acf2ac-b2e0-4927-8653-cba2b83816c2/Group_16-removebg-preview.png\",\n" +
+   "                \"backgroundImage\": \"https://assets.customerglu.com/35deace8-c04f-43c3-a00b-9c06eaae7acb/Group 16.svg\",\n" +
    "                \"campaignId\": \"62ad1c12-6be5-435a-85cc-fda72dfcac8e\",\n" +
    "                \"openLayout\": \"FULL-DEFAULT\",\n" +
    "                \"absoluteHeight\": 100,\n" +
@@ -131,8 +131,10 @@ struct CGConstants {
    "                },\n" +
    "                \"primaryCta\": {\n" +
    "                    \"isHandledBySDK\": false,\n" +
-   "                    \"type\": \"OPEN_CAMPAIGN\",\n" +
+   "                    \"type\": \"SHARE\",\n" +
    "                    \"url\": \"https://your-url.com\",\n" +
+    "                    \"shareText\": \"Shop Now\",\n" +
+    "                    \"shareImage\": \"\",\n" +
    "                    \"button\": {\n" +
    "                        \"showButton\": true,\n" +
    "                        \"buttonColor\": \"#D17842\",\n" +

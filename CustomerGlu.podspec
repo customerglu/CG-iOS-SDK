@@ -29,12 +29,14 @@ A new CustomerGlu.
   s.source_files = 'Sources/CustomerGlu/Classes/**/*.*'
   s.exclude_files = 'Tests/**/*.*'
   s.resources = 'Sources/CustomerGlu/Resources/**/*.*'
-  s.platform = :ios, '9.0'
+  s.platform = :ios, '13.0'
   
 
   # Flutter.framework does not contain a i386 slice.
   # s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
-  s.ios.deployment_target = '13.0'
+  s.ios.deployment_target = '14.0'
   s.swift_version = '5.0'
   s.dependency 'lottie-ios','>= 4.0.0'
+  s.dependency 'SVGKit', '~> 3.0.0'
+
 end
