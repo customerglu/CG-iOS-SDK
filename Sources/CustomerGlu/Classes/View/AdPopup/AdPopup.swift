@@ -431,6 +431,37 @@ class AdPopupViewController: UIViewController {
             closeIconView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16)
         ]
         
+        
+        let secondaryBtn = entryPointsData?.mobile.content.first?.secondaryCta?.button
+        let primaryBtn = entryPointsData?.mobile.content.first?.primaryCta?.button
+
+        let marginHorizontal = CGFloat(Double(primaryBtn?.marginHorizontal ?? "20") ?? 20)
+        let marginVertical = CGFloat(Double(primaryBtn?.marginVertical ?? "16") ?? 16)
+
+        if !secondaryCTAButton.isHidden {
+            let secondaryMarginHorizontal = CGFloat(Double(secondaryBtn?.marginHorizontal ?? "20") ?? 20)
+            let verticalSpacing = CGFloat(Double(secondaryBtn?.marginVertical ?? "12") ?? 12)
+
+            constraints.append(contentsOf: [
+                // Secondary attached to card bottom
+                secondaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: secondaryMarginHorizontal),
+                secondaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -secondaryMarginHorizontal),
+                secondaryCTAButton.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -verticalSpacing),
+
+                // Primary above secondary
+                primaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: marginHorizontal),
+                primaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -marginHorizontal),
+                primaryCTAButton.bottomAnchor.constraint(equalTo: secondaryCTAButton.topAnchor, constant: -verticalSpacing)
+            ])
+        } else {
+            constraints.append(contentsOf: [
+                primaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: marginHorizontal),
+                primaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: marginHorizontal),
+                primaryCTAButton.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -marginVertical)
+            ])
+        }
+
+        
         if isFull {
             constraints.append(contentsOf: [
                 cardView.topAnchor.constraint(equalTo: guide.topAnchor),
@@ -570,11 +601,7 @@ class AdPopupViewController: UIViewController {
             }
             let marginVertical = CGFloat(Double(btn.marginVertical ?? "16") ?? 16)
              let marginHorizontal = CGFloat(Double(btn.marginHorizontal ?? "20") ?? 20)
-            NSLayoutConstraint.activate([
-                  primaryCTAButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: marginVertical),
-                  primaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: marginHorizontal),
-                  primaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -marginHorizontal)
-              ])
+         
 
         } else {
             primaryCTAButton.isHidden = true
