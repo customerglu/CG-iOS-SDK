@@ -144,6 +144,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     internal  var isPiPViewLoadedEventPushed = false
     public static var pipDismissed = false
     public static var pipLoaded = false
+    public static var pipLoading = false
     public static var sseInit = false
     public static var toolTipLoaded = false
     weak var diagonsticHelper: CGEventsDiagnosticsHelper? = CGEventsDiagnosticsHelper.shared
@@ -683,7 +684,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         SSEClient.shared.shouldReconnect = true;
         CustomerGlu.sseInit = false;
         popupDict.removeAll()
-        
+        deletePIPCacheDirectory()
         CustomerGlu.entryPointdata.removeAll()
         entryPointPopUpModel = EntryPointPopUpModel()
         self.popupDisplayScreens.removeAll()
@@ -1141,7 +1142,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                                                         // Continue with rest of the logic after filtering
                                                         let floatingButtons = CustomerGlu.entryPointdata.filter {
                                                             $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" ||
-                                                            $0.mobile.container.type == "PIP"
+                                                            $0.mobile.container.type == "PIP" || $0.mobile.container.type == "AD_POPUP"
                                                         }
                                                         
                                                         self.entryPointInfoAddDelete(entryPoint: floatingButtons)
@@ -1673,7 +1674,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                             // Continue with rest of the logic after filtering
                             let floatingButtons = CustomerGlu.entryPointdata.filter {
                                 $0.mobile.container.type == "FLOATING" || $0.mobile.container.type == "POPUP" ||
-                                $0.mobile.container.type == "PIP"
+                                $0.mobile.container.type == "PIP" || $0.mobile.container.type == "AD_POPUP"
                             }
                             
                             self.entryPointInfoAddDelete(entryPoint: floatingButtons)
@@ -1717,7 +1718,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                  Below code only handles that scenario to show POPUP if it exists in API response.
                  */
                 let popupData = CustomerGlu.entryPointdata.filter {
-                    $0.mobile.container.type == "POPUP"
+                    $0.mobile.container.type == "POPUP" || $0.mobile.container.type == "AD_POPUP"
                 }
                 if popupData.count > 0 {
                     DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(0), execute: {
@@ -2436,7 +2437,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     private func addPIPViewToUI(pipInfo: CGData)
     {
         print("addPIPViewToUI Called")
-        if activePIPView == nil, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController) {
+        if activePIPView == nil, !(self.topMostController() is CustomerWebViewController), !(self.topMostController() is CGPiPExpandedViewController),!(self.topMostController() is AdPopupViewController) {
             CustomerGlu.pipLoaded = true
             if let videoURL = pipInfo.mobile.content[0].url {
                 self.downloadPiPVideo(videoURL: videoURL, pipInfo: pipInfo)
@@ -2594,7 +2595,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                         if pipInfo.mobile.conditions.showCount.dailyRefresh, !CGPIPHelper.shared.checkShowOnDailyRefresh(){
                             return
                         }
-                        
+                        CustomerGlu.pipLoading = false;
                         self?.activePIPView = CGPictureInPictureViewController(btnInfo: pipInfo)
                         CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
                         
@@ -2792,34 +2793,35 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         }
     }
     
-    internal func addPIPViews()
-    {
+    internal func addPIPViews() {
         if CustomerGlu.isEntryPointEnabled {
-            let pipViews = popupDict.filter { $0.type == "PIP" }
-            print("Filtered PIP views: \(pipViews)")
             
-            if !pipViews.isEmpty {
-                for pipView in pipViews {
-                    let matchingPips = CustomerGlu.entryPointdata.filter { $0._id == pipView._id }
-                    print("Matching PIP for id \(pipView._id): \(matchingPips)")
+            // Get the first PIP view, if available
+            if let firstPipView = popupDict.first(where: { $0.type == "PIP" }) {
+                print("Selected PIP view: \(firstPipView)")
+                
+                // Find matching entry point data
+                if let matchingPip = CustomerGlu.entryPointdata.first(where: { $0._id == firstPipView._id }) {
+                    print("Matching PIP for id \(firstPipView._id): \(matchingPip)")
                     
-                    if !matchingPips.isEmpty {
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-                            print("Adding PIP view to UI for id: \(matchingPips[0]._id)")
-                            self.addPIPViewToUI(pipInfo: matchingPips[0])
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        print("Adding PIP view to UI for id: \(matchingPip._id)")
+                        if !CustomerGlu.pipLoading {
+                            CustomerGlu.pipLoading = true
+                            self.addPIPViewToUI(pipInfo: matchingPip)
                         }
-                    } else {
-                        print("No matching PIP found for id: \(pipView._id)")
                     }
+                } else {
+                    print("No matching PIP found for id: \(firstPipView._id)")
                 }
             } else {
                 print("No PIP views to process.")
                 CGFileDownloader.deletePIPVideo()
             }
         }
-        
     }
+
     
     
     internal func postBannersCount() {
@@ -2958,6 +2960,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                     }
                 }
             }
+        }else{
+            deletePIPCacheDirectory()
+
         }
     }
     
@@ -2994,21 +2999,44 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             
             popuptimer?.invalidate()
             popuptimer = nil
-            
-            let nudgeConfiguration = CGNudgeConfiguration()
-            nudgeConfiguration.layout = finalPopUp.mobile.content[0].openLayout.lowercased()
-            nudgeConfiguration.opacity = finalPopUp.mobile.conditions.backgroundOpacity ?? 0.5
-            nudgeConfiguration.closeOnDeepLink = finalPopUp.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
-            nudgeConfiguration.relativeHeight = finalPopUp.mobile.content[0].relativeHeight ?? 0.0
-            nudgeConfiguration.absoluteHeight = finalPopUp.mobile.content[0].absoluteHeight ?? 0.0
-            
-            CustomerGlu.getInstance.openCampaignById(campaign_id: (finalPopUp.mobile.content[0].campaignId), nudgeConfiguration: nudgeConfiguration)
-            
+            if finalPopUp.mobile.container.type == "AD_POPUP"{
+                displayAdPopup(entrypointId: finalPopUp._id)
+            }else{
+                let nudgeConfiguration = CGNudgeConfiguration()
+                nudgeConfiguration.layout = finalPopUp.mobile.content[0].openLayout.lowercased()
+                nudgeConfiguration.opacity = finalPopUp.mobile.conditions.backgroundOpacity ?? 0.5
+                nudgeConfiguration.closeOnDeepLink = finalPopUp.mobile.content[0].closeOnDeepLink ?? CustomerGlu.auto_close_webview!
+                nudgeConfiguration.relativeHeight = finalPopUp.mobile.content[0].relativeHeight ?? 0.0
+                nudgeConfiguration.absoluteHeight = finalPopUp.mobile.content[0].absoluteHeight ?? 0.0
+                
+                CustomerGlu.getInstance.openCampaignById(campaign_id: (finalPopUp.mobile.content[0].campaignId), nudgeConfiguration: nudgeConfiguration)
+            }
             self.popupDisplayScreens.append(CustomerGlu.getInstance.activescreenname)
             updateShowCount(showCount: showCount, eventData: finalPopUp)
             callEventPublishNudge(data: finalPopUp, className: CustomerGlu.getInstance.activescreenname, actionType: "OPEN", event_name: "ENTRY_POINT_LOAD")
         }
     }
+    
+    func deletePIPCacheDirectory() {
+        let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        let pipDir = cacheDir.appendingPathComponent("ad_videos")
+        deleteDirectory(at: pipDir)
+    }
+
+    func deleteDirectory(at url: URL) {
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: url.path) {
+            do {
+                try fileManager.removeItem(at: url)
+                print("✅ Directory deleted: \(url.path)")
+            } catch {
+                print("❌ Failed to delete directory: \(error.localizedDescription)")
+            }
+        } else {
+            print("ℹ️ Directory does not exist: \(url.path)")
+        }
+    }
+
     
     internal func callEventPublishNudge(data: CGData, className: String, actionType: String, event_name:String) {
         
@@ -3092,7 +3120,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     
-    @objc public func showAdBanner(){
+    @objc public func displayAdPopup(entrypointId:String){
         DispatchQueue.main.async { [weak self] in
             
             
@@ -3103,7 +3131,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             // Check if top controller is already CustomerWebViewController
             
             // If not presented already, present the new CustomerWebViewController
-            self?.presentAdPopup(from: topController, entryPointId: "d")
+            self?.hideFloatingButtons()
+            self?.hidePiPView()
+            self?.presentAdPopup(from: topController, entryPointId: entrypointId)
             
         }
         

@@ -33,7 +33,7 @@ final class SSEClient: NSObject, URLSessionDataDelegate {
             return
         }
 
-        print("[SSEClient] Starting SSE connection")
+    //    print("[SSEClient] Starting SSE connection")
         CustomerGlu.sseInit = true
         self.onMessageReceived = onMessage
         eventBuffer = ""
@@ -68,12 +68,12 @@ final class SSEClient: NSObject, URLSessionDataDelegate {
         retryCount += 1
         retryDelay = min(retryDelay * 2, maxRetryDelay)
         
-        print("[SSEClient] Retrying SSE connection in \(Int(retryDelay * 1000)) ms...")
+       // print("[SSEClient] Retrying SSE connection in \(Int(retryDelay * 1000)) ms...")
 
         reconnectTimer?.invalidate()
         DispatchQueue.main.async {
                self.reconnectTimer = Timer.scheduledTimer(withTimeInterval: self.retryDelay, repeats: false) { [weak self] _ in
-                   print("[SSEClient] 🔁 Retrying now...")
+               //    print("[SSEClient] 🔁 Retrying now...")
                    self?.startSSE(urlString: url, onMessage: self?.onMessageReceived ?? { _ in })
                }
            }
@@ -89,7 +89,7 @@ final class SSEClient: NSObject, URLSessionDataDelegate {
             isConnected = true
             retryCount = 0
             retryDelay = 1
-            print("[SSEClient] ✅ SSE Connected")
+          //  print("[SSEClient] ✅ SSE Connected")
 
             DispatchQueue.main.async {
                 self.disconnectTimer?.invalidate()
@@ -124,7 +124,7 @@ final class SSEClient: NSObject, URLSessionDataDelegate {
     
     @objc func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         isConnected = false
-        print("[SSEClient] Connection error: \(error?.localizedDescription ?? "unknown error")")
+       // print("[SSEClient] Connection error: \(error?.localizedDescription ?? "unknown error")")
         
         if let url = task.originalRequest?.url?.absoluteString {
             scheduleReconnect(url: url)

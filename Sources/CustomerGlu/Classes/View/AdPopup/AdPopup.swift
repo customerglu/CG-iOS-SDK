@@ -3,7 +3,8 @@
 import UIKit
 import Lottie
 import SVGKit
-
+import Foundation
+import AVFoundation
 
 class AdPopupViewController: UIViewController {
     
@@ -64,11 +65,20 @@ class AdPopupViewController: UIViewController {
     }
     
     private func setupEntryPoint() {
-        let jsonData = CGConstants.ad_pop_up_response
-        if let data = jsonData.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-            entryPointsData = CGData(fromDictionary: json)
-        }
+        
+        var entryPointsDataArray  = CustomerGlu.entryPointdata
+        
+        if  !entryPointsDataArray.isEmpty {
+                // Iterate through all entry points to find the matching ID
+                for data in entryPointsDataArray {
+                    if let dataId = data._id, dataId == self.entryPointId {
+                        entryPointsData = data
+                        break
+                    }
+                }
+            }
+
+        
     }
     
     private func isFullLayout() -> Bool {
@@ -96,7 +106,7 @@ class AdPopupViewController: UIViewController {
             let bottomInset = view.safeAreaInsets.bottom
             topSafeAreaView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: topInset)
             bottomSafeAreaView.frame = CGRect(x: 0, y: view.bounds.height - bottomInset, width: view.bounds.width, height: bottomInset)
-
+            
         } else {
             view.addSubview(bottomSafeAreaView)
             
@@ -107,6 +117,13 @@ class AdPopupViewController: UIViewController {
             
         }
         
+        if let btn = entryPointsData?.mobile.content?.first?.secondaryCta?.button, btn.showButton ?? false  {
+            secondaryCTAButton.isHidden = false;
+        }else{
+            secondaryCTAButton.isHidden = true;
+
+        }
+        
         mainView.addSubview(cardView)
         cardView.addSubview(cardBackgroundImageView)
         cardView.addSubview(imageView)
@@ -114,6 +131,13 @@ class AdPopupViewController: UIViewController {
         cardView.addSubview(secondaryCTAButton)
         cardView.addSubview(closeIconView)
         cardView.addSubview(videoPlayer)
+        view.sendSubviewToBack(mainView)
+        cardView.bringSubviewToFront(primaryCTAButton)
+        cardView.bringSubviewToFront(secondaryCTAButton)
+        primaryCTAButton.isUserInteractionEnabled = true
+        cardView.isUserInteractionEnabled = true
+        mainView.isUserInteractionEnabled = true
+
         
         if !isFullLayout() {
             cardView.layer.cornerRadius = 16
@@ -132,12 +156,12 @@ class AdPopupViewController: UIViewController {
         closeIconView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleDismiss)))
         primaryCTAButton.addTarget(self, action: #selector(primaryCTAClicked), for: .touchUpInside)
         secondaryCTAButton.addTarget(self, action: #selector(secondaryCTAClicked), for: .touchUpInside)
-
+        
     }
     
     public override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-            CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
+        CustomerGlu.getInstance.setCurrentClassName(className: CustomerGlu.getInstance.activescreenname)
         
     }
     
@@ -204,7 +228,7 @@ class AdPopupViewController: UIViewController {
                 CustomerGlu.getInstance.openWallet()
             }
         }
-
+        
         if dict?.primaryCta?.type == WebViewsKey.open_deeplink{
             self.dismiss(animated: true, completion: nil)
         }
@@ -244,11 +268,11 @@ class AdPopupViewController: UIViewController {
             print("❌ Invalid URL for SVG: \(urlString)")
             return
         }
-
+        
         DispatchQueue.global(qos: .userInitiated).async {
             if let data = try? Data(contentsOf: url),
                let svgImage = SVGKImage(data: data) {
-
+                
                 DispatchQueue.main.async {
                     // Remove existing subviews
                     imageView.subviews.forEach { $0.removeFromSuperview() }
@@ -287,7 +311,7 @@ class AdPopupViewController: UIViewController {
     
     @objc private func secondaryCTAClicked() {
         postAnalyticsEvent(event_name: CGConstants.ENTRY_POINT_CLICK)
-
+        
         var dict = entryPointsData?.mobile.content[0]
         guard let actionData = dict?.secondaryCta, let type = actionData.type else { return }
         if type == WebViewsKey.open_deeplink {
@@ -423,8 +447,18 @@ class AdPopupViewController: UIViewController {
     }
     
     private func registerDismissTap() {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(handleDismiss))
-        mainView.addGestureRecognizer(tap)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
+        self.view.addGestureRecognizer(tap)
+    }
+    
+    @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
+        guard let tapLocation = sender?.location(in: self.view) else { return }
+
+            // If the tap is outside the cardView, dismiss
+            if !cardView.frame.contains(tapLocation) {
+                self.handleDismiss()
+            }
+       // self.handleDismiss()
     }
     
     @objc private func handleDismiss() {
@@ -466,7 +500,7 @@ class AdPopupViewController: UIViewController {
         
         if let type = content.type?.uppercased() {
             if type == "LOTTIE" {
-                cardBackgroundImageView.isHidden = true
+                imageView.isHidden = true
                 print("Lottie starts download")
                 CGFileDownloader.loadFileAsync(url: URL(string: content.url)!) { [weak self] path, error in
                     DispatchQueue.main.async {
@@ -501,30 +535,23 @@ class AdPopupViewController: UIViewController {
                     }
                 }
             } else if type == "VIDEO" {
-                cardBackgroundImageView.isHidden = true
+                imageView.isHidden = true
                 videoPlayer.isHidden = false
                 self.cardView.sendSubviewToBack(videoPlayer)
                 
                 print("Video starts downloading")
                 
                 if let videoUrl = URL(string: content.url) {
-                    videoPlayer.play(
-                        with: videoUrl,
-                        behaviour: .autoPlayOnLoad,
-                        screenTimeBehaviour: .preventFromIdle
-                    )
-                    videoPlayer.setVideoShouldLoop(with: entryPointsData?.mobile.conditions.pip?.loopVideoPIP ?? true)
-                    if let muteOnDefaultPIP = entryPointsData?.mobile?.conditions?.pip?.muteOnDefaultPIP, muteOnDefaultPIP {
-                        videoPlayer.mute()
-                    }
+                    loadOrDownloadPIPVideo(from: content.url)
                     
                 }
                 
             } else {
+                
             }
         }
         if let imageUrl = content.url {
-                  loadImage(from: imageUrl, into: imageView)
+            loadImage(from: imageUrl, into: imageView)
         }
         
         if let closeIcon = content.closeIcon {
@@ -541,6 +568,14 @@ class AdPopupViewController: UIViewController {
             if let heightStr = btn.height, let height = Double(heightStr) {
                 primaryCTAButton.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
             }
+            let marginVertical = CGFloat(Double(btn.marginVertical ?? "16") ?? 16)
+             let marginHorizontal = CGFloat(Double(btn.marginHorizontal ?? "20") ?? 20)
+            NSLayoutConstraint.activate([
+                  primaryCTAButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: marginVertical),
+                  primaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: marginHorizontal),
+                  primaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -marginHorizontal)
+              ])
+
         } else {
             primaryCTAButton.isHidden = true
         }
@@ -554,14 +589,88 @@ class AdPopupViewController: UIViewController {
             if let heightStr = btn.height, let height = Double(heightStr) {
                 secondaryCTAButton.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
             }
+            let marginVertical = CGFloat(Double(btn.marginVertical ?? "16") ?? 16)
+             let marginHorizontal = CGFloat(Double(btn.marginHorizontal ?? "20") ?? 20)
+            
         } else {
             secondaryCTAButton.isHidden = true
         }
+        
+        
     }
+    
+    
+    func getPIPVideoFilePath(for url: String) -> URL? {
+        guard let fileName = URL(string: url)?.lastPathComponent else { return nil }
+        let directory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        return directory.appendingPathComponent("ad_videos").appendingPathComponent(fileName)
+    }
+    
+    func ensurePIPVideoDirectoryExists() {
+        let pipDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!.appendingPathComponent("ad_videos")
+        if !FileManager.default.fileExists(atPath: pipDir.path) {
+            try? FileManager.default.createDirectory(at: pipDir, withIntermediateDirectories: true)
+        }
+    }
+    
+    func loadOrDownloadPIPVideo(from urlString: String) {
+        ensurePIPVideoDirectoryExists()
+        
+        guard let videoURL = URL(string: urlString),
+              let localFileURL = getPIPVideoFilePath(for: urlString) else { return }
+        
+        if FileManager.default.fileExists(atPath: localFileURL.path) {
+            print("Video loaded from cache")
+            playVideo(at: localFileURL)
+        } else {
+            print("Downloading video")
+            URLSession.shared.downloadTask(with: videoURL) { tempURL, response, error in
+                guard let tempURL = tempURL, error == nil else {
+                    print("Video download failed: \(error?.localizedDescription ?? "Unknown error")")
+                    return
+                }
+                
+                do {
+                    try FileManager.default.moveItem(at: tempURL, to: localFileURL)
+                    print("Video saved to \(localFileURL.path)")
+                    DispatchQueue.main.async {
+                        self.playVideo(at: localFileURL)
+                    }
+                } catch {
+                    print("Failed to save video: \(error)")
+                }
+            }.resume()
+        }
+    }
+    
+    func playVideo(at url: URL) {
+        cardBackgroundImageView.isHidden = true
+        videoPlayer.isHidden = false
+        cardView.sendSubviewToBack(videoPlayer)
+        
+        let shouldLoop = entryPointsData?.mobile?.conditions?.pip?.loopVideoPIP ?? true
+        videoPlayer.setVideoShouldLoop(with: shouldLoop)
+        
+        if entryPointsData?.mobile?.conditions?.pip?.muteOnDefaultPIP == true {
+            videoPlayer.mute()
+        }else{
+            videoPlayer.unmute()
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1 , execute: {
+            self.videoPlayer.play(with: CustomerGlu.getInstance.getPiPLocalPath(), startTime: CMTime(seconds: 0.0, preferredTimescale: 600))
+        })
+        
+        
+        
+        
+    }
+    
+    
     
     private func loadImage(from urlString: String, into imageView: UIImageView) {
         guard let url = URL(string: urlString) else { return }
-
+        
         if url.pathExtension.lowercased() == "svg" {
             loadSVG(from: urlString, into: imageView)
         } else {
