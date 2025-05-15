@@ -2,7 +2,6 @@
 
 import UIKit
 import Lottie
-import SVGKit
 import Foundation
 import AVFoundation
 
@@ -69,15 +68,15 @@ class AdPopupViewController: UIViewController {
         var entryPointsDataArray  = CustomerGlu.entryPointdata
         
         if  !entryPointsDataArray.isEmpty {
-                // Iterate through all entry points to find the matching ID
-                for data in entryPointsDataArray {
-                    if let dataId = data._id, dataId == self.entryPointId {
-                        entryPointsData = data
-                        break
-                    }
+            // Iterate through all entry points to find the matching ID
+            for data in entryPointsDataArray {
+                if let dataId = data._id, dataId == self.entryPointId {
+                    entryPointsData = data
+                    break
                 }
             }
-
+        }
+        
         
     }
     
@@ -121,7 +120,7 @@ class AdPopupViewController: UIViewController {
             secondaryCTAButton.isHidden = false;
         }else{
             secondaryCTAButton.isHidden = true;
-
+            
         }
         
         mainView.addSubview(cardView)
@@ -137,7 +136,7 @@ class AdPopupViewController: UIViewController {
         primaryCTAButton.isUserInteractionEnabled = true
         cardView.isUserInteractionEnabled = true
         mainView.isUserInteractionEnabled = true
-
+        
         
         if !isFullLayout() {
             cardView.layer.cornerRadius = 16
@@ -263,38 +262,6 @@ class AdPopupViewController: UIViewController {
         }
     }
     
-    func loadSVG(from urlString: String, into imageView: UIImageView) {
-        guard let url = URL(string: urlString) else {
-            print("❌ Invalid URL for SVG: \(urlString)")
-            return
-        }
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            if let data = try? Data(contentsOf: url),
-               let svgImage = SVGKImage(data: data) {
-                
-                DispatchQueue.main.async {
-                    // Remove existing subviews
-                    imageView.subviews.forEach { $0.removeFromSuperview() }
-                    
-                    // Create SVGKFastImageView with the loaded SVG image - properly unwrapped
-                    if let svgView = SVGKFastImageView(svgkImage: svgImage) {
-                        // Add the view first, then set the frame
-                        imageView.addSubview(svgView)
-                        
-                        // Set the frame to match the parent imageView
-                        svgView.frame = imageView.bounds
-                        svgView.contentMode = .scaleAspectFit
-                        svgView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                    } else {
-                        print("❌ Failed to create SVGKFastImageView for: \(urlString)")
-                    }
-                }
-            } else {
-                print("❌ Failed to load SVG data from URL: \(urlString)")
-            }
-        }
-    }
     
     private func sendToOtherApps(shareText: String) {
         // set up activity view controller
@@ -434,20 +401,20 @@ class AdPopupViewController: UIViewController {
         
         let secondaryBtn = entryPointsData?.mobile.content.first?.secondaryCta?.button
         let primaryBtn = entryPointsData?.mobile.content.first?.primaryCta?.button
-
+        
         let marginHorizontal = CGFloat(Double(primaryBtn?.marginHorizontal ?? "20") ?? 20)
         let marginVertical = CGFloat(Double(primaryBtn?.marginVertical ?? "16") ?? 16)
-
+        
         if !secondaryCTAButton.isHidden {
             let secondaryMarginHorizontal = CGFloat(Double(secondaryBtn?.marginHorizontal ?? "20") ?? 20)
             let verticalSpacing = CGFloat(Double(secondaryBtn?.marginVertical ?? "12") ?? 12)
-
+            
             constraints.append(contentsOf: [
                 // Secondary attached to card bottom
                 secondaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: secondaryMarginHorizontal),
                 secondaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -secondaryMarginHorizontal),
                 secondaryCTAButton.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -verticalSpacing),
-
+                
                 // Primary above secondary
                 primaryCTAButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: marginHorizontal),
                 primaryCTAButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -marginHorizontal),
@@ -460,7 +427,7 @@ class AdPopupViewController: UIViewController {
                 primaryCTAButton.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -marginVertical)
             ])
         }
-
+        
         
         if isFull {
             constraints.append(contentsOf: [
@@ -484,12 +451,12 @@ class AdPopupViewController: UIViewController {
     
     @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
         guard let tapLocation = sender?.location(in: self.view) else { return }
-
-            // If the tap is outside the cardView, dismiss
-            if !cardView.frame.contains(tapLocation) {
-                self.handleDismiss()
-            }
-       // self.handleDismiss()
+        
+        // If the tap is outside the cardView, dismiss
+        if !cardView.frame.contains(tapLocation) {
+            self.handleDismiss()
+        }
+        // self.handleDismiss()
     }
     
     @objc private func handleDismiss() {
@@ -594,15 +561,27 @@ class AdPopupViewController: UIViewController {
             primaryCTAButton.setTitle(btn.buttonText, for: .normal)
             primaryCTAButton.setTitleColor(UIColor(hex: btn.buttonTextColor ?? "#FFFFFF"), for: .normal)
             primaryCTAButton.backgroundColor = UIColor(hex: btn.buttonColor ?? "#0000FF")
-            primaryCTAButton.titleLabel?.font = .systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
+            
+            if let fontName = btn.iOSFontName, !fontName.trimmingCharacters(in: .whitespaces).isEmpty {
+                 CustomerGlu.getInstance.setAdPopupFonts(fontName: fontName)
+             }
+            
+            let customFont = UIFont(name: CustomerGlu.adPopupFonts, size: CGFloat(Double(btn.textSize ?? "16") ?? 16))
+            if customFont == nil {
+                print("❌ Satoshi-Bold not found")
+            }
+            primaryCTAButton.titleLabel?.font = customFont ?? .systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
+//            primaryCTAButton.titleLabel?.font = UIFont(name: "Satoshi-Bold", size: CGFloat(Double(btn.textSize ?? "16") ?? 16)) ?? UIFont.systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
+
+//            primaryCTAButton.titleLabel?.font = .systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
             primaryCTAButton.layer.cornerRadius = CGFloat(Double(btn.borderRadius ?? "0") ?? 0)
             if let heightStr = btn.height, let height = Double(heightStr) {
                 primaryCTAButton.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
             }
             let marginVertical = CGFloat(Double(btn.marginVertical ?? "16") ?? 16)
-             let marginHorizontal = CGFloat(Double(btn.marginHorizontal ?? "20") ?? 20)
-         
-
+            let marginHorizontal = CGFloat(Double(btn.marginHorizontal ?? "20") ?? 20)
+            
+            
         } else {
             primaryCTAButton.isHidden = true
         }
@@ -611,13 +590,22 @@ class AdPopupViewController: UIViewController {
             secondaryCTAButton.setTitle(btn.buttonText, for: .normal)
             secondaryCTAButton.setTitleColor(UIColor(hex: btn.buttonTextColor ?? "#FFFFFF"), for: .normal)
             secondaryCTAButton.backgroundColor = UIColor(hex: btn.buttonColor ?? "#0000FF")
-            secondaryCTAButton.titleLabel?.font = .systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
+            
+       
+            
+            let customFont = UIFont(name: CustomerGlu.adPopupFonts, size: CGFloat(Double(btn.textSize ?? "16") ?? 16))
+            if customFont == nil {
+                print("❌ Font not found")
+            }
+            
+            secondaryCTAButton.titleLabel?.font = customFont ?? .systemFont(ofSize: CGFloat(Double(btn.textSize ?? "16") ?? 16))
             secondaryCTAButton.layer.cornerRadius = CGFloat(Double(btn.borderRadius ?? "0") ?? 0)
+            
             if let heightStr = btn.height, let height = Double(heightStr) {
                 secondaryCTAButton.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
             }
             let marginVertical = CGFloat(Double(btn.marginVertical ?? "16") ?? 16)
-             let marginHorizontal = CGFloat(Double(btn.marginHorizontal ?? "20") ?? 20)
+            let marginHorizontal = CGFloat(Double(btn.marginHorizontal ?? "20") ?? 20)
             
         } else {
             secondaryCTAButton.isHidden = true
@@ -698,16 +686,13 @@ class AdPopupViewController: UIViewController {
     private func loadImage(from urlString: String, into imageView: UIImageView) {
         guard let url = URL(string: urlString) else { return }
         
-        if url.pathExtension.lowercased() == "svg" {
-            loadSVG(from: urlString, into: imageView)
-        } else {
-            DispatchQueue.global().async {
-                if let data = try? Data(contentsOf: url), let img = UIImage(data: data) {
-                    DispatchQueue.main.async {
-                        imageView.image = img
-                    }
+        DispatchQueue.global().async {
+            if let data = try? Data(contentsOf: url), let img = UIImage(data: data) {
+                DispatchQueue.main.async {
+                    imageView.image = img
                 }
             }
         }
+        
     }
 }

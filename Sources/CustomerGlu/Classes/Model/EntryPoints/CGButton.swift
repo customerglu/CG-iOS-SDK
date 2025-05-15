@@ -6,7 +6,8 @@ public struct CGButton: Codable {
     var showButton: Bool?
     var buttonText: String?
     var buttonColor: String?
-    
+    var androidFontName: String?
+    var iOSFontName: String?
     var borderRadius: String?
     var height: String?
     var width: String?
@@ -19,6 +20,8 @@ public struct CGButton: Codable {
         showButton = dictionary["showButton"] as? Bool
         buttonColor = dictionary["buttonColor"] as? String
         buttonTextColor = dictionary["buttonTextColor"] as? String
+        androidFontName = dictionary["androidFontName"] as? String
+        iOSFontName = dictionary["iOSFontName"] as? String
         
         borderRadius = dictionary["borderRadius"] as? String
         height = dictionary["height"] as? String
@@ -35,6 +38,12 @@ public struct CGButton: Codable {
         }
         if let showButton = showButton {
             dictionary["showButton"] = showButton
+        }
+        if let androidFontName = androidFontName {
+            dictionary["androidFontName"] = androidFontName
+        }
+        if let iOSFontName = iOSFontName {
+            dictionary["iOSFontName"] = iOSFontName
         }
         if let buttonColor = buttonColor {
             dictionary["buttonColor"] = buttonColor
