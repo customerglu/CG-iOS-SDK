@@ -123,6 +123,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var textMsg = "Requested-page-is-not-valid"
     public static var lightLoaderURL = ""
     public static var darkLoaderURL = ""
+    public static var adPopupFonts = ""
     public static var lightEmbedLoaderURL = ""
     public static var darkEmbedLoaderURL = ""
     public static var PiPVideoURL = ""
@@ -275,6 +276,10 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     
     @objc public func isDarkModeEnabled()-> Bool {
         return CustomerGlu.getInstance.checkIsDarkMode()
+    }
+    
+    @objc public func setAdPopupFonts(fontName:String) {
+        CustomerGlu.adPopupFonts = fontName
     }
     
     @objc public func listenToDarkMode(allowToListenDarkMode: Bool){
