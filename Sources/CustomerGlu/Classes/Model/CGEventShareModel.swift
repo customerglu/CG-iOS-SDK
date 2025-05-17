@@ -8,12 +8,12 @@
 import Foundation
 
 class CGEventShareModel: Codable {
-    var eventName = ""
+    var eventName: String?
     var data: CGEventShareData?
 }
 
 class CGEventShareData: Codable {
-    var channelName = ""
-    var text = ""
-    var image = ""
+    var channelName: String?
+    var text: String?
+    var image: String?
 }
