@@ -73,11 +73,9 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var sentry_enable: Bool? = false
     public static var enableDarkMode: Bool? = false
     public static var listenToSystemDarkMode: Bool? = false
-    @objc public static var fcm_apn = ""
     public static var analyticsEvent: Bool? = false
     let userDefaults = UserDefaults.standard
     @objc public var apnToken = ""
-    @objc public var fcmToken = ""
     @objc public static var defaultBannerUrl = ""
     @objc public static var arrColor = [UIColor(red: (101/255), green: (220/255), blue: (171/255), alpha: 1.0)]
     public static var auto_close_webview: Bool? = false
@@ -288,11 +286,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         diagonsticHelper?.sendDiagnosticsReport(eventName: CGDiagnosticConstants.CG_DIAGNOSTICS_LISTEN_SYSTEM_DARK_MODE_CALLED, eventType:CGDiagnosticConstants.CG_TYPE_DIAGNOSTICS, eventMeta:eventData )
         CustomerGlu.listenToSystemDarkMode = allowToListenDarkMode
     }
-    
-    @objc public func isFcmApn(fcmApn: String) {
-        CustomerGlu.fcm_apn = fcmApn
-    }
-    
+
     @objc public func setDefaultBannerImage(bannerUrl: String) {
         CustomerGlu.defaultBannerUrl = bannerUrl
     }
@@ -548,49 +542,52 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     @objc public func presentToCustomerWebViewController(nudge_url: String, page_type: String, backgroundAlpha: Double, auto_close_webview : Bool, nudgeConfiguration : CGNudgeConfiguration? = nil) {
-        
-        
-        
-        let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
-        customerWebViewVC.urlStr = nudge_url
-        customerWebViewVC.auto_close_webview = auto_close_webview
-        customerWebViewVC.notificationHandler = true
-        customerWebViewVC.alpha = backgroundAlpha
-        customerWebViewVC.nudgeConfiguration = nudgeConfiguration
-        
-        guard let topController = UIViewController.topViewController() else {
-            return
-        }
-        
-        if page_type == CGConstants.BOTTOM_SHEET_NOTIFICATION {
-            customerWebViewVC.isbottomsheet = true
+
+        // Ensure all UI operations (view controller creation and presentation) happen on the main thread
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            let customerWebViewVC = StoryboardType.main.instantiate(vcType: CustomerWebViewController.self)
+            customerWebViewVC.urlStr = nudge_url
+            customerWebViewVC.auto_close_webview = auto_close_webview
+            customerWebViewVC.notificationHandler = true
+            customerWebViewVC.alpha = backgroundAlpha
+            customerWebViewVC.nudgeConfiguration = nudgeConfiguration
+
+            guard let topController = UIViewController.topViewController() else {
+                return
+            }
+
+            if page_type == CGConstants.BOTTOM_SHEET_NOTIFICATION {
+                customerWebViewVC.isbottomsheet = true
 #if compiler(>=5.5)
-            if #available(iOS 15.0, *) {
-                if let sheet = customerWebViewVC.sheetPresentationController {
-                    sheet.detents = [ .medium(), .large() ]
-                }else{
+                if #available(iOS 15.0, *) {
+                    if let sheet = customerWebViewVC.sheetPresentationController {
+                        sheet.detents = [ .medium(), .large() ]
+                    }else{
+                        customerWebViewVC.modalPresentationStyle = .pageSheet
+                    }
+                } else {
                     customerWebViewVC.modalPresentationStyle = .pageSheet
                 }
-            } else {
-                customerWebViewVC.modalPresentationStyle = .pageSheet
-            }
 #else
-            customerWebViewVC.modalPresentationStyle = .pageSheet
+                customerWebViewVC.modalPresentationStyle = .pageSheet
 #endif
-        } else if ((page_type == CGConstants.BOTTOM_DEFAULT_NOTIFICATION) || (page_type == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP)) {
-            customerWebViewVC.isbottomdefault = true
-            customerWebViewVC.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-            customerWebViewVC.navigationController?.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
-        } else if ((page_type == CGConstants.MIDDLE_NOTIFICATIONS) || (page_type == CGConstants.MIDDLE_NOTIFICATIONS_POPUP)) {
-            customerWebViewVC.ismiddle = true
-            customerWebViewVC.modalPresentationStyle = .overCurrentContext
-        } else {
-            customerWebViewVC.modalPresentationStyle = .overCurrentContext//.fullScreen
+            } else if ((page_type == CGConstants.BOTTOM_DEFAULT_NOTIFICATION) || (page_type == CGConstants.BOTTOM_DEFAULT_NOTIFICATION_POPUP)) {
+                customerWebViewVC.isbottomdefault = true
+                customerWebViewVC.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
+                customerWebViewVC.navigationController?.modalPresentationStyle = UIModalPresentationStyle.overCurrentContext
+            } else if ((page_type == CGConstants.MIDDLE_NOTIFICATIONS) || (page_type == CGConstants.MIDDLE_NOTIFICATIONS_POPUP)) {
+                customerWebViewVC.ismiddle = true
+                customerWebViewVC.modalPresentationStyle = .overCurrentContext
+            } else {
+                customerWebViewVC.modalPresentationStyle = .overCurrentContext//.fullScreen
+            }
+            topController.present(customerWebViewVC, animated: true, completion: {
+                self.hideFloatingButtons()
+                self.hidePiPView()
+            })
         }
-        topController.present(customerWebViewVC, animated: true, completion: {
-            self.hideFloatingButtons()
-            self.hidePiPView()
-        })
     }
     
     @objc public func setDelaySeconds(delaySeconds: Double) {
@@ -1000,15 +997,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userData[APIParameterKey.deviceName] = getDeviceName()
         userData[APIParameterKey.appVersion] = appVersion
         userData[APIParameterKey.writeKey] = writekey
-        
-        if CustomerGlu.fcm_apn == "fcm" {
-            userData[APIParameterKey.apnsDeviceToken] = ""
-            userData[APIParameterKey.firebaseToken] = fcmToken
-        } else {
-            userData[APIParameterKey.firebaseToken] = ""
-            userData[APIParameterKey.apnsDeviceToken] = apnToken
-        }
-        
+        userData[APIParameterKey.apnsDeviceToken] = apnToken
+
         // Manage UserID & AnonymousId
         let t_userid = userData[APIParameterKey.userId] as? String ?? ""
         let t_anonymousIdP = userData[APIParameterKey.anonymousId] as? String ?? ""
@@ -1485,14 +1475,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userData[APIParameterKey.appVersion] = appVersion
         userData[APIParameterKey.writeKey] = writekey
         userData[APIParameterKey.customAttributes] = customAttributes
-        if CustomerGlu.fcm_apn == "fcm" {
-            userData[APIParameterKey.apnsDeviceToken] = ""
-            userData[APIParameterKey.firebaseToken] = fcmToken
-        } else {
-            userData[APIParameterKey.firebaseToken] = ""
-            userData[APIParameterKey.apnsDeviceToken] = apnToken
-        }
-        
+        userData[APIParameterKey.apnsDeviceToken] = apnToken
+
         // Manage UserID & AnonymousId
         let t_anonymousIdS = self.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID) as String? ?? ""
         if (t_anonymousIdS.count > 0){
@@ -1556,15 +1540,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userData[APIParameterKey.appVersion] = appVersion
         userData[APIParameterKey.writeKey] = writekey
         userData[APIParameterKey.userId] = user_id
-        
-        if CustomerGlu.fcm_apn == "fcm" {
-            userData[APIParameterKey.apnsDeviceToken] = ""
-            userData[APIParameterKey.firebaseToken] = fcmToken
-        } else {
-            userData[APIParameterKey.firebaseToken] = ""
-            userData[APIParameterKey.apnsDeviceToken] = apnToken
-        }
-        
+        userData[APIParameterKey.apnsDeviceToken] = apnToken
+
         // Manage UserID & AnonymousId
         let t_anonymousIdS = self.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID) as String? ?? ""
         if (t_anonymousIdS.count > 0){

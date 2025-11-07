@@ -96,51 +96,56 @@ public class BannerView: UIView, UIScrollViewDelegate {
     
     // MARK: - Nib handlers
     private func xibSetup() {
-        self.autoresizesSubviews = true
-        view = UIView()
-        view.frame = bounds
-        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.translatesAutoresizingMaskIntoConstraints = true
-        view.autoresizesSubviews = true
-        
-        // Adding custom subview on top of our view (over any custom drawing > see note below)
-        imgScrollView = UIScrollView()
-        imgScrollView.frame = bounds
-        imgScrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        imgScrollView.translatesAutoresizingMaskIntoConstraints = true
-        imgScrollView.delegate = self
-        imgScrollView.isPagingEnabled = true
-        imgScrollView.autoresizesSubviews = true
-        view.addSubview(imgScrollView)
-        
-        pageControl = UIPageControl()
-        pageControl.currentPage = 0
-        pageControl.currentPageIndicatorTintColor = .black
-        pageControl.pageIndicatorTintColor = .lightGray
-        view.addSubview(pageControl)
-        
-        var path_key = ""
-        if CustomerGlu.getInstance.checkIsDarkMode() {
-            path_key = CGConstants.CUSTOMERGLU_DARK_EMBEDLOTTIE_FILE_PATH
-        } else {
-            path_key = CGConstants.CUSTOMERGLU_LIGHT_EMBEDLOTTIE_FILE_PATH
+        // Ensure all UI operations happen on the main thread
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            self.autoresizesSubviews = true
+            self.view = UIView()
+            self.view.frame = self.bounds
+            self.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            self.view.translatesAutoresizingMaskIntoConstraints = true
+            self.view.autoresizesSubviews = true
+
+            // Adding custom subview on top of our view (over any custom drawing > see note below)
+            self.imgScrollView = UIScrollView()
+            self.imgScrollView.frame = self.bounds
+            self.imgScrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            self.imgScrollView.translatesAutoresizingMaskIntoConstraints = true
+            self.imgScrollView.delegate = self
+            self.imgScrollView.isPagingEnabled = true
+            self.imgScrollView.autoresizesSubviews = true
+            self.view.addSubview(self.imgScrollView)
+
+            self.pageControl = UIPageControl()
+            self.pageControl.currentPage = 0
+            self.pageControl.currentPageIndicatorTintColor = .black
+            self.pageControl.pageIndicatorTintColor = .lightGray
+            self.view.addSubview(self.pageControl)
+
+            var path_key = ""
+            if CustomerGlu.getInstance.checkIsDarkMode() {
+                path_key = CGConstants.CUSTOMERGLU_DARK_EMBEDLOTTIE_FILE_PATH
+            } else {
+                path_key = CGConstants.CUSTOMERGLU_LIGHT_EMBEDLOTTIE_FILE_PATH
+            }
+            let path = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: path_key)
+
+            self.progressView.removeFromSuperview()
+
+            if path.count > 0 && URL(string: path) != nil && path.hasSuffix(".json") {
+                self.progressView = LottieAnimationView(filePath: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: path_key))
+
+                self.progressView.frame = self.bounds
+                self.progressView.contentMode = .scaleAspectFill
+                self.progressView.loopMode = .loop
+                self.progressView.play()
+                self.view.addSubview(self.progressView)
+                self.view.bringSubviewToFront(self.progressView)
+            }
+
+            self.addSubview(self.view)
         }
-        let path = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: path_key)
-        
-        progressView.removeFromSuperview()
-        
-        if path.count > 0 && URL(string: path) != nil && path.hasSuffix(".json") {
-            progressView = LottieAnimationView(filePath: CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: path_key))
-                        
-            progressView.frame = bounds
-            progressView.contentMode = .scaleAspectFill
-            progressView.loopMode = .loop
-            progressView.play()
-            view.addSubview(progressView)
-            view.bringSubviewToFront(progressView)
-        }
-        
-        addSubview(view)
     }
     
     @objc public func reloadBannerView() {

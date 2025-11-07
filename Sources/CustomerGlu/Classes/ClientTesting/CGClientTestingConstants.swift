@@ -38,9 +38,6 @@ public enum CGClientTestingRowItem {
     case userRegistered(status: CGClientTestingStatus)
     case callbackHanding(status: CGClientTestingStatus)
     case advanceIntegration(status: CGClientTestingStatus)
-    case firebaseSetup(status: CGClientTestingStatus)
-    case firebaseToken(status: CGClientTestingStatus)
-    case firebaseServerKey(status: CGClientTestingStatus)
     case apnsDeviceToken(status: CGClientTestingStatus)
     case privateKeyApns(status: CGClientTestingStatus)
     case nudgeHandling(status: CGClientTestingStatus)
@@ -62,12 +59,6 @@ public enum CGClientTestingRowItem {
             return "Callback Handing"
         case .advanceIntegration:
             return "Advance Integration"
-        case .firebaseSetup:
-            return "Firebase Setup"
-        case .firebaseToken:
-            return "Firebase Token"
-        case .firebaseServerKey:
-            return "Firebase Server Key Setup"
         case .apnsDeviceToken:
             return "APNS Setup"
         case .privateKeyApns:
@@ -89,7 +80,7 @@ public enum CGClientTestingRowItem {
     
     func isSubTask() -> Bool {
         switch self {
-        case .firebaseToken, .firebaseServerKey, .apnsDeviceToken, .privateKeyApns, .entryPointScreeNameSetup, .entryPointBannerIDSetup, .entryPointEmbedIDSetup:
+        case .apnsDeviceToken, .privateKeyApns, .entryPointScreeNameSetup, .entryPointBannerIDSetup, .entryPointEmbedIDSetup:
             return true
         default:
             return false
@@ -107,12 +98,6 @@ public enum CGClientTestingRowItem {
         case .callbackHanding(let status):
             return status
         case .advanceIntegration(let status):
-            return status
-        case .firebaseSetup(let status):
-            return status
-        case .firebaseToken(let status):
-            return status
-        case .firebaseServerKey(let status):
             return status
         case .apnsDeviceToken(let status):
             return status
@@ -149,12 +134,6 @@ public enum CGClientTestingRowItem {
             }
         case .advanceIntegration:
             return nil
-        case .firebaseSetup:
-            return nil
-        case .firebaseToken:
-            return nil
-        case .firebaseServerKey:
-            return nil
         case .apnsDeviceToken:
             return nil
         case .privateKeyApns:
@@ -186,12 +165,6 @@ public enum CGClientTestingRowItem {
             return URL(string: "https://docs.customerglu.com/sdk/mobile-sdks#handling-events")
         case .advanceIntegration:
             return nil
-        case .firebaseSetup:
-            return nil
-        case .firebaseToken:
-            return URL(string: "https://docs.customerglu.com/sdk/mobile-sdks#register-user-mandatory")
-        case .firebaseServerKey:
-            return URL(string: "https://docs.customerglu.com/advanced-topics/notifications#firebase-cloud-messaging-fcm")
         case .apnsDeviceToken:
             return nil
         case .privateKeyApns:
@@ -223,12 +196,6 @@ public enum CGClientTestingRowItem {
             return "CALLBACK_HANDLING"
         case .advanceIntegration:
             return ""
-        case .firebaseSetup:
-            return ""
-        case .firebaseToken:
-            return "FIREBASE_TOKEN_SHARED"
-        case .firebaseServerKey:
-            return "FIREBASE_PRIVATE_KEY"
         case .apnsDeviceToken:
             return "APNS_TOKEN_SHARED"
         case .privateKeyApns:

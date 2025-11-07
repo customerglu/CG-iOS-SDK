@@ -280,17 +280,22 @@ public class CGEmbedView: UIView, WKNavigationDelegate, WKScriptMessageHandler {
     
     // MARK: - Nib handlers
     private func xibSetup() {
-        self.autoresizesSubviews = true
-        view = UIView()
-        view.frame = bounds
-        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.translatesAutoresizingMaskIntoConstraints = true
-        view.autoresizesSubviews = true
-        
-        contentController.add(self, name: WebViewsKey.callback) //name is the key you want the app to listen to.
-        config.userContentController = contentController
-        
-        addSubview(view)
+        // Ensure all UI operations happen on the main thread
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            self.autoresizesSubviews = true
+            self.view = UIView()
+            self.view.frame = self.bounds
+            self.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            self.view.translatesAutoresizingMaskIntoConstraints = true
+            self.view.autoresizesSubviews = true
+
+            self.contentController.add(self, name: WebViewsKey.callback) //name is the key you want the app to listen to.
+            self.config.userContentController = self.contentController
+
+            self.addSubview(self.view)
+        }
     }
     
     public func reloadEmbedView() {

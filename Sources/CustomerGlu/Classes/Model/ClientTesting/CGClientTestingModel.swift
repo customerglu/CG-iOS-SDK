@@ -22,9 +22,7 @@ public class CGClientTestingErrorModel: Codable {
 // MARK: - CGClientTestingDataModel
 public class CGClientTestingDataModel: Codable {
     var apnsDeviceToken: Bool?
-    var firebaseToken: Bool?
     var privateKeyApns: Bool?
-    var privateKeyFirebase: Bool?
 }
 
 // MARK: - CGSDKTestStepsResponseModel

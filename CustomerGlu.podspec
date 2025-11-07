@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'CustomerGlu'
-  s.version          = '3.1.6'
+  s.version          = '4.0.0'
   s.summary          = 'CustomerGlu'
   s.description      = <<-DESC
 A new CustomerGlu.
