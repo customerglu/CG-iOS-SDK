@@ -75,7 +75,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     public static var listenToSystemDarkMode: Bool? = false
     public static var analyticsEvent: Bool? = false
     let userDefaults = UserDefaults.standard
-    @objc public var apnToken = ""
     @objc public static var defaultBannerUrl = ""
     @objc public static var arrColor = [UIColor(red: (101/255), green: (220/255), blue: (171/255), alpha: 1.0)]
     public static var auto_close_webview: Bool? = false
@@ -997,7 +996,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userData[APIParameterKey.deviceName] = getDeviceName()
         userData[APIParameterKey.appVersion] = appVersion
         userData[APIParameterKey.writeKey] = writekey
-        userData[APIParameterKey.apnsDeviceToken] = apnToken
 
         // Manage UserID & AnonymousId
         let t_userid = userData[APIParameterKey.userId] as? String ?? ""
@@ -1475,7 +1473,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userData[APIParameterKey.appVersion] = appVersion
         userData[APIParameterKey.writeKey] = writekey
         userData[APIParameterKey.customAttributes] = customAttributes
-        userData[APIParameterKey.apnsDeviceToken] = apnToken
 
         // Manage UserID & AnonymousId
         let t_anonymousIdS = self.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID) as String? ?? ""
@@ -1540,7 +1537,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         userData[APIParameterKey.appVersion] = appVersion
         userData[APIParameterKey.writeKey] = writekey
         userData[APIParameterKey.userId] = user_id
-        userData[APIParameterKey.apnsDeviceToken] = apnToken
 
         // Manage UserID & AnonymousId
         let t_anonymousIdS = self.decryptUserDefaultKey(userdefaultKey: CGConstants.CUSTOMERGLU_ANONYMOUSID) as String? ?? ""

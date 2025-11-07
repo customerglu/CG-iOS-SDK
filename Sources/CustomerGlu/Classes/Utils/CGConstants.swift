@@ -299,7 +299,6 @@ struct APIParameterKey {
     static let customAttributes = "customAttributes"
     static let anonymousId = "anonymousId"
     static let bearer = "Bearer"
-    static let apnsDeviceToken = "apnsDeviceToken"
     static let campaign_id = "campaign_id"
     static let type = "type"
     static let status = "status"

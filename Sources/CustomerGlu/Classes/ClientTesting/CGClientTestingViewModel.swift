@@ -39,17 +39,12 @@ public class CGClientTestingViewModel: NSObject {
         eventsSectionsArray.append(.userRegistered(status: .pending))
         eventsSectionsArray.append(.callbackHanding(status: .pending))
         eventsSectionsArray.append(.advanceIntegration(status: .header))
-        eventsSectionsArray.append(.apnsDeviceToken(status: .pending))
-        eventsSectionsArray.append(.privateKeyApns(status: .pending))
         eventsSectionsArray.append(.nudgeHandling(status: .pending))
         eventsSectionsArray.append(.cgDeeplinkHandling(status: .pending))
         eventsSectionsArray.append(.entryPointSetup(status: .pending))
         eventsSectionsArray.append(.entryPointScreeNameSetup(status: .pending))
         eventsSectionsArray.append(.entryPointBannerIDSetup(status: .pending))
         eventsSectionsArray.append(.entryPointEmbedIDSetup(status: .pending))
-        
-        // Make the API call
-        self.onboardingSDKNotificationConfig()
     }
     
     func numberOfSections() -> Int {
@@ -353,51 +348,7 @@ public class CGClientTestingViewModel: NSObject {
             sdkTestStepsArray.append(model)
         }
     }
-    
-    // MARK: - API Calls
-    func onboardingSDKNotificationConfig() {
-        guard let userId = CustomerGlu.getInstance.cgUserData.userId else { return }
-        let queryParameters: [String: Any] = [APIParameterKey.userId: userId]
-        
-        APIManager.onboardingSDKNotificationConfig(queryParameters: queryParameters as NSDictionary) { result in
-            switch result {
-            case .success(let response):
-                self.clientTestingModel = response
 
-                var apnsDeviceTokenEvent: CGClientTestingRowItem = .apnsDeviceToken(status: .failure)
-                var privateKeyApnsEvent: CGClientTestingRowItem = .privateKeyApns(status: .failure)
-
-                if let clientTestingModel = self.clientTestingModel, let data = clientTestingModel.data {
-                    if data.apnsDeviceToken ?? false  {
-                        apnsDeviceTokenEvent = .apnsDeviceToken(status: .success)
-                    }
-
-                    if data.privateKeyApns ?? false  {
-                        privateKeyApnsEvent = .privateKeyApns(status: .success)
-                    }
-                }
-
-                // Record Test Steps
-                self.updateSdkTestStepsArray(withModel: CGSDKTestStepsModel(name: apnsDeviceTokenEvent, status: apnsDeviceTokenEvent.getStatus()))
-                self.updateSdkTestStepsArray(withModel: CGSDKTestStepsModel(name: privateKeyApnsEvent, status: privateKeyApnsEvent.getStatus()))
-
-                self.update(events: [apnsDeviceTokenEvent, privateKeyApnsEvent])
-
-            case .failure(let error):
-                let apnsDeviceTokenEvent: CGClientTestingRowItem = .apnsDeviceToken(status: .failure)
-                let privateKeyApnsEvent: CGClientTestingRowItem = .privateKeyApns(status: .failure)
-
-                // Record Test Steps
-                self.updateSdkTestStepsArray(withModel: CGSDKTestStepsModel(name: apnsDeviceTokenEvent, status: apnsDeviceTokenEvent.getStatus()))
-                self.updateSdkTestStepsArray(withModel: CGSDKTestStepsModel(name: privateKeyApnsEvent, status: privateKeyApnsEvent.getStatus()))
-
-                self.update(events: [apnsDeviceTokenEvent, privateKeyApnsEvent])
-
-                CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "CGClientTestingViewModel-onboardingSDKNotificationConfig", posttoserver: true)
-            }
-        }
-    }
-    
     // Update Multiple Event or Cell at Same time
     func update(events: [CGClientTestingRowItem]) {
         var indexPathArray: [IndexPath] = []

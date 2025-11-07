@@ -38,8 +38,6 @@ public enum CGClientTestingRowItem {
     case userRegistered(status: CGClientTestingStatus)
     case callbackHanding(status: CGClientTestingStatus)
     case advanceIntegration(status: CGClientTestingStatus)
-    case apnsDeviceToken(status: CGClientTestingStatus)
-    case privateKeyApns(status: CGClientTestingStatus)
     case nudgeHandling(status: CGClientTestingStatus)
     case cgDeeplinkHandling(status: CGClientTestingStatus)
     case entryPointSetup(status: CGClientTestingStatus)
@@ -59,10 +57,6 @@ public enum CGClientTestingRowItem {
             return "Callback Handing"
         case .advanceIntegration:
             return "Advance Integration"
-        case .apnsDeviceToken:
-            return "APNS Setup"
-        case .privateKeyApns:
-            return "APNS Server Key Setup"
         case .nudgeHandling:
             return "Nudge Handling"
         case .cgDeeplinkHandling:
@@ -80,7 +74,7 @@ public enum CGClientTestingRowItem {
     
     func isSubTask() -> Bool {
         switch self {
-        case .apnsDeviceToken, .privateKeyApns, .entryPointScreeNameSetup, .entryPointBannerIDSetup, .entryPointEmbedIDSetup:
+        case .entryPointScreeNameSetup, .entryPointBannerIDSetup, .entryPointEmbedIDSetup:
             return true
         default:
             return false
@@ -98,10 +92,6 @@ public enum CGClientTestingRowItem {
         case .callbackHanding(let status):
             return status
         case .advanceIntegration(let status):
-            return status
-        case .apnsDeviceToken(let status):
-            return status
-        case .privateKeyApns(let status):
             return status
         case .nudgeHandling(let status):
             return status
@@ -134,10 +124,6 @@ public enum CGClientTestingRowItem {
             }
         case .advanceIntegration:
             return nil
-        case .apnsDeviceToken:
-            return nil
-        case .privateKeyApns:
-            return nil
         case .nudgeHandling:
             return ("CustomerGlu", "Do you see a nudge?", CGCustomAlertTag.nudgeHandlingTag.rawValue)
         case .cgDeeplinkHandling:
@@ -164,10 +150,6 @@ public enum CGClientTestingRowItem {
         case .callbackHanding:
             return URL(string: "https://docs.customerglu.com/sdk/mobile-sdks#handling-events")
         case .advanceIntegration:
-            return nil
-        case .apnsDeviceToken:
-            return nil
-        case .privateKeyApns:
             return nil
         case .nudgeHandling:
             return URL(string: "https://docs.customerglu.com/sdk/mobile-sdks#handle-customerglu-nudges")
@@ -196,10 +178,6 @@ public enum CGClientTestingRowItem {
             return "CALLBACK_HANDLING"
         case .advanceIntegration:
             return ""
-        case .apnsDeviceToken:
-            return "APNS_TOKEN_SHARED"
-        case .privateKeyApns:
-            return "APNS_PRIVATE_KEY"
         case .nudgeHandling:
             return "NUDGE_HANDLING"
         case .cgDeeplinkHandling:

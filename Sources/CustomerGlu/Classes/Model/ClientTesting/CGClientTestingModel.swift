@@ -21,8 +21,6 @@ public class CGClientTestingErrorModel: Codable {
 
 // MARK: - CGClientTestingDataModel
 public class CGClientTestingDataModel: Codable {
-    var apnsDeviceToken: Bool?
-    var privateKeyApns: Bool?
 }
 
 // MARK: - CGSDKTestStepsResponseModel
