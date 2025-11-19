@@ -240,7 +240,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
                         // Failed to download banner
                     }
                 }
-                imageView.contentMode = .scaleToFill
+                imageView.contentMode = .scaleAspectFill
                 self.imgScrollView.addSubview(imageView)
                 // Removed individual tap gesture from imageView
             } else {
