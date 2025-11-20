@@ -168,7 +168,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
                     for content in mobile.content {
                         arrContent.append(content)
                     }
-                    self.setBannerView(height: Double(mobile.container.height) ?? 0, isAutoScrollEnabled: mobile.conditions.autoScroll, autoScrollSpeed: mobile.conditions.autoScrollSpeed)
+                    self.setBannerView(height: Int(mobile.container.height)!, isAutoScrollEnabled: mobile.conditions.autoScroll, autoScrollSpeed: mobile.conditions.autoScrollSpeed)
                     callLoadBannerAnalytics()
                 } else {
                     bannerviewHeightZero()
@@ -198,11 +198,11 @@ public class BannerView: UIView, UIScrollViewDelegate {
         self.layoutIfNeeded()
     }
     
-    private func setBannerView(height: Double, isAutoScrollEnabled: Bool, autoScrollSpeed: Int){
-
+    private func setBannerView(height: Int, isAutoScrollEnabled: Bool, autoScrollSpeed: Int){
+        
         let screenWidth = self.frame.size.width
         let screenHeight = UIScreen.main.bounds.height
-        finalHeight = Int((screenHeight * height)/100)
+        finalHeight = (Int(screenHeight) * height)/100
         
         if let bannerId = self.bannerId, !bannerId.isEmpty{
             CustomerGlu.getInstance.addBannerId(bannerId: bannerId)
