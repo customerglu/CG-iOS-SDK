@@ -33,12 +33,12 @@ class FloatingButtonController: UIViewController {
         
         let screenHeight = Int(UIScreen.main.bounds.height)
         let screenWidth = Int(UIScreen.main.bounds.width)
-        
-        let heightPer = Int((floatInfo?.mobile.container.height)!)!
-        let widthPer = Int((floatInfo?.mobile.container.width)!)!
-        
-        let finalHeight = (screenHeight * heightPer)/100
-        let finalWidth = (screenWidth * widthPer)/100
+
+        let heightPer = Double((floatInfo?.mobile.container.height)!) ?? 0
+        let widthPer = Double((floatInfo?.mobile.container.width)!) ?? 0
+
+        let finalHeight = Int((Double(screenHeight) * heightPer)/100)
+        let finalWidth = Int((Double(screenWidth) * widthPer)/100)
         
         let bottomSpace = CustomerGlu.floatingVerticalPadding
         let sideSpace = CustomerGlu.floatingHorizontalPadding
