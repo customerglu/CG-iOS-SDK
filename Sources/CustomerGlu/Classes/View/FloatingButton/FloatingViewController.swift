@@ -69,7 +69,7 @@ class FloatingButtonController: UIViewController {
         }
         
      
-        imageview.contentMode = .scaleAspectFill
+        imageview.contentMode = .scaleAspectFit
         imageview.clipsToBounds = true
         imageview.backgroundColor = UIColor.clear
         imageview.layer.shadowColor = UIColor.black.cgColor
