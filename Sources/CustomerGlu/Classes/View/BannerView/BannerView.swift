@@ -168,7 +168,7 @@ public class BannerView: UIView, UIScrollViewDelegate {
                     for content in mobile.content {
                         arrContent.append(content)
                     }
-                    self.setBannerView(height: Int(mobile.container.height)!, isAutoScrollEnabled: mobile.conditions.autoScroll, autoScrollSpeed: mobile.conditions.autoScrollSpeed)
+                    self.setBannerView(height: Int(Double(mobile.container.height ?? "0") ?? 0.0), isAutoScrollEnabled: mobile.conditions.autoScroll, autoScrollSpeed: mobile.conditions.autoScrollSpeed)
                     callLoadBannerAnalytics()
                 } else {
                     bannerviewHeightZero()

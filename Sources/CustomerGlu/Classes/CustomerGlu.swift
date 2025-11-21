@@ -2819,12 +2819,12 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CUSTOMERGLU_BANNER_LOADED").rawValue), object: nil, userInfo: postInfo)
         
         let bannersforheight = CustomerGlu.entryPointdata.filter {
-            $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId != nil && $0.mobile.container.bannerId.count > 0 && (Int($0.mobile.container.height)!) > 0 && $0.mobile.content.count > 0
+            $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId != nil && $0.mobile.container.bannerId.count > 0 && (Double($0.mobile.container.height ?? "0") ?? 0.0) > 0 && $0.mobile.content.count > 0
         }
         if bannersforheight.count > 0 {
             CustomerGlu.bannersHeight = [String:Any]()
             for banner in bannersforheight {
-                CustomerGlu.bannersHeight![banner.mobile.container.bannerId] = Int(banner.mobile.container.height)
+                CustomerGlu.bannersHeight![banner.mobile.container.bannerId] = Double(banner.mobile.container.height ?? "0") ?? 0.0
             }
         }
         if (CustomerGlu.bannersHeight == nil) {
