@@ -1,38 +1,74 @@
-# CustomerGlu
+# CustomerGlu iOS SDK
 
-CustomerGlu SDK provides you lots of in-built stuff and make your integration faster with CustomerGlu
-Our SDK provides you In-built functions you just need to use them.
+CustomerGlu SDK for iOS provides in-app gamification, rewards, and engagement campaigns with minimal integration effort.
 
-# Prerequisite
+**Current Version:** 4.0.0
 
-iOS - Requires IOS 11.0 or above.
+## Requirements
 
-Xcode - Version 13.0 or above
+- iOS 14.0+
+- Xcode 13.0+
+- Swift 5.0+
 
-# Installation
+## Installation
 
-1. Open Xcode.
-2. Click on Your app Name Open General.
-3. Click on + Button under Framework,Library and Embedded Content.
-4. Click on Add Other.
-5. Select Add Package dependency.
-6. Paste the repo url here - https://github.com/customerglu/CG-iOS-SDK  
-7. Click on Add packages.
+### Swift Package Manager (Recommended)
 
-# Initialise CustomerGlu SDK 
+1. In Xcode, go to **File → Add Package Dependencies**
+2. Enter the repository URL: `https://github.com/customerglu/CG-iOS-SDK`
+3. Select version **4.0.0** or "Up to Next Major"
+4. Click **Add Package**
 
-Mandatory step and need to put CustomerGlu WRITE_KEY in Info.plist
-``` 
+### CocoaPods
+
+Add to your `Podfile`:
+
+```ruby
+pod 'CustomerGlu', '~> 4.0.0'
+```
+
+Then run:
+
+```bash
+pod install
+```
+
+## Initialization
+
+### 1. Add Write Key to Info.plist
+
+```xml
 <key>CUSTOMERGLU_WRITE_KEY</key>
 <string>YOUR_WRITE_KEY</string>
-
-```
-Define the global instance of CustomerGlu SDK -  CustomerGlu SDK follows singleton pattern so you need to initialise it once
-``` 
-let customerglu = CustomerGlu.getInstance
-
 ```
 
-# Functionalities
+### 2. Initialize the SDK
 
-[Supported Functionality Document](https://docs.customerglu.com/sdk/ios)
+```swift
+import CustomerGlu
+
+// CustomerGlu follows the singleton pattern
+let customerGlu = CustomerGlu.getInstance
+```
+
+### 3. Register User
+
+```swift
+CustomerGlu.getInstance.registerDevice(userId: "user-123") { success in
+    if success {
+        // User registered, SDK is ready
+    }
+}
+```
+
+## Key Features
+
+- **Entry Points**: Floating buttons, banners, embedded views, tooltips, PiP video
+- **Campaign Display**: Bottom sheets, popups, full-screen WebView campaigns
+- **Real-time Updates**: Server-Sent Events (SSE) for live nudges
+- **Deep Linking**: Handle campaign deep links and navigation
+- **Analytics**: Automatic event tracking and diagnostics
+
+## Documentation
+
+Full documentation: [https://docs.customerglu.com/sdk/ios](https://docs.customerglu.com/sdk/ios)
