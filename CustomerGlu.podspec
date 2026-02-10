@@ -25,7 +25,7 @@ A new CustomerGlu.
     LICENSE
   }
   s.author           = { 'CustomerGlu' => 'code@customerglu.net' }
-  s.source           = { :git => 'https://github.com/customerglu/CG-iOS-SDK.git', :tag => 'v3.1.6'}
+  s.source           = { :git => 'https://github.com/customerglu/CG-iOS-SDK.git', :tag => 'v4.0.0'}
   s.source_files = 'Sources/CustomerGlu/Classes/**/*.*'
   s.exclude_files = 'Tests/**/*.*'
   s.resources = 'Sources/CustomerGlu/Resources/**/*.*'
