@@ -1,8 +1,11 @@
 # CustomerGlu iOS SDK
 
-CustomerGlu SDK for iOS provides in-app gamification, rewards, and engagement campaigns with minimal integration effort.
+In-app gamification, rewards, and engagement campaigns for iOS.
 
-**Current Version:** 4.0.0
+**Version:** `4.0.0`
+
+> **All CustomerGlu SDKs share the same version number.**
+> iOS `4.0.0` · Android `4.0.0` · React Native `4.0.0`
 
 ## Requirements
 
@@ -14,26 +17,23 @@ CustomerGlu SDK for iOS provides in-app gamification, rewards, and engagement ca
 
 ### Swift Package Manager (Recommended)
 
-1. In Xcode, go to **File → Add Package Dependencies**
-2. Enter the repository URL: `https://github.com/customerglu/CG-iOS-SDK`
-3. Select version **4.0.0** or "Up to Next Major"
+1. In Xcode: **File → Add Package Dependencies**
+2. Enter: `https://github.com/customerglu/CG-iOS-SDK`
+3. Select version `4.0.0` or **Up to Next Major**
 4. Click **Add Package**
 
 ### CocoaPods
 
-Add to your `Podfile`:
-
 ```ruby
+# Podfile
 pod 'CustomerGlu', '~> 4.0.0'
 ```
-
-Then run:
 
 ```bash
 pod install
 ```
 
-## Initialization
+## Quick Start
 
 ### 1. Add Write Key to Info.plist
 
@@ -42,12 +42,11 @@ pod install
 <string>YOUR_WRITE_KEY</string>
 ```
 
-### 2. Initialize the SDK
+### 2. Initialize
 
 ```swift
 import CustomerGlu
 
-// CustomerGlu follows the singleton pattern
 let customerGlu = CustomerGlu.getInstance
 ```
 
@@ -56,19 +55,44 @@ let customerGlu = CustomerGlu.getInstance
 ```swift
 CustomerGlu.getInstance.registerDevice(userId: "user-123") { success in
     if success {
-        // User registered, SDK is ready
+        // SDK ready — entry points, nudges, and campaigns are now active
     }
 }
 ```
 
-## Key Features
+### 4. Common Operations
 
-- **Entry Points**: Floating buttons, banners, embedded views, tooltips, PiP video
-- **Campaign Display**: Bottom sheets, popups, full-screen WebView campaigns
-- **Real-time Updates**: Server-Sent Events (SSE) for live nudges
-- **Deep Linking**: Handle campaign deep links and navigation
-- **Analytics**: Automatic event tracking and diagnostics
+```swift
+// Open the rewards wallet
+CustomerGlu.getInstance.openWallet()
+
+// Load all campaigns
+CustomerGlu.getInstance.loadAllCampaigns()
+
+// Send a custom event
+CustomerGlu.getInstance.sendEventData(eventName: "purchase", eventProperties: ["amount": 99])
+
+// Update user attributes
+CustomerGlu.getInstance.updateProfile(userAttributes: ["plan": "premium"])
+```
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| Entry Points | Floating buttons, banners, embedded views, tooltips, PiP video |
+| Campaigns | Bottom sheets, popups, full-screen WebView campaigns |
+| Real-time | Server-Sent Events (SSE) for live nudges |
+| Deep Linking | Campaign deep links and in-app navigation |
+| Analytics | Automatic event tracking and diagnostics |
+
+## Other SDKs
+
+| Platform | Package | Install |
+|----------|---------|---------|
+| **Android** | `com.customerglu:CustomerGluLibrary:4.0.0` | [Maven Central](https://central.sonatype.com/artifact/com.customerglu/CustomerGluLibrary) |
+| **React Native** | `@customerglu/react-native-customerglu` | [npm](https://www.npmjs.com/package/@customerglu/react-native-customerglu) |
 
 ## Documentation
 
-Full documentation: [https://docs.customerglu.com/sdk/ios](https://docs.customerglu.com/sdk/ios)
+[https://docs.customerglu.com/sdk/ios](https://docs.customerglu.com/sdk/ios)
