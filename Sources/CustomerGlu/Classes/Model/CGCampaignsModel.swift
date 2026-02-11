@@ -39,4 +39,9 @@ public class CGBanner: Codable {
     public var stepsRemaining: String?
     public var tag: String?
     public var userCampaignStatus: String?
+    public var stepCompleted: Int?
+    public var activityCount: Int?
+    public var activityExpiry: String?
+    public var checkAccepted: Bool?
+    public var accepted: Bool?
 }

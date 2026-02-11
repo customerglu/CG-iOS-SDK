@@ -27,6 +27,15 @@ public struct CGContent: Codable {
     var backgroundColor: String?
     var backgroundImage: String?
 
+    var typeId: String?
+    var widgetStates: [CGWidgetState]?
+    var activityStates: [CGActivityState]?
+    var contentState: CGContentState?
+    var entryPointStates: CGEntryPointStates?
+    var progressBarIcon: String?
+    var progressMeterIcon: String?
+    var nativeStyle: CGNativeStyle?
+
     init(fromDictionary dictionary: [String: Any]) {
         _id = dictionary["_id"] as? String
         campaignId = dictionary["campaignId"] as? String
@@ -54,6 +63,25 @@ public struct CGContent: Codable {
         closeIcon = dictionary["closeIcon"] as? String
         backgroundColor = dictionary["backgroundColor"] as? String
         backgroundImage = dictionary["backgroundImage"] as? String
+
+        typeId = dictionary["typeId"] as? String
+        if let wsArray = dictionary["IWidgetState"] as? [[String: Any]] {
+            widgetStates = wsArray.map { CGWidgetState(fromDictionary: $0) }
+        }
+        if let asArray = dictionary["activityState"] as? [[String: Any]] {
+            activityStates = asArray.map { CGActivityState(fromDictionary: $0) }
+        }
+        if let stateDict = dictionary["state"] as? [String: Any] {
+            contentState = CGContentState(fromDictionary: stateDict)
+        }
+        if let epStates = dictionary["entryPointStates"] as? [String: Any] {
+            entryPointStates = CGEntryPointStates(fromDictionary: epStates)
+        }
+        progressBarIcon = dictionary["progressBarIcon"] as? String
+        progressMeterIcon = dictionary["progressMeterIcon"] as? String
+        if let nsDict = dictionary["nativeStyle"] as? [String: Any] {
+            nativeStyle = CGNativeStyle(fromDictionary: nsDict)
+        }
     }
 
     func toDictionary() -> [String: Any] {
@@ -82,6 +110,15 @@ public struct CGContent: Codable {
         dictionary["closeIcon"] = closeIcon
         dictionary["backgroundColor"] = backgroundColor
         dictionary["backgroundImage"] = backgroundImage
+
+        if let typeId = typeId { dictionary["typeId"] = typeId }
+        if let ws = widgetStates { dictionary["IWidgetState"] = ws.map { $0.toDictionary() } }
+        if let as_ = activityStates { dictionary["activityState"] = as_.map { $0.toDictionary() } }
+        if let cs = contentState { dictionary["state"] = cs.toDictionary() }
+        if let eps = entryPointStates { dictionary["entryPointStates"] = eps.toDictionary() }
+        if let pbi = progressBarIcon { dictionary["progressBarIcon"] = pbi }
+        if let pmi = progressMeterIcon { dictionary["progressMeterIcon"] = pmi }
+        if let ns = nativeStyle { dictionary["nativeStyle"] = ns.toDictionary() }
 
         return dictionary
     }
