@@ -1,335 +1,440 @@
 import UIKit
 
-/// Main container view that renders DYNAMIC_MULTISTEP_1, _2, or _3 based on typeId.
-/// Programmatic UIKit — no storyboards/xibs.
 class DynamicMultistepView: UIView {
 
-    // MARK: - Properties
     private let content: CGContent
     private let banner: CGBanner?
     private let typeId: String
 
-    // Derived data
-    private var stepCompleted: Int = 0
-    private var activityCount: Int = 1
-    private var userStatus: String = "pristine"
-    private var selectedWidgetState: CGWidgetState?
-    private var nativeStyle: CGNativeStyle?
+    // For MULTISTEP_3 expand/collapse
+    private var isExpanded = false
+    private var contentContainer: UIView?
 
-    // MARK: - Init
     init(frame: CGRect, content: CGContent, banner: CGBanner?, typeId: String) {
         self.content = content
         self.banner = banner
         self.typeId = typeId
         super.init(frame: frame)
+        clipsToBounds = true
 
-        self.nativeStyle = content.nativeStyle
-        self.stepCompleted = banner?.stepCompleted ?? 0
-        self.activityCount = max(banner?.activityCount ?? 1, 1)
-        self.userStatus = banner?.userCampaignStatus ?? "pristine"
-
-        selectWidgetState()
-        buildLayout()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) not supported")
-    }
-
-    // MARK: - Widget State Selection (matches JS-UI-SDK exactly)
-    private func selectWidgetState() {
-        guard let states = content.widgetStates, !states.isEmpty else { return }
-
-        if userStatus == "completed" {
-            selectedWidgetState = states.first(where: { $0.state == "completed" })
+        if let bgColor = content.nativeStyle?.backgroundColor {
+            backgroundColor = UIColor(hex: bgColor) ?? .white
         } else {
-            selectedWidgetState = states.first(where: { $0.step == stepCompleted && $0.state == userStatus })
-            if selectedWidgetState == nil {
-                selectedWidgetState = states.first(where: { $0.step == stepCompleted && $0.state == "in-progress" })
-            }
+            backgroundColor = .white
         }
-        if selectedWidgetState == nil {
-            selectedWidgetState = states.first
-        }
+
+        setupView()
     }
 
-    // MARK: - Layout Builder
-    private func buildLayout() {
-        backgroundColor = .clear
-        if typeId.hasSuffix("_1") || typeId == "DYNAMIC_MULTISTEP_1" {
-            buildMultistep1()
-        } else if typeId.hasSuffix("_2") || typeId == "DYNAMIC_MULTISTEP_2" {
-            buildMultistep2()
-        } else if typeId.hasSuffix("_3") || typeId == "DYNAMIC_MULTISTEP_3" {
-            buildMultistep3()
+    required init?(coder: NSCoder) { fatalError("init(coder:) not supported") }
+
+    private func setupView() {
+        switch typeId {
+        case "DYNAMIC_MULTISTEP_1": setupMultistep1()
+        case "DYNAMIC_MULTISTEP_2": setupMultistep2()
+        case "DYNAMIC_MULTISTEP_3": setupMultistep3()
+        default: break
         }
     }
 
-    // MARK: - Style Helpers
-    private var brandColor: UIColor { UIColor(hex: nativeStyle?.brandColor ?? "#FF0099") }
-    private var bgColor: UIColor { UIColor(hex: nativeStyle?.backgroundColor ?? "#FFFFFF") }
-    private var titleColorVal: UIColor { UIColor(hex: nativeStyle?.titleColor ?? "#242220") }
-    private var bodyColorVal: UIColor { UIColor(hex: nativeStyle?.bodyColor ?? "#242220") }
-    private var ctaBgColor: UIColor { UIColor(hex: nativeStyle?.ctaBackgroundColor ?? "#4F4DF8") }
-    private var ctaTextColorVal: UIColor { UIColor(hex: nativeStyle?.ctaTextColor ?? "#FFFFFF") }
-    private var trackColor: UIColor { UIColor(hex: nativeStyle?.progressTrackColor ?? "#FCEEF8") }
-    private var fillColor: UIColor { UIColor(hex: nativeStyle?.progressFillColor ?? "#FF0099") }
-    private var inProgressColorVal: UIColor { UIColor(hex: nativeStyle?.progressInProgressColor ?? "#FDBEE5") }
-    private var cornerRadiusVal: CGFloat { CGFloat(nativeStyle?.cornerRadius ?? 0) }
-    private var barHeight: CGFloat { CGFloat(nativeStyle?.progressBarHeight ?? 16) }
-    private var titleFontSize: CGFloat { CGFloat(nativeStyle?.titleFontSize ?? 16) }
-    private var bodyFontSize: CGFloat { CGFloat(nativeStyle?.bodyFontSize ?? 14) }
+    // MARK: - Helpers
 
-    // MARK: - Title/body from widget state or content state
-    private var resolvedTitle: String {
-        if let t = selectedWidgetState?.title, !t.isEmpty { return t }
-        return contentStateItem?.title ?? ""
+    private var stepCompleted: Int { banner?.stepCompleted ?? 0 }
+    private var activityCount: Int { banner?.activityCount ?? 1 }
+
+    private func getSelectedWidgetState() -> CGWidgetState? {
+        return WidgetStateSelector.select(from: content.widgetStates, banner: banner)
     }
 
-    private var resolvedBody: String {
-        if let b = selectedWidgetState?.body, !b.isEmpty { return b }
-        return contentStateItem?.body ?? ""
-    }
+    // MARK: - MULTISTEP_1: Horizontal Progress Bar
 
-    private var contentStateItem: CGContentStateItem? {
-        guard let cs = content.contentState else { return nil }
-        switch userStatus {
-        case "completed": return cs.completed
-        case "in-progress": return cs.inProgress
-        case "in-progress-daycompleted": return cs.inProgressDayCompleted
-        case "pristine": return cs.pristine
-        default: return cs.inProgress
-        }
-    }
-
-    // MARK: - MULTISTEP_1
-    private func buildMultistep1() {
-        let container = UIView(frame: bounds)
-        container.backgroundColor = bgColor
-        container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        addSubview(container)
+    private func setupMultistep1() {
+        guard let ws = getSelectedWidgetState() else { return }
 
         let padding: CGFloat = 16
+        var yOffset: CGFloat = 12
 
         // Title
-        let titleLabel = UILabel()
-        titleLabel.text = resolvedTitle
-        titleLabel.font = UIFont.systemFont(ofSize: titleFontSize, weight: .semibold)
-        titleLabel.textColor = titleColorVal
-        titleLabel.numberOfLines = 0
-
-        // Body
-        let bodyLabel = UILabel()
-        bodyLabel.text = resolvedBody
-        bodyLabel.font = UIFont.systemFont(ofSize: bodyFontSize, weight: .regular)
-        bodyLabel.textColor = bodyColorVal
-        bodyLabel.numberOfLines = 0
-
-        // Progress bar
-        let progressBar = MultistepProgressBar()
-        progressBar.stepCompleted = stepCompleted
-        progressBar.activityCount = activityCount
-        progressBar.progressMeterIconURL = content.progressMeterIcon
-        progressBar.rewardText = selectedWidgetState?.progressMeter?.completedText
-        progressBar.trackColor = trackColor
-        progressBar.inProgressColor = inProgressColorVal
-        progressBar.completedColor = fillColor
-        progressBar.rewardTextColor = brandColor
-        progressBar.barHeight = barHeight
-
-        // Right arrow icon
-        let arrowView = UIImageView()
-        arrowView.contentMode = .scaleAspectFit
-        arrowView.tintColor = UIColor(hex: "#242220")
-        if #available(iOS 13.0, *) {
-            arrowView.image = UIImage(systemName: "chevron.right")
+        if let titleText = ws.title {
+            let titleLabel = UILabel(frame: CGRect(x: padding, y: yOffset, width: bounds.width - padding * 2, height: 20))
+            titleLabel.text = titleText
+            titleLabel.font = UIFont.boldSystemFont(ofSize: content.nativeStyle?.titleFontSize.map { CGFloat($0) } ?? 16)
+            titleLabel.textColor = UIColor(hex: content.nativeStyle?.titleColor ?? "#242220") ?? UIColor(red: 36/255, green: 34/255, blue: 32/255, alpha: 1)
+            titleLabel.numberOfLines = 0
+            titleLabel.sizeToFit()
+            titleLabel.frame.size.width = bounds.width - padding * 2
+            addSubview(titleLabel)
+            yOffset = titleLabel.frame.maxY + 4
         }
 
-        // Layout manually
-        let arrowSize: CGFloat = 24
-        let arrowX = bounds.width - padding - arrowSize
-        let contentWidth = arrowX - padding * 2
+        // Body
+        if let bodyText = ws.body {
+            let bodyLabel = UILabel(frame: CGRect(x: padding, y: yOffset, width: bounds.width - padding * 2, height: 18))
+            bodyLabel.text = bodyText
+            bodyLabel.font = UIFont.systemFont(ofSize: content.nativeStyle?.bodyFontSize.map { CGFloat($0) } ?? 14)
+            bodyLabel.textColor = UIColor(hex: content.nativeStyle?.bodyColor ?? "#242220") ?? UIColor(red: 36/255, green: 34/255, blue: 32/255, alpha: 1)
+            bodyLabel.numberOfLines = 0
+            bodyLabel.sizeToFit()
+            bodyLabel.frame.size.width = bounds.width - padding * 2
+            addSubview(bodyLabel)
+            yOffset = bodyLabel.frame.maxY + 8
+        }
 
-        titleLabel.frame = CGRect(x: padding, y: padding, width: contentWidth, height: 0)
-        titleLabel.sizeToFit()
-        titleLabel.frame.size.width = contentWidth
+        // Progress bar + reward text
+        let rewardText = ws.progressMeter?.completedText
+        let rewardWidth: CGFloat = rewardText != nil ? 80 : 0
+        let barWidth = bounds.width - padding * 2 - rewardWidth - (rewardText != nil ? 8 : 0)
+        let barHeight: CGFloat = content.nativeStyle?.progressBarHeight.map { CGFloat($0) } ?? 16
 
-        bodyLabel.frame = CGRect(x: padding, y: titleLabel.frame.maxY + 4, width: contentWidth, height: 0)
-        bodyLabel.sizeToFit()
-        bodyLabel.frame.size.width = contentWidth
+        let progressBar = MultistepProgressBarView(frame: CGRect(x: padding, y: yOffset, width: barWidth, height: barHeight + 4))
+        progressBar.configure(stepCompleted: stepCompleted, activityCount: activityCount, nativeStyle: content.nativeStyle, progressBarIcon: content.progressBarIcon)
+        addSubview(progressBar)
 
-        progressBar.frame = CGRect(x: padding, y: bodyLabel.frame.maxY + 12, width: bounds.width - padding * 2, height: barHeight)
-
-        arrowView.frame = CGRect(x: arrowX, y: (bounds.height - arrowSize) / 2, width: arrowSize, height: arrowSize)
-
-        container.addSubview(titleLabel)
-        container.addSubview(bodyLabel)
-        container.addSubview(progressBar)
-        container.addSubview(arrowView)
+        if let rewardText = rewardText {
+            let rewardLabel = UILabel(frame: CGRect(x: progressBar.frame.maxX + 8, y: yOffset, width: rewardWidth, height: barHeight + 4))
+            rewardLabel.text = rewardText
+            rewardLabel.font = UIFont.boldSystemFont(ofSize: 12)
+            rewardLabel.textColor = UIColor(hex: content.nativeStyle?.brandColor ?? "#FF0099") ?? UIColor(red: 255/255, green: 0/255, blue: 153/255, alpha: 1)
+            rewardLabel.textAlignment = .left
+            addSubview(rewardLabel)
+        }
     }
 
-    // MARK: - MULTISTEP_2
-    private func buildMultistep2() {
-        let container = UIView(frame: bounds)
-        container.backgroundColor = UIColor(hex: nativeStyle?.backgroundColor ?? "#F4F4F4")
-        container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        addSubview(container)
+    // MARK: - MULTISTEP_2: Vertical Step List
 
-        let cardView = UIView()
-        cardView.backgroundColor = bgColor
-        cardView.layer.cornerRadius = 16
-        cardView.clipsToBounds = true
+    private func setupMultistep2() {
+        guard let ws = getSelectedWidgetState() else { return }
 
         let padding: CGFloat = 16
-        let cardInset: CGFloat = 16
-        let cardWidth = bounds.width - cardInset * 2
         var yOffset: CGFloat = 0
 
         // Header image
-        let headerImageView = UIImageView()
-        headerImageView.contentMode = .scaleAspectFill
-        headerImageView.clipsToBounds = true
-        let imageHeight = cardWidth * 0.4 // aspect ratio estimate
-        headerImageView.frame = CGRect(x: 0, y: 0, width: cardWidth, height: imageHeight)
-
-        if let imgURL = selectedWidgetState?.headerImage, !imgURL.isEmpty {
-            headerImageView.downloadImage(urlString: imgURL, success: nil, failure: nil)
+        if let headerImg = ws.headerImage, !headerImg.isEmpty {
+            let imageView = UIImageView(frame: CGRect(x: 0, y: yOffset, width: bounds.width, height: 120))
+            imageView.contentMode = .scaleAspectFill
+            imageView.clipsToBounds = true
+            imageView.downloadImage(urlString: headerImg, completion: { _ in }, failure: { _ in })
+            addSubview(imageView)
+            yOffset = imageView.frame.maxY
         }
-        cardView.addSubview(headerImageView)
-        yOffset = imageHeight + padding
+
+        yOffset += 12
 
         // Title
-        let titleLabel = UILabel()
-        titleLabel.text = resolvedTitle
-        titleLabel.font = UIFont.systemFont(ofSize: titleFontSize, weight: .semibold)
-        titleLabel.textColor = titleColorVal
-        titleLabel.textAlignment = .center
-        titleLabel.numberOfLines = 0
-        titleLabel.frame = CGRect(x: padding, y: yOffset, width: cardWidth - padding * 2, height: 0)
-        titleLabel.sizeToFit()
-        titleLabel.frame = CGRect(x: padding, y: yOffset, width: cardWidth - padding * 2, height: titleLabel.frame.height)
-        cardView.addSubview(titleLabel)
-        yOffset = titleLabel.frame.maxY + 24
+        if let titleText = ws.title {
+            let titleLabel = UILabel(frame: CGRect(x: padding, y: yOffset, width: bounds.width - padding * 2, height: 22))
+            titleLabel.text = titleText
+            titleLabel.font = UIFont.boldSystemFont(ofSize: content.nativeStyle?.titleFontSize.map { CGFloat($0) } ?? 16)
+            titleLabel.textColor = UIColor(hex: content.nativeStyle?.titleColor ?? "#242220") ?? UIColor(red: 36/255, green: 34/255, blue: 32/255, alpha: 1)
+            titleLabel.numberOfLines = 0
+            titleLabel.sizeToFit()
+            titleLabel.frame.size.width = bounds.width - padding * 2
+            addSubview(titleLabel)
+            yOffset = titleLabel.frame.maxY + 8
+        }
 
-        // Progress bar with reward text
-        let progressBar = MultistepProgressBar()
-        progressBar.stepCompleted = stepCompleted
-        progressBar.activityCount = activityCount
-        progressBar.progressMeterIconURL = content.progressMeterIcon
-        progressBar.rewardText = selectedWidgetState?.progressMeter?.completedText
-        progressBar.trackColor = trackColor
-        progressBar.inProgressColor = inProgressColorVal
-        progressBar.completedColor = fillColor
-        progressBar.rewardTextColor = brandColor
-        progressBar.barHeight = barHeight
-        progressBar.frame = CGRect(x: padding, y: yOffset, width: cardWidth - padding * 2, height: barHeight)
-        cardView.addSubview(progressBar)
-        yOffset = progressBar.frame.maxY + 24
+        // Progress bar + reward text
+        let rewardText = ws.progressMeter?.completedText
+        let rewardWidth: CGFloat = rewardText != nil ? 80 : 0
+        let barWidth = bounds.width - padding * 2 - rewardWidth - (rewardText != nil ? 8 : 0)
+        let barHeight: CGFloat = content.nativeStyle?.progressBarHeight.map { CGFloat($0) } ?? 16
 
-        // Step circles
-        let stepCircles = MultistepStepCircles()
-        stepCircles.connectorStyle = .solid
-        stepCircles.brandColor = brandColor
-        stepCircles.stepCompleted = stepCompleted
-        stepCircles.activityCount = activityCount
+        let progressBar = MultistepProgressBarView(frame: CGRect(x: padding, y: yOffset, width: barWidth, height: barHeight + 4))
+        progressBar.configure(stepCompleted: stepCompleted, activityCount: activityCount, nativeStyle: content.nativeStyle, progressBarIcon: content.progressBarIcon)
+        addSubview(progressBar)
 
-        var stepData: [MultistepStepCircles.StepData] = []
-        if let ws = content.widgetStates {
-            for i in 0..<activityCount {
-                // Find widget state for this step
-                let widget = ws.first(where: { $0.step == i && $0.state == userStatus })
-                    ?? ws.first(where: { $0.step == i && $0.state == "in-progress" })
-                    ?? ws.first(where: { $0.step == 0 && $0.state == "pristine" })
-                    ?? ws.first
-                let rewardText = widget?.progressBar?.progressRewardText ?? ""
-                let label = widget?.progressBar?.progressLabel ?? "Step \(i + 1)"
-                stepData.append(.init(rewardText: rewardText, label: label))
+        if let rewardText = rewardText {
+            let rewardLabel = UILabel(frame: CGRect(x: progressBar.frame.maxX + 8, y: yOffset, width: rewardWidth, height: barHeight + 4))
+            rewardLabel.text = rewardText
+            rewardLabel.font = UIFont.boldSystemFont(ofSize: 12)
+            rewardLabel.textColor = UIColor(hex: content.nativeStyle?.brandColor ?? "#FF0099") ?? UIColor(red: 255/255, green: 0/255, blue: 153/255, alpha: 1)
+            addSubview(rewardLabel)
+        }
+
+        yOffset = progressBar.frame.maxY + 16
+
+        // Step circles row
+        let count = activityCount
+        let circleSize: CGFloat = content.nativeStyle?.stepIconSize.map { CGFloat($0) } ?? 50
+        let connectorGap: CGFloat = 20
+        let totalWidth = CGFloat(count) * circleSize + CGFloat(max(count - 1, 0)) * connectorGap
+        var xPos = (bounds.width - totalWidth) / 2
+        if xPos < padding { xPos = padding }
+
+        let completedColor = UIColor(hex: content.nativeStyle?.completedStepColor ?? "#FF0099") ?? UIColor(red: 255/255, green: 0/255, blue: 153/255, alpha: 1)
+        let currentColor = UIColor(hex: content.nativeStyle?.currentStepColor ?? "#FF0099") ?? UIColor(red: 255/255, green: 0/255, blue: 153/255, alpha: 1)
+        let lockedColor = UIColor(hex: content.nativeStyle?.lockedStepColor ?? "#999999") ?? UIColor(red: 153/255, green: 153/255, blue: 153/255, alpha: 1)
+        let connectorHeight: CGFloat = 4
+
+        for step in 0..<count {
+            let circleView = UIView(frame: CGRect(x: xPos, y: yOffset, width: circleSize, height: circleSize))
+            circleView.layer.cornerRadius = circleSize / 2
+            circleView.clipsToBounds = true
+
+            if step < stepCompleted {
+                circleView.backgroundColor = completedColor
+                let checkIcon = UIImageView(frame: CGRect(x: circleSize * 0.25, y: circleSize * 0.25, width: circleSize * 0.5, height: circleSize * 0.5))
+                checkIcon.image = UIImage(systemName: "checkmark")
+                checkIcon.tintColor = .white
+                checkIcon.contentMode = .scaleAspectFit
+                circleView.addSubview(checkIcon)
+            } else if step == stepCompleted {
+                circleView.backgroundColor = .white
+                circleView.layer.borderColor = currentColor.cgColor
+                circleView.layer.borderWidth = 2
+            } else {
+                circleView.backgroundColor = .white
+                circleView.layer.borderColor = lockedColor.cgColor
+                circleView.layer.borderWidth = 1.5
+            }
+
+            // Reward text inside circle for non-completed steps
+            if step >= stepCompleted {
+                if let pb = ws.progressBar, let rewardTxt = pb.progressRewardText {
+                    let rewardLbl = UILabel(frame: circleView.bounds)
+                    rewardLbl.text = rewardTxt
+                    rewardLbl.font = UIFont.boldSystemFont(ofSize: 10)
+                    rewardLbl.textAlignment = .center
+                    rewardLbl.textColor = step == stepCompleted ? currentColor : lockedColor
+                    circleView.addSubview(rewardLbl)
+                }
+            }
+
+            addSubview(circleView)
+
+            // Label below circle
+            let labelY = yOffset + circleSize + 4
+            let label = UILabel(frame: CGRect(x: xPos - 10, y: labelY, width: circleSize + 20, height: 16))
+            label.font = UIFont.systemFont(ofSize: 10)
+            label.textAlignment = .center
+            label.textColor = step < stepCompleted ? UIColor(hex: "#242220") : UIColor(hex: "#757575")
+            if let pb = ws.progressBar, let plabel = pb.progressLabel {
+                label.text = plabel
+            }
+            addSubview(label)
+
+            xPos += circleSize
+
+            // Connector
+            if step < count - 1 {
+                let connector = UIView(frame: CGRect(x: xPos, y: yOffset + circleSize / 2 - connectorHeight / 2, width: connectorGap, height: connectorHeight))
+                connector.backgroundColor = step < stepCompleted ? completedColor : UIColor(hex: "#E0E0E0")
+                connector.layer.cornerRadius = connectorHeight / 2
+                addSubview(connector)
+                xPos += connectorGap
             }
         }
-        stepCircles.steps = stepData
-        let circlesPadding: CGFloat = 8
-        let circlesWidth = cardWidth - padding - circlesPadding
-        let circlesHeight: CGFloat = 78 // 50 circle + 8 gap + 20 label
-        stepCircles.frame = CGRect(x: circlesPadding, y: yOffset, width: circlesWidth, height: circlesHeight)
-        stepCircles.reload()
-        cardView.addSubview(stepCircles)
-        yOffset = stepCircles.frame.maxY + 24
+
+        yOffset += circleSize + 24 + 16
 
         // CTA Button
-        let ctaButton = UIButton(type: .system)
-        ctaButton.setTitle(selectedWidgetState?.ctaText ?? "Check my progress", for: .normal)
-        ctaButton.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        ctaButton.setTitleColor(ctaTextColorVal, for: .normal)
-        ctaButton.backgroundColor = ctaBgColor
-        ctaButton.layer.cornerRadius = 25
-        ctaButton.frame = CGRect(x: padding, y: yOffset, width: cardWidth - padding * 2, height: 50)
-        cardView.addSubview(ctaButton)
-        yOffset = ctaButton.frame.maxY + padding
-
-        cardView.frame = CGRect(x: cardInset, y: 0, width: cardWidth, height: yOffset)
-        container.addSubview(cardView)
+        if let ctaText = ws.ctaText, !ctaText.isEmpty {
+            let ctaButton = UIButton(frame: CGRect(x: padding, y: yOffset, width: bounds.width - padding * 2, height: 44))
+            ctaButton.setTitle(ctaText, for: .normal)
+            ctaButton.setTitleColor(UIColor(hex: content.nativeStyle?.ctaTextColor ?? "#FFFFFF") ?? .white, for: .normal)
+            ctaButton.backgroundColor = UIColor(hex: content.nativeStyle?.ctaBackgroundColor ?? "#4F4DF8") ?? UIColor(red: 79/255, green: 77/255, blue: 248/255, alpha: 1)
+            ctaButton.layer.cornerRadius = content.nativeStyle?.cornerRadius.map { CGFloat($0) } ?? 8
+            ctaButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
+            addSubview(ctaButton)
+        }
     }
 
-    // MARK: - MULTISTEP_3
-    private func buildMultistep3() {
-        let container = UIView(frame: bounds)
-        container.backgroundColor = bgColor
-        container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        addSubview(container)
+    // MARK: - MULTISTEP_3: Expandable Card
+
+    private func setupMultistep3() {
+        guard let ws = getSelectedWidgetState() else { return }
 
         let padding: CGFloat = 16
-        let expandableCard = MultistepExpandableCard(frame: CGRect(x: padding, y: 24, width: bounds.width - padding * 2, height: bounds.height - 40))
-        expandableCard.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        let headerHeight: CGFloat = 56
 
-        expandableCard.badgeText = selectedWidgetState?.badgeTag ?? ""
-        expandableCard.titleText = resolvedTitle
-        expandableCard.bodyText = resolvedBody
-        expandableCard.ctaText = selectedWidgetState?.ctaText ?? ""
-        expandableCard.stepCompleted = stepCompleted
-        expandableCard.activityCount = activityCount
-        expandableCard.widgetStates = content.widgetStates
-        expandableCard.progressBarIconURL = content.progressBarIcon
-        expandableCard.ctaAction = selectedWidgetState?.ctaAction
-        expandableCard.content = content
+        // Header container
+        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: bounds.width, height: headerHeight))
+        headerView.backgroundColor = .white
+        addSubview(headerView)
 
-        // Apply styles
-        expandableCard.brandColor = UIColor(hex: nativeStyle?.brandColor ?? "#E00087")
-        expandableCard.ctaBgColor = UIColor(hex: nativeStyle?.ctaBackgroundColor ?? "#E00087")
-        expandableCard.ctaTextColor = ctaTextColorVal
-        expandableCard.titleColor = titleColorVal
-        expandableCard.bodyColor = UIColor(hex: nativeStyle?.bodyColor ?? "#757575")
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleExpand))
+        headerView.addGestureRecognizer(tapGesture)
 
-        // Check if should start expanded
-        expandableCard.isExpanded = false // Default collapsed on mobile
-
-        expandableCard.configure()
-        container.addSubview(expandableCard)
-    }
-}
-
-// MARK: - UIColor hex extension
-extension UIColor {
-    convenience init(hex: String) {
-        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
-        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
-
-        var rgb: UInt64 = 0
-        Scanner(string: hexSanitized).scanHexInt64(&rgb)
-
-        let length = hexSanitized.count
-        let r, g, b, a: CGFloat
-        if length == 8 {
-            r = CGFloat((rgb & 0xFF000000) >> 24) / 255.0
-            g = CGFloat((rgb & 0x00FF0000) >> 16) / 255.0
-            b = CGFloat((rgb & 0x0000FF00) >> 8) / 255.0
-            a = CGFloat(rgb & 0x000000FF) / 255.0
-        } else {
-            r = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
-            g = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
-            b = CGFloat(rgb & 0x0000FF) / 255.0
-            a = 1.0
+        // Badge
+        var badgeEndX: CGFloat = padding
+        if let badgeText = ws.badgeTag, !badgeText.isEmpty {
+            let badgeLabel = UILabel()
+            badgeLabel.text = badgeText
+            badgeLabel.font = UIFont.boldSystemFont(ofSize: content.nativeStyle?.badgeFontSize.map { CGFloat($0) } ?? 11)
+            badgeLabel.textColor = UIColor(hex: "#E00087")
+            badgeLabel.sizeToFit()
+            let badgeW = badgeLabel.frame.width + 16
+            let badgeH: CGFloat = 24
+            let badgeContainer = UIView(frame: CGRect(x: padding, y: (headerHeight - badgeH) / 2, width: badgeW, height: badgeH))
+            badgeContainer.backgroundColor = UIColor(hex: "#FCEEF8")
+            badgeContainer.layer.cornerRadius = badgeH / 2
+            badgeContainer.layer.borderColor = UIColor(hex: "#E00087")?.cgColor
+            badgeContainer.layer.borderWidth = 1
+            badgeLabel.frame = CGRect(x: 8, y: (badgeH - badgeLabel.frame.height) / 2, width: badgeLabel.frame.width, height: badgeLabel.frame.height)
+            badgeContainer.addSubview(badgeLabel)
+            headerView.addSubview(badgeContainer)
+            badgeEndX = badgeContainer.frame.maxX + 8
         }
 
-        self.init(red: r, green: g, blue: b, alpha: a)
+        // Title in header
+        let chevronSize: CGFloat = 20
+        if let titleText = ws.title {
+            let titleLabel = UILabel(frame: CGRect(x: badgeEndX, y: 0, width: bounds.width - badgeEndX - chevronSize - padding * 2, height: headerHeight))
+            titleLabel.text = titleText
+            titleLabel.font = UIFont.boldSystemFont(ofSize: content.nativeStyle?.titleFontSize.map { CGFloat($0) } ?? 16)
+            titleLabel.textColor = UIColor(hex: content.nativeStyle?.titleColor ?? "#242220") ?? UIColor(red: 36/255, green: 34/255, blue: 32/255, alpha: 1)
+            titleLabel.numberOfLines = 1
+            headerView.addSubview(titleLabel)
+        }
+
+        // Chevron
+        let chevronImageView = UIImageView(frame: CGRect(x: bounds.width - padding - chevronSize, y: (headerHeight - chevronSize) / 2, width: chevronSize, height: chevronSize))
+        chevronImageView.image = UIImage(systemName: "chevron.down")
+        chevronImageView.tintColor = UIColor(hex: "#757575")
+        chevronImageView.contentMode = .scaleAspectFit
+        chevronImageView.tag = 999
+        headerView.addSubview(chevronImageView)
+
+        // Content container (starts collapsed)
+        let container = UIView(frame: CGRect(x: 0, y: headerHeight, width: bounds.width, height: 0))
+        container.clipsToBounds = true
+        addSubview(container)
+        self.contentContainer = container
+
+        // Build content inside container
+        var yOffset: CGFloat = 8
+
+        // Step circles (smaller, 24x24)
+        let count = activityCount
+        let circleSize: CGFloat = content.nativeStyle?.stepIconSize.map { CGFloat($0) } ?? 24
+        let connectorWidth: CGFloat = 20
+        let totalWidth = CGFloat(count) * circleSize + CGFloat(max(count - 1, 0)) * connectorWidth
+        var xPos = (bounds.width - totalWidth) / 2
+        if xPos < padding { xPos = padding }
+
+        let completedColor = UIColor(hex: content.nativeStyle?.completedStepColor ?? "#FF0099") ?? UIColor(red: 255/255, green: 0/255, blue: 153/255, alpha: 1)
+        let currentColor = UIColor(hex: content.nativeStyle?.currentStepColor ?? "#FF0099") ?? UIColor(red: 255/255, green: 0/255, blue: 153/255, alpha: 1)
+        let lockedColor = UIColor(hex: content.nativeStyle?.lockedStepColor ?? "#999999") ?? UIColor(red: 153/255, green: 153/255, blue: 153/255, alpha: 1)
+
+        for step in 0..<count {
+            let circleView = UIView(frame: CGRect(x: xPos, y: yOffset, width: circleSize, height: circleSize))
+            circleView.layer.cornerRadius = circleSize / 2
+            circleView.clipsToBounds = true
+
+            if step < stepCompleted {
+                circleView.backgroundColor = completedColor
+                let iconSize = circleSize * 0.5
+                let checkIcon = UIImageView(frame: CGRect(x: (circleSize - iconSize) / 2, y: (circleSize - iconSize) / 2, width: iconSize, height: iconSize))
+                if let iconUrl = content.progressBarIcon, !iconUrl.isEmpty {
+                    checkIcon.downloadImage(urlString: iconUrl, completion: { _ in }, failure: { _ in })
+                } else {
+                    checkIcon.image = UIImage(systemName: "checkmark")
+                    checkIcon.tintColor = .white
+                }
+                checkIcon.contentMode = .scaleAspectFit
+                circleView.addSubview(checkIcon)
+            } else if step == stepCompleted {
+                circleView.backgroundColor = .white
+                circleView.layer.borderColor = currentColor.cgColor
+                circleView.layer.borderWidth = 2
+            } else {
+                circleView.backgroundColor = .white
+                circleView.layer.borderColor = lockedColor.cgColor
+                circleView.layer.borderWidth = 1.5
+            }
+
+            container.addSubview(circleView)
+            xPos += circleSize
+
+            // Dashed connector
+            if step < count - 1 {
+                let connectorView = UIView(frame: CGRect(x: xPos, y: yOffset + circleSize / 2 - 2, width: connectorWidth, height: 4))
+                let shapeLayer = CAShapeLayer()
+                let path = UIBezierPath()
+                path.move(to: CGPoint(x: 0, y: 2))
+                path.addLine(to: CGPoint(x: connectorWidth, y: 2))
+                shapeLayer.path = path.cgPath
+                shapeLayer.strokeColor = (step < stepCompleted ? completedColor : lockedColor).cgColor
+                shapeLayer.lineWidth = 2
+                shapeLayer.lineDashPattern = [4, 4]
+                connectorView.layer.addSublayer(shapeLayer)
+                container.addSubview(connectorView)
+                xPos += connectorWidth
+            }
+        }
+
+        yOffset += circleSize + 12
+
+        // Description
+        if let bodyText = ws.body {
+            let bodyLabel = UILabel(frame: CGRect(x: padding, y: yOffset, width: bounds.width - padding * 2, height: 40))
+            bodyLabel.text = bodyText
+            bodyLabel.font = UIFont.systemFont(ofSize: content.nativeStyle?.bodyFontSize.map { CGFloat($0) } ?? 14)
+            bodyLabel.textColor = UIColor(hex: content.nativeStyle?.bodyColor ?? "#242220") ?? UIColor(red: 36/255, green: 34/255, blue: 32/255, alpha: 1)
+            bodyLabel.numberOfLines = 0
+            bodyLabel.sizeToFit()
+            bodyLabel.frame.size.width = bounds.width - padding * 2
+            container.addSubview(bodyLabel)
+            yOffset = bodyLabel.frame.maxY + 12
+        }
+
+        // CTA Button with shine
+        if let ctaText = ws.ctaText, !ctaText.isEmpty {
+            let ctaButton = UIButton(frame: CGRect(x: padding, y: yOffset, width: bounds.width - padding * 2, height: 44))
+            ctaButton.setTitle(ctaText, for: .normal)
+            ctaButton.setTitleColor(UIColor(hex: content.nativeStyle?.ctaTextColor ?? "#FFFFFF") ?? .white, for: .normal)
+            ctaButton.backgroundColor = UIColor(hex: content.nativeStyle?.ctaBackgroundColor ?? "#E00087") ?? UIColor(red: 224/255, green: 0/255, blue: 135/255, alpha: 1)
+            ctaButton.layer.cornerRadius = content.nativeStyle?.cornerRadius.map { CGFloat($0) } ?? 8
+            ctaButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
+            ctaButton.clipsToBounds = true
+            container.addSubview(ctaButton)
+
+            // Shine animation
+            addShineAnimation(to: ctaButton)
+
+            yOffset = ctaButton.frame.maxY + 12
+        }
+
+        // Store total content height
+        container.tag = Int(yOffset)
+    }
+
+    @objc private func toggleExpand() {
+        guard let container = contentContainer else { return }
+        isExpanded.toggle()
+
+        let targetHeight: CGFloat = isExpanded ? CGFloat(container.tag) : 0
+
+        // Update chevron
+        if let headerView = subviews.first,
+           let chevron = headerView.viewWithTag(999) as? UIImageView {
+            chevron.image = UIImage(systemName: isExpanded ? "chevron.up" : "chevron.down")
+        }
+
+        UIView.animate(withDuration: 0.3) {
+            container.frame.size.height = targetHeight
+        }
+    }
+
+    private func addShineAnimation(to button: UIButton) {
+        let shine = CAGradientLayer()
+        shine.colors = [
+            UIColor.white.withAlphaComponent(0).cgColor,
+            UIColor.white.withAlphaComponent(0.4).cgColor,
+            UIColor.white.withAlphaComponent(0).cgColor
+        ]
+        shine.locations = [0, 0.5, 1]
+        shine.startPoint = CGPoint(x: 0, y: 0.5)
+        shine.endPoint = CGPoint(x: 1, y: 0.5)
+        shine.frame = CGRect(x: -button.bounds.width, y: 0, width: button.bounds.width * 0.5, height: button.bounds.height)
+        button.layer.addSublayer(shine)
+
+        let animation = CABasicAnimation(keyPath: "position.x")
+        animation.fromValue = -button.bounds.width * 0.25
+        animation.toValue = button.bounds.width * 1.25
+        animation.duration = 2.0
+        animation.repeatCount = .infinity
+        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        shine.add(animation, forKey: "shineAnimation")
     }
 }
