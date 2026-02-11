@@ -221,7 +221,21 @@ public class BannerView: UIView, UIScrollViewDelegate {
         
         for i in 0..<arrContent.count {
             let dict = arrContent[i]
-            if dict.type == "IMAGE" {
+            if let typeId = dict.typeId, typeId.hasPrefix("DYNAMIC_MULTISTEP") {
+                let xOrigin = screenWidth * CGFloat(i)
+                // Look up the campaign banner for step/activity data
+                let campaign = CustomerGlu.campaignsAvailable?.campaigns?.first(where: { $0.campaignId == dict.campaignId })
+                let multistepView = DynamicMultistepView(
+                    frame: CGRect(x: xOrigin, y: 0, width: screenWidth, height: CGFloat(finalHeight)),
+                    content: dict,
+                    banner: campaign?.banner,
+                    typeId: typeId
+                )
+                multistepView.tag = i
+                multistepView.isUserInteractionEnabled = true
+                self.imgScrollView.addSubview(multistepView)
+                self.progressView.removeFromSuperview()
+            } else if dict.type == "IMAGE" {
                 var imageView: UIImageView
                 let xOrigin = screenWidth * CGFloat(i)
                 
