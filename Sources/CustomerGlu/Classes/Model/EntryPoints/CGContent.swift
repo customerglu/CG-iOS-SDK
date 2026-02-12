@@ -35,6 +35,22 @@ public struct CGContent: Codable {
     var progressBarIcon: String?
     var progressMeterIcon: String?
     var nativeStyle: CGNativeStyle?
+    var removeOnCompletion: Bool?
+    var widgetCss: String?
+
+    enum CodingKeys: String, CodingKey {
+        case _id, campaignId, openLayout, type, url, darkUrl, lightUrl
+        case relativeHeight, absoluteHeight, closeOnDeepLink
+        case action, primaryCta, secondaryCta
+        case closeIcon, backgroundColor, backgroundImage
+        case typeId
+        case widgetStates = "IWidgetState"
+        case activityStates = "activityState"
+        case contentState = "state"
+        case entryPointStates
+        case progressBarIcon, progressMeterIcon, nativeStyle
+        case removeOnCompletion, widgetCss
+    }
 
     init(fromDictionary dictionary: [String: Any]) {
         _id = dictionary["_id"] as? String

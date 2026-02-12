@@ -8,12 +8,13 @@ class MultistepProgressBarView: UIView {
     var trackColor: UIColor = UIColor(red: 252/255, green: 238/255, blue: 248/255, alpha: 1)
     var inProgressColor: UIColor = UIColor(red: 253/255, green: 190/255, blue: 229/255, alpha: 1)
     var completedColor: UIColor = UIColor(red: 255/255, green: 0/255, blue: 153/255, alpha: 1)
-    var barHeight: CGFloat = 16
+    var barHeight: CGFloat = 12
 
     private let trackView = UIView()
     private let inProgressView = UIView()
     private let completedView = UIView()
     private var checkmarkViews: [UIImageView] = []
+    private var hasAnimated = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -26,15 +27,11 @@ class MultistepProgressBarView: UIView {
     }
 
     private func setupViews() {
+        backgroundColor = .clear
         [trackView, inProgressView, completedView].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            $0.layer.cornerRadius = barHeight / 2
             $0.clipsToBounds = true
             addSubview($0)
         }
-        trackView.backgroundColor = trackColor
-        inProgressView.backgroundColor = inProgressColor
-        completedView.backgroundColor = completedColor
     }
 
     func configure(stepCompleted: Int, activityCount: Int, nativeStyle: CGNativeStyle?, progressBarIcon: String?) {
@@ -61,42 +58,53 @@ class MultistepProgressBarView: UIView {
         let w = bounds.width
         let h = barHeight
         let y = (bounds.height - h) / 2
+        let radius = h / 2
 
+        // Track (full width, pill shaped)
         trackView.frame = CGRect(x: 0, y: y, width: w, height: h)
-        trackView.layer.cornerRadius = h / 2
+        trackView.layer.cornerRadius = radius
 
-        var inProgressWidth = CGFloat(stepCompleted + 1) / CGFloat(activityCount) * w
-        if inProgressWidth > w { inProgressWidth = w }
-        inProgressView.frame = CGRect(x: 0, y: y, width: inProgressWidth, height: h)
-        inProgressView.layer.cornerRadius = h / 2
+        // In-progress (one step ahead of completed)
+        let inProgressFrac = min(CGFloat(stepCompleted + 1) / CGFloat(activityCount), 1.0)
+        let inProgressW = stepCompleted == 0 && activityCount > 1 ? min(h, w) : inProgressFrac * w
+        inProgressView.frame = CGRect(x: 0, y: y, width: inProgressW, height: h)
+        inProgressView.layer.cornerRadius = radius
 
-        let completedWidth = CGFloat(stepCompleted) / CGFloat(activityCount) * w
-        completedView.frame = CGRect(x: 0, y: y, width: completedWidth, height: h)
-        completedView.layer.cornerRadius = h / 2
+        // Completed fill
+        let completedFrac = CGFloat(stepCompleted) / CGFloat(activityCount)
+        let completedW = completedFrac * w
+        completedView.frame = CGRect(x: 0, y: y, width: hasAnimated ? completedW : 0, height: h)
+        completedView.layer.cornerRadius = radius
 
-        // Remove old checkmarks
+        // Animate fill on first layout
+        if !hasAnimated {
+            hasAnimated = true
+            UIView.animate(withDuration: 0.6, delay: 0.2, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: .curveEaseOut) {
+                self.completedView.frame.size.width = completedW
+            }
+        }
+
+        // Checkmarks at completed positions
         checkmarkViews.forEach { $0.removeFromSuperview() }
         checkmarkViews.removeAll()
 
-        // Add checkmarks at completed step positions
         guard stepCompleted > 0 else { return }
-        let iconSize: CGFloat = 13.33
-        for i in 1...stepCompleted {
-            if i > activityCount { break }
-            let iconView = UIImageView()
-            iconView.contentMode = .scaleAspectFit
+        let iconSize: CGFloat = min(h * 0.8, 14)
+        for i in 1...min(stepCompleted, activityCount) {
+            let iv = UIImageView()
+            iv.contentMode = .scaleAspectFit
             let xPos = CGFloat(i) / CGFloat(activityCount) * w - iconSize / 2
-            iconView.frame = CGRect(x: xPos, y: y + 1.33, width: iconSize, height: iconSize)
+            iv.frame = CGRect(x: xPos, y: y + (h - iconSize) / 2, width: iconSize, height: iconSize)
 
             if let iconUrl = progressBarIcon, !iconUrl.isEmpty {
-                iconView.downloadImage(urlString: iconUrl, completion: { _ in }, failure: { _ in })
+                iv.downloadImage(urlString: iconUrl, success: { _ in }, failure: { _ in })
             } else {
-                iconView.image = UIImage(systemName: "checkmark")
-                iconView.tintColor = .white
+                iv.image = UIImage(systemName: "checkmark")
+                iv.tintColor = .white
             }
 
-            addSubview(iconView)
-            checkmarkViews.append(iconView)
+            addSubview(iv)
+            checkmarkViews.append(iv)
         }
     }
 }

@@ -19,6 +19,7 @@ public struct CGNativeStyle: Codable {
     var titleFontSize: Double?
     var bodyFontSize: Double?
     var badgeFontSize: Double?
+    var ctaBorderRadius: Double?
 
     init(fromDictionary dictionary: [String: Any]) {
         brandColor = dictionary["brandColor"] as? String
@@ -39,6 +40,7 @@ public struct CGNativeStyle: Codable {
         titleFontSize = dictionary["titleFontSize"] as? Double
         bodyFontSize = dictionary["bodyFontSize"] as? Double
         badgeFontSize = dictionary["badgeFontSize"] as? Double
+        ctaBorderRadius = dictionary["ctaBorderRadius"] as? Double
     }
 
     func toDictionary() -> [String: Any] {
@@ -61,6 +63,7 @@ public struct CGNativeStyle: Codable {
         if let titleFontSize = titleFontSize { dictionary["titleFontSize"] = titleFontSize }
         if let bodyFontSize = bodyFontSize { dictionary["bodyFontSize"] = bodyFontSize }
         if let badgeFontSize = badgeFontSize { dictionary["badgeFontSize"] = badgeFontSize }
+        if let ctaBorderRadius = ctaBorderRadius { dictionary["ctaBorderRadius"] = ctaBorderRadius }
         return dictionary
     }
 }

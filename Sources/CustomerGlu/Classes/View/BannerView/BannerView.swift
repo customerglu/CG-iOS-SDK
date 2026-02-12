@@ -160,6 +160,13 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId
             }
             
+            NSLog("[BannerView] Looking for bannerId: %@, total entrypoints: %d, matched: %d", self.bannerId ?? "nil", CustomerGlu.entryPointdata.count, bannerViews.count)
+            if bannerViews.count != 0 {
+                let firstContent = bannerViews[0].mobile?.content.first
+                NSLog("[BannerView] First content typeId: %@, type: %@, campaignId: %@", firstContent?.typeId ?? "nil", firstContent?.type ?? "nil", firstContent?.campaignId ?? "nil")
+                NSLog("[BannerView] widgetStates count: %d, nativeStyle: %@", firstContent?.widgetStates?.count ?? 0, firstContent?.nativeStyle != nil ? "present" : "nil")
+            }
+            
             if bannerViews.count != 0, let mobile = bannerViews[0].mobile {
                 arrContent = [CGContent]()
                 condition = mobile.conditions
@@ -204,6 +211,15 @@ public class BannerView: UIView, UIScrollViewDelegate {
         let screenHeight = UIScreen.main.bounds.height
         finalHeight = (Int(screenHeight) * height)/100
         
+        // For DYNAMIC_MULTISTEP, override height before posting notification
+        if let firstContent = arrContent.first,
+           let typeId = firstContent.typeId, typeId.hasPrefix("DYNAMIC_MULTISTEP") {
+            let campaign = CustomerGlu.campaignsAvailable?.campaigns?.first(where: { $0.campaignId == firstContent.campaignId })
+            let preferredH = DynamicMultistepView.preferredHeight(for: screenWidth, content: firstContent, banner: campaign?.banner, typeId: typeId)
+            NSLog("[BannerView] DYNAMIC_MULTISTEP height override: container%%=%d → preferred=%g (screenW=%g, screenH=%g)", finalHeight, preferredH, screenWidth, screenHeight)
+            finalHeight = Int(preferredH)
+        }
+        
         if let bannerId = self.bannerId, !bannerId.isEmpty{
             CustomerGlu.getInstance.addBannerId(bannerId: bannerId)
         }
@@ -224,17 +240,46 @@ public class BannerView: UIView, UIScrollViewDelegate {
             if let typeId = dict.typeId, typeId.hasPrefix("DYNAMIC_MULTISTEP") {
                 let xOrigin = screenWidth * CGFloat(i)
                 // Look up the campaign banner for step/activity data
-                let campaign = CustomerGlu.campaignsAvailable?.campaigns?.first(where: { $0.campaignId == dict.campaignId })
+                var campaign = CustomerGlu.campaignsAvailable?.campaigns?.first(where: { $0.campaignId == dict.campaignId })
+                // Fallback: also check the loadCampaignResponse (reward API data)
+                if campaign == nil {
+                    campaign = CustomerGlu.getInstance.loadCampaignResponse?.campaigns?.first(where: { $0.campaignId == dict.campaignId })
+                }
+                let availableIds = CustomerGlu.campaignsAvailable?.campaigns?.prefix(5).map({ $0.campaignId ?? "nil" }) ?? []
+                let loadIds = CustomerGlu.getInstance.loadCampaignResponse?.campaigns?.prefix(5).map({ $0.campaignId ?? "nil" }) ?? []
+                NSLog("[BannerView] DynMS lookup: want=%@, campaignsAvailable=%d ids=[%@], loadCampaignResponse=%d ids=[%@], found=%@, activityCount=%d",
+                    dict.campaignId ?? "nil",
+                    CustomerGlu.campaignsAvailable?.campaigns?.count ?? 0, availableIds.joined(separator: ","),
+                    CustomerGlu.getInstance.loadCampaignResponse?.campaigns?.count ?? 0, loadIds.joined(separator: ","),
+                    campaign != nil ? "YES" : "NO", campaign?.banner?.activityCount ?? -1)
+                // Calculate preferred height for DYNAMIC_MULTISTEP instead of using container percentage
+                let preferredH = DynamicMultistepView.preferredHeight(for: screenWidth, content: dict, banner: campaign?.banner, typeId: typeId)
+                let msHeight = Int(preferredH)
+                if msHeight != finalHeight {
+                    NSLog("[BannerView] Overriding height from %d to %d for %@", finalHeight, msHeight, typeId)
+                    finalHeight = msHeight
+                    self.constraints.filter{$0.firstAttribute == .height}.forEach({ $0.constant = CGFloat(finalHeight) })
+                    self.frame.size.height = CGFloat(finalHeight)
+                    self.view.frame.size.height = CGFloat(finalHeight)
+                    if self.imgScrollView != nil {
+                        self.imgScrollView.frame.size.height = CGFloat(finalHeight)
+                    }
+                    let postInfo: [String: Any] = [self.bannerId ?? "" : finalHeight]
+                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: Notification.Name("CGBANNER_FINAL_HEIGHT").rawValue), object: nil, userInfo: postInfo)
+                }
                 let multistepView = DynamicMultistepView(
                     frame: CGRect(x: xOrigin, y: 0, width: screenWidth, height: CGFloat(finalHeight)),
                     content: dict,
                     banner: campaign?.banner,
-                    typeId: typeId
+                    typeId: typeId,
+                    bannerId: self.bannerId
                 )
                 multistepView.tag = i
                 multistepView.isUserInteractionEnabled = true
+                // nativeStyle backgroundColor is applied inside DynamicMultistepView
                 self.imgScrollView.addSubview(multistepView)
                 self.progressView.removeFromSuperview()
+                NSLog("[BannerView] Added DynamicMultistepView to scrollView, frame=%@", NSCoder.string(for: multistepView.frame))
             } else if dict.type == "IMAGE" {
                 var imageView: UIImageView
                 let xOrigin = screenWidth * CGFloat(i)

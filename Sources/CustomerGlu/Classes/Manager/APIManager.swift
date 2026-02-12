@@ -221,7 +221,9 @@ class APIManager {
     
     private static func performRequest(withData requestData: CGRequestData) {
         
-        var strUrl = "https://" + requestData.baseurl + requestData.methodandpath.path
+        // TEMP: Use http for localhost proxy (revert before release)
+        let scheme = requestData.baseurl.contains("localhost") || requestData.baseurl.contains("10.7.0.2") ? "http://" : "https://"
+        var strUrl = scheme + requestData.baseurl + requestData.methodandpath.path
         
         if requestData.methodandpath.path == "reward/v1.1/user"
         {
@@ -526,6 +528,7 @@ class APIManager {
             let object = try jsonDecoder.decode(type, from: jsonData)
             return object
         } catch let error {
+            NSLog("[CG-DEBUG] dictToObject DECODE FAILED for %@: %@", String(describing: type), String(describing: error))
             CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "dictToObject", posttoserver: false)
             return nil
         }
