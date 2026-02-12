@@ -12,7 +12,7 @@ class DynamicMultistepView: UIView {
     private var isExpanded = false
     private var contentContainer: UIView?
     private var expandedHeight: CGFloat = 0
-    private var collapsedHeight: CGFloat = 56
+    private var collapsedHeight: CGFloat = 80
 
     init(frame: CGRect, content: CGContent, banner: CGBanner?, typeId: String, bannerId: String? = nil) {
         self.content = content
@@ -41,7 +41,6 @@ class DynamicMultistepView: UIView {
         let campaign = CustomerGlu.campaignsAvailable?.campaigns?.first(where: { $0.campaignId == campaignId })
             ?? CustomerGlu.getInstance.loadCampaignResponse?.campaigns?.first(where: { $0.campaignId == campaignId })
         guard let foundBanner = campaign?.banner else { return }
-        NSLog("[DynMS] Campaign loaded late, activityCount=%d, rebuilding", foundBanner.activityCount ?? -1)
         self.banner = foundBanner
         NotificationCenter.default.removeObserver(self, name: Notification.Name("CG_CAMPAIGNS_LOADED"), object: nil)
         // Rebuild the view
@@ -115,7 +114,7 @@ class DynamicMultistepView: UIView {
             h += 20
 
         case "DYNAMIC_MULTISTEP_3":
-            h = 56
+            h = 80 // 56 header + 24 shadow/padding
 
         default: h = 100
         }
@@ -368,8 +367,11 @@ class DynamicMultistepView: UIView {
         // ── Header ──
         let header = UIView(frame: CGRect(x: 0, y: 0, width: bounds.width, height: headerH))
         header.backgroundColor = .clear
+        header.isUserInteractionEnabled = true
         addSubview(header)
-        header.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(toggleExpand)))
+        // Add tap gesture on self (not header) — header may lose hit-testability after RN resize
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleExpand))
+        self.addGestureRecognizer(tapGesture)
 
         var labelX: CGFloat = pad
 
@@ -608,31 +610,47 @@ class DynamicMultistepView: UIView {
     // MARK: - Expand/Collapse (MS3)
 
     @objc private func toggleExpand() {
-        guard let container = contentContainer else { return }
+        guard let container = contentContainer else {
+            return
+        }
         isExpanded.toggle()
         let target: CGFloat = isExpanded ? expandedHeight : 0
         let newTotalHeight = collapsedHeight + target
 
+
+        // Rotate chevron
         if let header = subviews.first, let chev = header.viewWithTag(999) as? UIImageView {
             UIView.animate(withDuration: 0.25) {
                 chev.transform = self.isExpanded ? CGAffineTransform(rotationAngle: .pi) : .identity
             }
         }
 
+        // Animate expand/collapse with full parent hierarchy resize
         UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.85, initialSpringVelocity: 0, options: .curveEaseInOut) {
             container.frame.size.height = target
             self.frame.size.height = newTotalHeight
-            // Resize parent BannerView scroll view
+
+            // Resize parent scroll view
             if let scrollView = self.superview as? UIScrollView {
+                scrollView.frame.size.height = newTotalHeight
                 scrollView.contentSize.height = newTotalHeight
             }
-            // Resize parent BannerView
+
+            // Resize BannerView hierarchy
             if let bannerView = self.findParent(ofType: BannerView.self) {
                 bannerView.frame.size.height = newTotalHeight
+                bannerView.view.frame.size.height = newTotalHeight
                 bannerView.constraints.filter { $0.firstAttribute == .height }.forEach { $0.constant = newTotalHeight }
+                bannerView.view.constraints.filter { $0.firstAttribute == .height }.forEach { $0.constant = newTotalHeight }
+
+                // Resize the RN IosBannerView parent
+                if let rnView = bannerView.superview {
+                    rnView.frame.size.height = newTotalHeight
+                    rnView.constraints.filter { $0.firstAttribute == .height }.forEach { $0.constant = newTotalHeight }
+                }
             }
         } completion: { _ in
-            // Post height change to RN bridge
+            // Post height to RN so React can reflow siblings
             if let bid = self.bannerId {
                 let postInfo: [String: Any] = [bid: Int(newTotalHeight)]
                 NotificationCenter.default.post(

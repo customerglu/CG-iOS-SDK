@@ -18,8 +18,7 @@ class ApplicationManager {
     public static var diagnosticUrl = "diagnostics.customerglu.com/"
     
     // TEMP: Local proxy for DYNAMIC_MULTISTEP testing
-    // Original: public static var mebaseUrl = "api-me.customerglu.com/"
-    public static var mebaseUrl = "localhost:9000/"
+    public static var mebaseUrl = "api-me.customerglu.com/"
     public static var medevbaseUrl = "dev-api-me.customerglu.com/"
     public static var mestreamUrl = "stream-me.customerglu.com/"
     public static var meeventUrl = "events-me.customerglu.com/"

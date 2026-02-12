@@ -59,6 +59,8 @@ public class BannerView: UIView, UIScrollViewDelegate {
    
     
     @objc private func entryPointLoaded(notification: NSNotification) {
+        // Don't rebuild if DYNAMIC_MULTISTEP is already loaded (would reset expand/collapse state)
+        if hasDynamicMultistepLoaded { return }
         self.reloadBannerView()
     }
         
@@ -247,7 +249,6 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 }
                 let availableIds = CustomerGlu.campaignsAvailable?.campaigns?.prefix(5).map({ $0.campaignId ?? "nil" }) ?? []
                 let loadIds = CustomerGlu.getInstance.loadCampaignResponse?.campaigns?.prefix(5).map({ $0.campaignId ?? "nil" }) ?? []
-                NSLog("[BannerView] DynMS lookup: want=%@, campaignsAvailable=%d ids=[%@], loadCampaignResponse=%d ids=[%@], found=%@, activityCount=%d",
                     dict.campaignId ?? "nil",
                     CustomerGlu.campaignsAvailable?.campaigns?.count ?? 0, availableIds.joined(separator: ","),
                     CustomerGlu.getInstance.loadCampaignResponse?.campaigns?.count ?? 0, loadIds.joined(separator: ","),
@@ -278,7 +279,16 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 multistepView.isUserInteractionEnabled = true
                 // nativeStyle backgroundColor is applied inside DynamicMultistepView
                 self.imgScrollView.addSubview(multistepView)
+                self.imgScrollView.clipsToBounds = false
+                self.imgScrollView.isScrollEnabled = false
+                // Remove autoresizing so RN container resize doesn't kill our manually-managed frames
+                self.imgScrollView.autoresizingMask = []
+                self.view.autoresizingMask = []
+                self.autoresizingMask = []
+                self.view.clipsToBounds = false
+                self.clipsToBounds = false
                 self.progressView.removeFromSuperview()
+                self.hasDynamicMultistepLoaded = true
                 NSLog("[BannerView] Added DynamicMultistepView to scrollView, frame=%@", NSCoder.string(for: multistepView.frame))
             } else if dict.type == "IMAGE" {
                 var imageView: UIImageView
@@ -324,9 +334,13 @@ public class BannerView: UIView, UIScrollViewDelegate {
         self.imgScrollView.showsHorizontalScrollIndicator = false
         self.imgScrollView.contentSize = CGSize(width: screenWidth * CGFloat(arrContent.count), height: self.imgScrollView.frame.size.height)
         
-        // Add tap gesture to the BannerView itself
-        let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
-        self.view.addGestureRecognizer(tap)
+        // Add tap gesture to the BannerView — skip for MS2/MS3 (they have CTA buttons + expand/collapse)
+        // MS1 has no CTA, so the whole card should be tappable
+        let hasCtaOrExpand = arrContent.contains { $0.typeId == "DYNAMIC_MULTISTEP_2" || $0.typeId == "DYNAMIC_MULTISTEP_3" }
+        if !hasCtaOrExpand {
+            let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
+            self.view.addGestureRecognizer(tap)
+        }
         self.view.isUserInteractionEnabled = true
         
         // Timer in viewdidload()
@@ -349,7 +363,11 @@ public class BannerView: UIView, UIScrollViewDelegate {
         self.layoutIfNeeded()
     }
 
+    private var hasDynamicMultistepLoaded = false
+
     public override func layoutSubviews() {
+        // Don't rebuild DYNAMIC_MULTISTEP on every layout pass — it resets expand/collapse state
+        if hasDynamicMultistepLoaded { return }
         reloadBannerView()
     }
     
