@@ -17,7 +17,6 @@ class ApplicationManager {
     public static var analyticsUrl = "analytics.customerglu.com/"
     public static var diagnosticUrl = "diagnostics.customerglu.com/"
     
-    // TEMP: Local proxy for DYNAMIC_MULTISTEP testing
     public static var mebaseUrl = "api-me.customerglu.com/"
     public static var medevbaseUrl = "dev-api-me.customerglu.com/"
     public static var mestreamUrl = "stream-me.customerglu.com/"
@@ -66,7 +65,6 @@ class ApplicationManager {
                 completion(true, response)
                 
             case .failure(let error):
-                NSLog("[CG-DEBUG] openWalletApi FAILED: %@", String(describing: error))
                 CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "ApplicationManager-openWalletApi", posttoserver: true)
                 completion(false, nil)
             }
