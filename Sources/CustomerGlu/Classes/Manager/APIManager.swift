@@ -528,7 +528,6 @@ class APIManager {
             let object = try jsonDecoder.decode(type, from: jsonData)
             return object
         } catch let error {
-            NSLog("[CG-DEBUG] dictToObject DECODE FAILED for %@: %@", String(describing: type), String(describing: error))
             CustomerGlu.getInstance.printlog(cglog: error.localizedDescription, isException: false, methodName: "dictToObject", posttoserver: false)
             return nil
         }

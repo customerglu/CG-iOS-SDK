@@ -819,7 +819,6 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
             if(self.appconfigdata!.entryPointCount != nil){
                 CustomerGlu.entryPointCount = self.appconfigdata!.entryPointCount
             }
-            NSLog("[CG-DEBUG] entryPointCount=%d, isEntryPointEnabled=%@, campaignCount=%@", CustomerGlu.entryPointCount, CustomerGlu.isEntryPointEnabled ? "YES" : "NO", String(describing: CustomerGlu.loadCampaignCount))
             
             if self.appconfigdata!.isCrashLoggingEnabled != nil {
                 CustomerGlu.getInstance.setCrashLoggingEnabled(isCrashLoggingEnabled: (self.appconfigdata?.isCrashLoggingEnabled ?? CustomerGlu.isCrashLogsEnabled)!)
@@ -1099,11 +1098,8 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
                             self.initSSE()
                         }
                         CustomerGlu.oldCampaignIds = CustomerGlu.getInstance.decryptUserDefaultKey(userdefaultKey: CGConstants.allCampaignsIdsAsString)
-                        NSLog("[CG-DEBUG] About to check entryPointCount=%d for openWalletApi", CustomerGlu.entryPointCount)
                         if CustomerGlu.entryPointCount > 0 {
-                            NSLog("[CG-DEBUG] Calling openWalletApi...")
                             ApplicationManager.openWalletApi { success, response in
-                                NSLog("[CG-DEBUG] openWalletApi callback: success=%@, campaigns=%d", success ? "YES" : "NO", response?.campaigns?.count ?? -1)
                                 if success {
                                     CustomerGlu.campaignsAvailable = response
                                     NotificationCenter.default.post(name: Notification.Name("CG_CAMPAIGNS_LOADED"), object: nil)
@@ -3426,9 +3422,7 @@ public class CustomerGlu: NSObject, CustomerGluCrashDelegate {
     }
     
     func doLoadCampaignAndEntryPointCall() {
-        NSLog("[CG-DEBUG] doLoadCampaignAndEntryPointCall - calling openWalletApi")
         ApplicationManager.openWalletApi { success, response in
-            NSLog("[CG-DEBUG] doLoadCampaignAndEntryPointCall - openWalletApi result: success=%@, campaigns=%d", success ? "YES" : "NO", response?.campaigns?.count ?? -1)
             if success {
                 CustomerGlu.campaignsAvailable = response
                 NotificationCenter.default.post(name: Notification.Name("CG_CAMPAIGNS_LOADED"), object: nil)
