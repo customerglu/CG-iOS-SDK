@@ -12,7 +12,7 @@
 
 <p align="center">
   <b>All CustomerGlu SDKs share the same version number.</b><br>
-  iOS <code>4.1.0</code> · Android <code>4.1.0</code> · React Native <code>4.1.0</code>
+  iOS <code>4.1.1</code> · Android <code>4.1.1</code> · React Native <code>4.1.1</code>
 </p>
 
 ---
@@ -24,7 +24,7 @@
 - [Quick Start](#quick-start)
 - [Entry Points](#entry-points)
 - [Features](#features)
-- [What's New in 4.1.0](#whats-new-in-410)
+- [What's New in 4.1.1](#whats-new-in-410)
 - [Troubleshooting](#troubleshooting)
 - [Other SDKs](#other-sdks)
 - [Documentation](#documentation)
@@ -50,7 +50,7 @@
    ```
    https://github.com/customerglu/CG-iOS-SDK
    ```
-3. Select **Up to Next Major Version** from `4.1.0`
+3. Select **Up to Next Major Version** from `4.1.1`
 4. Click **Add Package**
 
 ### CocoaPods
@@ -58,7 +58,7 @@
 Add to your `Podfile`:
 
 ```ruby
-pod 'CustomerGlu', '~> 4.1.0'
+pod 'CustomerGlu', '~> 4.1.1'
 ```
 
 Then install:
@@ -163,7 +163,7 @@ The SDK handles rendering, styling, and click actions automatically based on you
 
 ---
 
-## What's New in 4.1.0
+## What's New in 4.1.1
 
 - **DYNAMIC_MULTISTEP native rendering** — three widget variants (MS1, MS2, MS3) rendered natively instead of WebView for better performance and native feel
 - **Native style support** — 19 configurable `nativeStyle` fields (colors, fonts, border radius, shimmer, etc.) controlled via dashboard
@@ -192,7 +192,7 @@ The SDK handles rendering, styling, and click actions automatically based on you
 
 | Platform | Package | Install |
 |----------|---------|---------|
-| **Android** | `com.customerglu:CustomerGluLibrary:4.1.0` | [Maven Central](https://central.sonatype.com/artifact/com.customerglu/CustomerGluLibrary) |
+| **Android** | `com.customerglu:CustomerGluLibrary:4.1.1` | [Maven Central](https://central.sonatype.com/artifact/com.customerglu/CustomerGluLibrary) |
 | **React Native** | `@customerglu/react-native-customerglu` | [npm](https://www.npmjs.com/package/@customerglu/react-native-customerglu) |
 
 ---

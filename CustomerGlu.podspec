@@ -4,12 +4,15 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'CustomerGlu'
-  s.version          = '4.1.0'
-  s.summary          = 'CustomerGlu'
+  s.version          = '4.1.1'
+  s.summary          = 'In-app gamification, rewards, and engagement campaigns for iOS.'
   s.description      = <<-DESC
-A new CustomerGlu.
+CustomerGlu iOS SDK — native in-app gamification, rewards, and engagement campaigns.
+Supports entry points (banners, floating buttons, embedded views, tooltips, PiP video),
+WebView and native widget rendering (including DYNAMIC_MULTISTEP progress widgets),
+real-time SSE nudges, deep linking, analytics, and multi-region API routing.
                        DESC
-  s.homepage         = 'https://github.com/customerglu/CG-iOS-SDK'
+  s.homepage         = 'https://customerglu.com'
   s.license          = { :type => 'Apache License, Version 2.0', :text => <<-LICENSE
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,7 +28,7 @@ A new CustomerGlu.
     LICENSE
   }
   s.author           = { 'CustomerGlu' => 'code@customerglu.net' }
-  s.source           = { :git => 'https://github.com/customerglu/CG-iOS-SDK.git', :tag => 'v4.1.0'}
+  s.source           = { :git => 'https://github.com/customerglu/CG-iOS-SDK.git', :tag => 'v4.1.1'}
   s.source_files = 'Sources/CustomerGlu/Classes/**/*.*'
   s.exclude_files = 'Tests/**/*.*'
   s.resources = 'Sources/CustomerGlu/Resources/**/*.*'
