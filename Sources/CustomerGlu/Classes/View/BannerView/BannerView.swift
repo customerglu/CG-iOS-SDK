@@ -239,12 +239,6 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 if campaign == nil {
                     campaign = CustomerGlu.getInstance.loadCampaignResponse?.campaigns?.first(where: { $0.campaignId == dict.campaignId })
                 }
-                let availableIds = CustomerGlu.campaignsAvailable?.campaigns?.prefix(5).map({ $0.campaignId ?? "nil" }) ?? []
-                let loadIds = CustomerGlu.getInstance.loadCampaignResponse?.campaigns?.prefix(5).map({ $0.campaignId ?? "nil" }) ?? []
-                    dict.campaignId ?? "nil",
-                    CustomerGlu.campaignsAvailable?.campaigns?.count ?? 0, availableIds.joined(separator: ","),
-                    CustomerGlu.getInstance.loadCampaignResponse?.campaigns?.count ?? 0, loadIds.joined(separator: ","),
-                    campaign != nil ? "YES" : "NO", campaign?.banner?.activityCount ?? -1)
                 // Calculate preferred height for DYNAMIC_MULTISTEP instead of using container percentage
                 let preferredH = DynamicMultistepView.preferredHeight(for: screenWidth, content: dict, banner: campaign?.banner, typeId: typeId)
                 let msHeight = Int(preferredH)
