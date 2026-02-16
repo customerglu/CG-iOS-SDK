@@ -162,13 +162,6 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 $0.mobile.container.type == "BANNER" && $0.mobile.container.bannerId == self.bannerId
             }
             
-            NSLog("[BannerView] Looking for bannerId: %@, total entrypoints: %d, matched: %d", self.bannerId ?? "nil", CustomerGlu.entryPointdata.count, bannerViews.count)
-            if bannerViews.count != 0 {
-                let firstContent = bannerViews[0].mobile?.content.first
-                NSLog("[BannerView] First content typeId: %@, type: %@, campaignId: %@", firstContent?.typeId ?? "nil", firstContent?.type ?? "nil", firstContent?.campaignId ?? "nil")
-                NSLog("[BannerView] widgetStates count: %d, nativeStyle: %@", firstContent?.widgetStates?.count ?? 0, firstContent?.nativeStyle != nil ? "present" : "nil")
-            }
-            
             if bannerViews.count != 0, let mobile = bannerViews[0].mobile {
                 arrContent = [CGContent]()
                 condition = mobile.conditions
@@ -218,7 +211,6 @@ public class BannerView: UIView, UIScrollViewDelegate {
            let typeId = firstContent.typeId, typeId.hasPrefix("DYNAMIC_MULTISTEP") {
             let campaign = CustomerGlu.campaignsAvailable?.campaigns?.first(where: { $0.campaignId == firstContent.campaignId })
             let preferredH = DynamicMultistepView.preferredHeight(for: screenWidth, content: firstContent, banner: campaign?.banner, typeId: typeId)
-            NSLog("[BannerView] DYNAMIC_MULTISTEP height override: container%%=%d → preferred=%g (screenW=%g, screenH=%g)", finalHeight, preferredH, screenWidth, screenHeight)
             finalHeight = Int(preferredH)
         }
         
@@ -257,7 +249,6 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 let preferredH = DynamicMultistepView.preferredHeight(for: screenWidth, content: dict, banner: campaign?.banner, typeId: typeId)
                 let msHeight = Int(preferredH)
                 if msHeight != finalHeight {
-                    NSLog("[BannerView] Overriding height from %d to %d for %@", finalHeight, msHeight, typeId)
                     finalHeight = msHeight
                     self.constraints.filter{$0.firstAttribute == .height}.forEach({ $0.constant = CGFloat(finalHeight) })
                     self.frame.size.height = CGFloat(finalHeight)
@@ -289,7 +280,6 @@ public class BannerView: UIView, UIScrollViewDelegate {
                 self.clipsToBounds = false
                 self.progressView.removeFromSuperview()
                 self.hasDynamicMultistepLoaded = true
-                NSLog("[BannerView] Added DynamicMultistepView to scrollView, frame=%@", NSCoder.string(for: multistepView.frame))
             } else if dict.type == "IMAGE" {
                 var imageView: UIImageView
                 let xOrigin = screenWidth * CGFloat(i)
