@@ -221,9 +221,7 @@ class APIManager {
     
     private static func performRequest(withData requestData: CGRequestData) {
         
-        // TEMP: Use http for localhost proxy (revert before release)
-        let scheme = requestData.baseurl.contains("localhost") || requestData.baseurl.contains("10.7.0.2") ? "http://" : "https://"
-        var strUrl = scheme + requestData.baseurl + requestData.methodandpath.path
+        var strUrl = "https://" + requestData.baseurl + requestData.methodandpath.path
         
         if requestData.methodandpath.path == "reward/v1.1/user"
         {
