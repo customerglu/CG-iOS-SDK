@@ -76,6 +76,17 @@ CustomerGlu.getInstance.sendEventData(eventName: "purchase", eventProperties: ["
 CustomerGlu.getInstance.updateProfile(userAttributes: ["plan": "premium"])
 ```
 
+## What's New in 4.0.0
+
+- **DYNAMIC_MULTISTEP native rendering** — three widget variants (MS1, MS2, MS3) rendered natively instead of WebView for better performance and native feel
+- **Native style support** — 19 configurable `nativeStyle` fields (colors, fonts, border radius, shimmer, etc.) controlled via dashboard
+- **SVG header images** — rendered inline via WKWebView
+- **Auto-height** — widgets calculate preferred height and override dashboard percentage
+- **MS3 expand/collapse** — animated accordion with height resize propagation to RN container
+- **CTA shimmer animation** — shimmer effect on call-to-action buttons
+- **Campaign lookup fallback** — `CG_CAMPAIGNS_LOADED` notification rebuilds widget when campaigns load late
+- **Custom CGBanner decoder** — handles type mismatches and unknown fields gracefully
+
 ## Features
 
 | Feature | Description |
