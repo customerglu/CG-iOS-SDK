@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'CustomerGlu'
-  s.version          = '4.1.1'
+  s.version          = '4.1.2'
   s.summary          = 'In-app gamification, rewards, and engagement campaigns for iOS.'
   s.description      = <<-DESC
 CustomerGlu iOS SDK — native in-app gamification, rewards, and engagement campaigns.
