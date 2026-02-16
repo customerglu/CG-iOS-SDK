@@ -43,17 +43,21 @@ class DynamicMultistepView: UIView {
         guard let foundBanner = campaign?.banner else { return }
         self.banner = foundBanner
         NotificationCenter.default.removeObserver(self, name: Notification.Name("CG_CAMPAIGNS_LOADED"), object: nil)
-        // Rebuild the view
-        subviews.forEach { $0.removeFromSuperview() }
-        layer.sublayers?.filter { $0.name == "shine" }.forEach { $0.removeFromSuperlayer() }
-        setupCard()
-        setupView()
-        // Update height
-        let preferredH = DynamicMultistepView.preferredHeight(for: bounds.width, content: content, banner: foundBanner, typeId: typeId)
-        if preferredH != bounds.height {
-            frame.size.height = preferredH
-            if let bid = bannerId {
-                NotificationCenter.default.post(name: Notification.Name("CGBANNER_FINAL_HEIGHT"), object: nil, userInfo: [bid: Int(preferredH)])
+        // Must dispatch to main thread — notification may fire on background thread
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            // Rebuild the view
+            self.subviews.forEach { $0.removeFromSuperview() }
+            self.layer.sublayers?.filter { $0.name == "shine" }.forEach { $0.removeFromSuperlayer() }
+            self.setupCard()
+            self.setupView()
+            // Update height
+            let preferredH = DynamicMultistepView.preferredHeight(for: self.bounds.width, content: self.content, banner: foundBanner, typeId: self.typeId)
+            if preferredH != self.bounds.height {
+                self.frame.size.height = preferredH
+                if let bid = self.bannerId {
+                    NotificationCenter.default.post(name: Notification.Name("CGBANNER_FINAL_HEIGHT"), object: nil, userInfo: [bid: Int(preferredH)])
+                }
             }
         }
     }
